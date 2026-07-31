@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahaniverse — AI Speech Therapy World</title>
+  <meta name="description" content="Kahaniverse is an AI-personalized reinforcement world for speech and language therapy, featuring Indian festival-themed mini-games, sign-to-text communication, and a clinician console.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/portal.css">
+  <link rel="stylesheet" href="css/a11y.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    body {
+      background: var(--void);
+      color: #fff;
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── PHOTOREAL HERO WORLD IMAGE ── */
+    #hero-world-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: url('hero-world.jpg') center center / cover no-repeat;
+      transform-origin: center center;
+      animation: cinemaSequence 10s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    /* Full 10-second cinematic sequence:
+       0-2s  : Fast fly-in — starts tiny + blurred + offset, slams to center
+       2-4s  : Settles with weight — slight overshoot bounce, rotation suggestion
+       4-6.5s: Deep zoom toward surface with DOF blur building
+       6.5-7.5s: Shatter — white flash + scale burst
+       7.5-10s: Fade to clean hero shot */
+    @keyframes cinemaSequence {
+      0%   { transform: scale(0.12) translateY(60px) rotate(-8deg);
+             filter: blur(18px) brightness(0.4) saturate(0.6); opacity:0; }
+      5%   { opacity: 1; }
+      /* 2s: Slams into place */
+      20%  { transform: scale(1.08) translateY(-8px) rotate(1.5deg);
+             filter: blur(3px) brightness(0.85) saturate(1.1); }
+      /* 4s: Settles with weight */
+      40%  { transform: scale(1.00) translateY(0px) rotate(0deg);
+             filter: blur(0px) brightness(0.88) saturate(1.05); }
+      /* 6.5s: Deep zoom in — DOF blur starts */
+      65%  { transform: scale(1.55) translateY(-2%);
+             filter: blur(1.5px) brightness(0.75) saturate(1.2); }
+      /* 7.5s: SHATTER — white flash + scale burst */
+      72%  { transform: scale(1.72) translateY(-3%);
+             filter: blur(0px) brightness(2.2) saturate(0.3); }
+      75%  { transform: scale(1.65) translateY(-2%);
+             filter: blur(6px) brightness(0.3) saturate(0);
+             opacity: 0.6; }
+      /* 7.5-10s: Clean hero — fade back, settle */
+      85%  { transform: scale(1.05) translateY(0%);
+             filter: blur(0px) brightness(0.82) saturate(1.08);
+             opacity: 1; }
+      100% { transform: scale(1.00) translateY(0%);
+             filter: blur(0px) brightness(0.82) saturate(1.08);
+             opacity: 1; }
+    }
+
+    /* Shatter flash overlay — vivid coral-white burst at 7.2s */
+    #shatter-flash {
+      position: fixed; inset: 0; z-index: 5;
+      background: radial-gradient(ellipse at center, #fff5e0 0%, #ffb347 40%, #ff6b6b 100%);
+      opacity: 0;
+      pointer-events: none;
+      animation: shatterFlash 10s forwards;
+    }
+    @keyframes shatterFlash {
+      0%,70%  { opacity: 0; }
+      72%     { opacity: 0.95; }
+      74%     { opacity: 0.4; }
+      78%     { opacity: 0; }
+      100%    { opacity: 0; }
+    }
+
+    /* Plasma trail — rainbow glowing ring during fly-in */
+    #plasma-ring {
+      position: fixed;
+      top: 50%; left: 50%;
+      width: 300px; height: 300px;
+      margin: -150px 0 0 -150px;
+      border-radius: 50%;
+      border: 4px solid transparent;
+      z-index: 4;
+      pointer-events: none;
+      animation: plasmaRing 10s forwards;
+    }
+    @keyframes plasmaRing {
+      0%   { opacity:0; transform:scale(0.1);
+             box-shadow: none; }
+      8%   { opacity:1; transform:scale(1.05);
+             box-shadow:
+               0 0 40px 8px rgba(255,107,107,0.7),
+               0 0 80px 20px rgba(255,179,71,0.5),
+               0 0 130px 40px rgba(79,227,216,0.4),
+               inset 0 0 30px rgba(255,255,255,0.15); }
+      20%  { opacity:1; transform:scale(1.12);
+             box-shadow:
+               0 0 60px 12px rgba(255,107,107,0.5),
+               0 0 100px 30px rgba(255,179,71,0.35),
+               0 0 160px 60px rgba(79,227,216,0.3); }
+      35%  { opacity:0.3; transform:scale(1.02);
+             box-shadow: 0 0 20px rgba(255,179,71,0.15); }
+      50%  { opacity:0; box-shadow:none; }
+      100% { opacity:0; }
+    }
+
+    /* DOF lens shimmer — colorful light particles during zoom */
+    #dof-layer {
+      position: fixed; inset: 0; z-index: 3;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 65% 35%, rgba(255,179,71,0.12) 0%, transparent 45%),
+        radial-gradient(ellipse at 35% 70%, rgba(79,227,216,0.10) 0%, transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(255,107,107,0.06) 0%, transparent 60%);
+      animation: dofShimmer 10s forwards;
+    }
+    @keyframes dofShimmer {
+      0%,38%  { opacity:0; }
+      48%     { opacity:0; }
+      55%     { opacity:1; }
+      65%     { opacity:0.8; }
+      72%     { opacity:0.3; }
+      78%     { opacity:0; }
+      100%    { opacity:0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #hero-world-bg  { animation:none; transform:scale(1); filter:brightness(0.82); }
+      #shatter-flash  { animation:none; opacity:0; }
+      #plasma-ring    { animation:none; opacity:0; }
+      #dof-layer      { animation:none; opacity:0; }
+    }
+
+    /* Vignette — gentle, preserves vivid image color at center */
+    #hero-world-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(11,14,43,0.0)  0%,
+        rgba(11,14,43,0.35) 50%,
+        rgba(11,14,43,0.78) 100%
+      );
+    }
+    /* Subtle star particles */
+    #star-bg {
+      position: fixed; inset: 0; z-index: 1;
+      pointer-events: none; overflow: hidden;
+      opacity: 0.3;
+    }
+
+    /* ── HERO SECTION ── */
+    .hero {
+      position: relative; z-index: 2;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: var(--s-xl);
+    }
+
+    .hero-mascot {
+      font-size: 7rem;
+      filter: drop-shadow(0 0 40px #4FE3D8) drop-shadow(0 0 80px rgba(79,227,216,0.3));
+      animation: mascotFloat 4s ease-in-out infinite;
+      margin-bottom: var(--s-xl);
+      position: relative; z-index: 2;
+    }
+    @keyframes mascotFloat {
+      0%,100%{ transform: translateY(0) rotate(-2deg); }
+      50%    { transform: translateY(-20px) rotate(2deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-mascot { animation: none; }
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 10vw, 7rem);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #4FE3D8 0%, #F7C948 50%, #E14FD8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--s-md);
+      line-height: 1;
+    }
+
+    .hero-sub {
+      font-family: var(--font-body);
+      font-size: clamp(0.9rem, 2vw, 1.2rem);
+      color: rgba(79,227,216,0.7);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: var(--s-2xl);
+    }
+
+    .hero-desc {
+      font-size: clamp(0.95rem, 2vw, 1.1rem);
+      color: rgba(255,255,255,0.65);
+      max-width: 560px;
+      line-height: 1.75;
+      margin-bottom: var(--s-2xl);
+    }
+
+    .hero-ctas {
+      display: flex; gap: var(--s-lg);
+      flex-wrap: wrap; justify-content: center;
+      margin-bottom: var(--s-3xl);
+    }
+
+    /* ── FEATURE PILLS ── */
+    .feature-pills {
+      display: flex; gap: var(--s-sm);
+      flex-wrap: wrap; justify-content: center;
+      margin-bottom: var(--s-2xl);
+    }
+    .pill {
+      background: rgba(79,227,216,0.06);
+      border: 1px solid rgba(79,227,216,0.15);
+      border-radius: var(--r-full);
+      padding: 6px 16px;
+      font-size: 0.78rem; font-weight: 700;
+      color: rgba(255,255,255,0.7);
+      white-space: nowrap;
+    }
+    .pill span { margin-right: 4px; }
+
+    /* ── WORLDS PREVIEW ROW ── */
+    .worlds-row {
+      position: relative; z-index: 2;
+      display: flex; gap: var(--s-lg);
+      justify-content: center; flex-wrap: wrap;
+      padding: var(--s-xl) var(--s-xl) var(--s-2xl);
+    }
+
+    .world-preview-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--r-xl);
+      padding: var(--s-xl) var(--s-lg);
+      text-align: center;
+      min-width: 140px; max-width: 170px;
+      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .world-preview-card:hover {
+      transform: translateY(-10px) scale(1.05);
+      border-color: var(--card-color, rgba(79,227,216,0.3));
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 30px var(--card-glow, rgba(79,227,216,0.1));
+      background: rgba(255,255,255,0.06);
+    }
+    .world-preview-emoji { font-size: 3.5rem; display: block; margin-bottom: var(--s-sm); animation: previewBob 3s ease-in-out infinite; animation-delay: var(--card-delay,0s); }
+    @keyframes previewBob { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+    .world-preview-name { font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .world-preview-skill { font-size: 0.68rem; color: rgba(255,255,255,0.45); }
+
+    /* ── HOW IT WORKS ── */
+    .section {
+      position: relative; z-index: 2;
+      padding: var(--s-2xl) var(--s-xl);
+      text-align: center;
+    }
+    .section-label {
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.15em;
+      text-transform: uppercase; color: rgba(79,227,216,0.6);
+      margin-bottom: var(--s-md);
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+      font-weight: 800; color: #fff;
+      margin-bottom: var(--s-2xl);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--s-lg);
+      max-width: 960px; margin: 0 auto;
+    }
+    .step-card {
+      background: rgba(79,227,216,0.03);
+      border: 1px solid rgba(79,227,216,0.1);
+      border-radius: var(--r-xl);
+      padding: var(--s-xl);
+      transition: all 0.3s;
+    }
+    .step-card:hover { background: rgba(79,227,216,0.07); transform: translateY(-4px); }
+    .step-num {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, #4FE3D8, #0E7C7B);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 0.9rem; font-weight: 800;
+      color: #fff; margin: 0 auto var(--s-md);
+      box-shadow: 0 4px 16px rgba(79,227,216,0.3);
+    }
+    .step-emoji { font-size: 2.5rem; display: block; margin-bottom: var(--s-sm); }
+    .step-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; margin-bottom: var(--s-sm); }
+    .step-desc  { font-size: 0.82rem; color: rgba(255,255,255,0.55); line-height: 1.6; }
+
+    /* ── FOOTER ── */
+    .footer {
+      position: relative; z-index: 2;
+      border-top: 1px solid rgba(79,227,216,0.08);
+      padding: var(--s-xl);
+      text-align: center;
+      font-size: 0.78rem; color: rgba(255,255,255,0.3);
+    }
+    .footer a { color: rgba(79,227,216,0.5); text-decoration: none; }
+    .footer a:hover { color: #4FE3D8; }
+  </style>
+</head>
+<body class="portal-body">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Photoreal hero world background -->
+<div id="hero-world-bg" role="img" aria-label="A photorealistic miniature tilt-shift planet world floating in a vivid night sky"></div>
+
+<!-- Cinematic overlay layers -->
+<div id="plasma-ring"  aria-hidden="true"></div>
+<div id="dof-layer"    aria-hidden="true"></div>
+<div id="shatter-flash" aria-hidden="true"></div>
+
+<!-- Star particles -->
+<div id="star-bg"></div>
+
+<!-- ── HERO ── -->
+<section id="main-content" class="hero">
+  <div class="hero-mascot">🦚</div>
+  <h1 class="hero-title">KAHANIVERSE</h1>
+  <p class="hero-sub">AI · Story · Speech · Festival · Play</p>
+  <p class="hero-desc">
+    A personalized speech therapy world built on Indian festival magic.
+    5 game worlds, sign-to-text communication, and AI rewards that adapt to every child.
+  </p>
+
+  <div class="feature-pills">
+    <div class="pill"><span>🤖</span> AI Reinforcement</div>
+    <div class="pill"><span>🤲</span> Sign Recognition</div>
+    <div class="pill"><span>🦚</span> Mascot "Kahi"</div>
+    <div class="pill"><span>🪔</span> Indian Festivals</div>
+    <div class="pill"><span>📊</span> Clinician Console</div>
+    <div class="pill"><span>🌍</span> Global Plaza</div>
+    <div class="pill"><span>🔒</span> Privacy-First</div>
+  </div>
+
+  <div class="hero-ctas">
+    <!-- ★ SIGN & TALK AI — PRIMARY HACKATHON FEATURE ★ -->
+    <a href="communicate.html" class="btn-world btn-xl" style="
+      background: linear-gradient(135deg,#00F0C8,#0EA5E9);
+      color:#04081A; font-weight:900;
+      box-shadow: 0 0 32px rgba(0,240,200,0.55), 0 0 64px rgba(0,240,200,0.2);
+      animation: signGlow 2s ease-in-out infinite alternate;
+      border:none; position:relative;
+    ">✋ Sign &amp; Talk AI
+      <span style="position:absolute;top:-9px;right:-9px;background:#FF5C8A;color:#fff;font-size:0.55rem;font-weight:900;padding:3px 7px;border-radius:99px;letter-spacing:.05em;">NEW</span>
+    </a>
+    <a href="intro.html" class="btn-world btn-xl">🎬 Begin the Story</a>
+    <a href="learn.html" class="btn-world btn-xl">📚 Learn &amp; Grow</a>
+    <a href="world-map.html" class="btn-ghost btn-lg" style="background:rgba(79,227,216,0.06);border-color:rgba(79,227,216,0.2);color:#fff;">🗺️ Jump to Map</a>
+    <a href="clinician.html" class="btn-ghost btn-sm" style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);">📊 Clinician Console</a>
+    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
+  </div>
+</section>
+
+<style>
+@keyframes signGlow {
+  from { box-shadow: 0 0 24px rgba(0,240,200,0.45), 0 0 48px rgba(0,240,200,0.15); }
+  to   { box-shadow: 0 0 44px rgba(0,240,200,0.75), 0 0 80px rgba(0,240,200,0.35); }
+}
+</style>
+
+<!-- ★ SIGN & TALK FEATURE CARD ★ -->
+<section style="
+  max-width:860px; margin:0 auto 32px; padding:0 20px;
+">
+  <a href="communicate.html" style="
+    display:flex; align-items:center; gap:20px;
+    background:linear-gradient(135deg,rgba(0,240,200,0.07),rgba(14,165,233,0.05));
+    border:1px solid rgba(0,240,200,0.25);
+    border-radius:20px; padding:22px 28px;
+    text-decoration:none; color:inherit;
+    transition:all 0.3s;
+    box-shadow: 0 0 40px rgba(0,240,200,0.08);
+  " onmouseover="this.style.boxShadow='0 0 60px rgba(0,240,200,0.2)';this.style.borderColor='rgba(0,240,200,0.5)'"
+     onmouseout="this.style.boxShadow='0 0 40px rgba(0,240,200,0.08)';this.style.borderColor='rgba(0,240,200,0.25)'">
+    <div style="font-size:3.5rem;filter:drop-shadow(0 0 20px rgba(0,240,200,0.6));flex-shrink:0;">🤲</div>
+    <div style="flex:1;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+        <span style="font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:900;color:#00F0C8;letter-spacing:.05em;">Sign &amp; Talk AI</span>
+        <span style="background:linear-gradient(135deg,#00F0C8,#0EA5E9);color:#04081A;font-size:0.58rem;font-weight:900;padding:3px 9px;border-radius:99px;letter-spacing:.08em;">HACKATHON FEATURE</span>
+      </div>
+      <p style="font-size:0.88rem;color:rgba(226,238,248,0.7);line-height:1.7;margin:0;">
+        Child shows an <strong style="color:#fff;">ISL hand sign</strong> → AI detects it in real-time with confidence scoring → converted to <strong style="color:#fff;">text &amp; voice</strong> for the teacher. Teacher types a reply → <strong style="color:#fff;">spoken aloud</strong> to the child. Two-way communication with zero speech required.
+      </p>
+    </div>
+    <div style="flex-shrink:0;text-align:center;">
+      <div style="font-family:monospace;font-size:0.65rem;color:rgba(0,240,200,0.6);letter-spacing:.1em;margin-bottom:6px;">ENTER SESSION</div>
+      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#00F0C8,#0EA5E9);display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 16px rgba(0,240,200,0.4);">▶</div>
+    </div>
+  </a>
+</section>
+
+<!-- ── WORLDS PREVIEW ── -->
+<div class="worlds-row">
+  <a href="level.html?world=1" class="world-preview-card" style="--card-color:rgba(247,201,72,0.4);--card-glow:rgba(247,201,72,0.1);--card-delay:0s;">
+    <span class="world-preview-emoji">🪔</span>
+    <div class="world-preview-name">Diwali Bazaar</div>
+    <div class="world-preview-skill">Articulation</div>
+  </a>
+  <a href="level.html?world=2" class="world-preview-card" style="--card-color:rgba(225,79,216,0.4);--card-glow:rgba(225,79,216,0.1);--card-delay:0.15s;">
+    <span class="world-preview-emoji">🎨</span>
+    <div class="world-preview-name">Holi Garden</div>
+    <div class="world-preview-skill">Vocabulary</div>
+  </a>
+  <a href="level.html?world=3" class="world-preview-card" style="--card-color:rgba(82,183,136,0.4);--card-glow:rgba(82,183,136,0.1);--card-delay:0.3s;">
+    <span class="world-preview-emoji">🚣</span>
+    <div class="world-preview-name">Onam Boat</div>
+    <div class="world-preview-skill">Sentences</div>
+  </a>
+  <a href="level.html?world=4" class="world-preview-card" style="--card-color:rgba(79,227,216,0.4);--card-glow:rgba(79,227,216,0.1);--card-delay:0.45s;">
+    <span class="world-preview-emoji">🪁</span>
+    <div class="world-preview-name">Monsoon Sky</div>
+    <div class="world-preview-skill">Sign Clarity</div>
+  </a>
+  <a href="plaza.html" class="world-preview-card" style="--card-color:rgba(242,153,74,0.4);--card-glow:rgba(242,153,74,0.1);--card-delay:0.6s;">
+    <span class="world-preview-emoji">🌍</span>
+    <div class="world-preview-name">Global Plaza</div>
+    <div class="world-preview-skill">Full Expression</div>
+  </a>
+</div>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="section">
+  <div class="section-label">How It Works</div>
+  <h2 class="section-title">Simple for children. Powerful for clinicians.</h2>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <span class="step-emoji">👤</span>
+      <div class="step-title">Set Up a Profile</div>
+      <div class="step-desc">Create a child profile with preferences. The AI immediately begins personalizing rewards to their interests.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <span class="step-emoji">🏝️</span>
+      <div class="step-title">Choose a Festival World</div>
+      <div class="step-desc">Each world is themed around an Indian festival with a unique therapy skill — Diwali, Holi, Onam, Monsoon, or the Global Plaza.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <span class="step-emoji">🤲</span>
+      <div class="step-title">Sign & Speak</div>
+      <div class="step-desc">Children communicate with gestures via camera. Signs are converted to text and sent to their teacher in real time.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <span class="step-emoji">🎁</span>
+      <div class="step-title">Earn AI-Picked Rewards</div>
+      <div class="step-desc">Our UCB-1 bandit engine selects culturally relevant rewards — dance videos, folk songs, animal clips — personalized per session.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">5</div>
+      <span class="step-emoji">📊</span>
+      <div class="step-title">Clinician Reviews Data</div>
+      <div class="step-desc">Clinicians see session timelines, motivation trendlines, and printable ABA reinforcement schedules — all generated automatically.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div style="font-size:2rem;margin-bottom:var(--s-sm);">🦚</div>
+  <div style="margin-bottom:var(--s-sm);"><strong style="color:rgba(255,255,255,0.5);">KAHANIVERSE</strong> — AI-Personalized Speech Therapy World</div>
+  <div style="margin-bottom:var(--s-md);">
+    <a href="intro.html">Intro</a> &nbsp;·&nbsp;
+    <a href="profile.html">Profiles</a> &nbsp;·&nbsp;
+    <a href="world-map.html">World Map</a> &nbsp;·&nbsp;
+    <a href="sign-detect.html">✋ Sign Detector</a> &nbsp;·&nbsp;
+    <a href="communicate.html">Sign &amp; Talk</a> &nbsp;·&nbsp;
+    <a href="learn.html">Learn</a> &nbsp;·&nbsp;
+    <a href="sticker-book.html">📚 Sticker Book</a> &nbsp;·&nbsp;
+    <a href="clinician.html">Clinician</a> &nbsp;·&nbsp;
+    <a href="settings.html">Settings</a>
+  </div>
+  <div>🔒 Privacy-first · All data stored locally · Camera is always opt-in · No cloud server required</div>
+</footer>
+
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="learn.html" class="persistent-btn" aria-label="Learn and career">📚 Learn</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn" aria-label="Help and settings">❓ Help</a>
+</div>
+
+<script src="js/kahani-app.js"></script>
+<script>
+// Star field
+const bg = document.getElementById('star-bg');
+for (let i = 0; i < 120; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const sz = Math.random() * 3 + 1;
+  s.style.cssText = [
+    `left:${Math.random()*100}%`,
+    `top:${Math.random()*100}%`,
+    `--sz:${sz}px`,
+    `--dur:${Math.random()*4+2}s`,
+    `--delay:${Math.random()*4}s`,
+    `background:${['#4FE3D8','#F7C948','#E14FD8','#ffffff'][Math.floor(Math.random()*4)]}`,
+  ].join(';');
+  bg.appendChild(s);
+}
+
+// Redirect logged-in users straight to world-map
+KV.init();
+const p = KV.getCurrentProfile();
+// Don't auto-redirect — user might want to see landing page
+</script>
+</body>
+</html>

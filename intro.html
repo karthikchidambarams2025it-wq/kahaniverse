@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahaniverse - Welcome</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; filter: contrast(1.1) saturate(1.2); }
+        
+        .overlay-ui { position: absolute; z-index: 10; pointer-events: none; }
+        #skip-btn { 
+            position: absolute; top: 30px; right: 40px; pointer-events: auto; 
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 10px 20px; border-radius: 30px; cursor: pointer;
+            backdrop-filter: blur(10px); transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 2px; font-size: 12px;
+        }
+        #skip-btn:hover { background: rgba(255,255,255,0.3); border-color: white; }
+        
+        #progress-container {
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 12px; pointer-events: auto;
+        }
+        .progress-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .progress-dot.active {
+            background: white; box-shadow: 0 0 10px rgba(255,255,255,0.8); transform: scale(1.5);
+        }
+
+        #fade-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; z-index: 20; opacity: 1; pointer-events: none;
+            transition: opacity 1s ease-in-out;
+        }
+
+        #title-container {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 5; text-align: center; width: 100%;
+        }
+        .letter {
+            font-size: 5rem; font-weight: 800; color: white; display: inline-block; opacity: 0;
+            text-shadow: 0 0 20px rgba(244, 180, 0, 0.8), 0 0 40px rgba(244, 180, 0, 0.5);
+            transform: translateY(20px) scale(0.8);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            letter-spacing: 5px;
+        }
+        .letter.visible { opacity: 1; transform: translateY(0) scale(1); }
+        
+        #chromatic-aberration {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="js/kahani-app.js"></script>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    <div id="chromatic-aberration"></div>
+    
+    <button id="skip-btn" class="overlay-ui">Skip Intro</button>
+    
+    <div id="progress-container" class="overlay-ui">
+        <div class="progress-dot" id="dot-0"></div>
+        <div class="progress-dot" id="dot-1"></div>
+        <div class="progress-dot" id="dot-2"></div>
+        <div class="progress-dot" id="dot-3"></div>
+        <div class="progress-dot" id="dot-4"></div>
+    </div>
+
+    <div id="title-container" class="overlay-ui"></div>
+
+    <div id="fade-overlay"></div>
+
+    <script>
+        // Check profile logic for redirect
+        function proceedToApp() {
+            // Check via mock app.js or localStorage
+            const hasProfile = localStorage.getItem('kahaniverse_profile');
+            if (hasProfile) {
+                window.location.href = 'world-map.html';
+            } else {
+                window.location.href = 'profile.html';
+            }
+        }
+
+        document.getElementById('skip-btn').addEventListener('click', proceedToApp);
+        
+        // Remove init fade
+        setTimeout(() => { document.getElementById('fade-overlay').style.opacity = '0'; }, 100);
+
+        // Three.js Setup
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050510, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 50;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        // Assets
+        
+        // 1. Micro Particles
+        const particleCount = 3000;
+        const particleGeo = new THREE.BufferGeometry();
+        const particlePos = new Float32Array(particleCount * 3);
+        const particleColors = new Float32Array(particleCount * 3);
+        const colorPalette = [new THREE.Color(0x00FFFF), new THREE.Color(0xFF00FF), new THREE.Color(0xFFD700)];
+
+        for(let i=0; i<particleCount; i++) {
+            particlePos[i*3] = (Math.random() - 0.5) * 150;
+            particlePos[i*3+1] = (Math.random() - 0.5) * 150;
+            particlePos[i*3+2] = (Math.random() - 0.5) * 150;
+
+            const c = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            particleColors[i*3] = c.r; particleColors[i*3+1] = c.g; particleColors[i*3+2] = c.b;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+        particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+        const particleMat = new THREE.PointsMaterial({ size: 0.15, vertexColors: true, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
+        const particles = new THREE.Points(particleGeo, particleMat);
+        scene.add(particles);
+
+        // 2. Holographic Globe (Peacock-Teal + Marigold)
+        const globeGeo = new THREE.IcosahedronGeometry(10, 3);
+        const globeMat = new THREE.MeshBasicMaterial({ color: 0x008080, wireframe: true, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
+        const globe = new THREE.Mesh(globeGeo, globeMat);
+        scene.add(globe);
+
+        // 3. Shards (Pre-computed for explosion)
+        const shardCount = 200;
+        const shards = new THREE.Group();
+        const shardGeo = new THREE.TetrahedronGeometry(1, 0);
+        const shardMat = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff, transmission: 0.9, opacity: 1, metalness: 0.1, roughness: 0.1, ior: 1.5,
+            thickness: 0.5, clearcoat: 1, clearcoatRoughness: 0.1
+        });
+        
+        const shardData = [];
+        for(let i=0; i<shardCount; i++) {
+            const mesh = new THREE.Mesh(shardGeo, shardMat);
+            // Start at globe surface
+            const phi = Math.acos( -1 + ( 2 * i ) / shardCount );
+            const theta = Math.sqrt( shardCount * Math.PI ) * phi;
+            const r = 10;
+            mesh.position.setFromSphericalCoords(r, phi, theta);
+            
+            mesh.lookAt(0,0,0);
+            mesh.visible = false;
+            
+            const targetPos = mesh.position.clone().multiplyScalar(1.5 + Math.random());
+            const finalPos = new THREE.Vector3((Math.random()-0.5)*10, (Math.random()-0.5)*15, (Math.random()-0.5)*5); // Mascot shape roughly
+            
+            shardData.push({ mesh, startPos: mesh.position.clone(), explodePos: targetPos, finalPos: finalPos, rotSpeed: new THREE.Vector3(Math.random(), Math.random(), Math.random()) });
+            shards.add(mesh);
+        }
+        scene.add(shards);
+
+        // 4. Mascot Core Glow
+        const coreLight = new THREE.PointLight(0xFFD700, 0, 50);
+        scene.add(coreLight);
+
+        // 5. Hand Light Trail (Palm Eruption)
+        const palmBurstMat = new THREE.PointsMaterial({ size: 0.5, color: 0xFFD700, transparent: true, opacity: 0, blending: THREE.AdditiveBlending });
+        const palmBurst = new THREE.Points(particleGeo.clone(), palmBurstMat); // Reuse geo for simplicity
+        palmBurst.scale.set(0.01, 0.01, 0.01);
+        scene.add(palmBurst);
+
+        // 6. Anamorphic Lens Flare
+        const flareGeo = new THREE.PlaneGeometry(100, 0.5);
+        const flareMat = new THREE.MeshBasicMaterial({ color: 0xFFD700, transparent: true, opacity: 0, blending: THREE.AdditiveBlending });
+        const flare = new THREE.Mesh(flareGeo, flareMat);
+        scene.add(flare);
+
+        // Ambient Lights
+        const ambLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambLight);
+
+        // Web Audio API Setup
+        let audioCtx, osc, gainNode;
+        let audioStarted = false;
+
+        function initAudio() {
+            if (audioStarted) return;
+            audioStarted = true;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            osc = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(60, audioCtx.currentTime); // Deep hum
+            
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 1);
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+        }
+
+        function playChime() {
+            if(!audioCtx) return;
+            const chimeOsc = audioCtx.createOscillator();
+            const chimeGain = audioCtx.createGain();
+            chimeOsc.type = 'triangle';
+            chimeOsc.frequency.setValueAtTime(800 + Math.random()*400, audioCtx.currentTime);
+            chimeGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            chimeGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.05);
+            chimeGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            chimeOsc.connect(chimeGain);
+            chimeGain.connect(audioCtx.destination);
+            chimeOsc.start();
+            chimeOsc.stop(audioCtx.currentTime + 0.6);
+        }
+
+        // Start audio on first interaction if possible, or trust user has interacted
+        document.body.addEventListener('click', initAudio);
+
+        // Title Setup
+        const titleText = "KAHANIVERSE";
+        const titleContainer = document.getElementById('title-container');
+        titleText.split('').forEach(char => {
+            const span = document.createElement('span');
+            span.className = 'letter';
+            span.textContent = char;
+            titleContainer.appendChild(span);
+        });
+
+        // Animation Loop Variables
+        const clock = new THREE.Clock();
+        let totalTime = 0;
+        const DURATION = 6.0;
+
+        function updateDots(t) {
+            const numDots = 5;
+            const step = DURATION / numDots;
+            for(let i=0; i<numDots; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (t >= i * step) {
+                    dot.classList.add('active');
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            totalTime += delta;
+            
+            if (!audioStarted && totalTime > 0.1) {
+                // Try to auto-start audio (might fail due to browser policies)
+                try { initAudio(); } catch(e){}
+            }
+
+            updateDots(totalTime);
+
+            // Base rotations
+            particles.rotation.y += 0.02 * delta;
+            globe.rotation.y += 0.5 * delta;
+
+            const filterEl = document.getElementById('canvas-container');
+
+            // --- SHOT 1 (0-1s): Void & Pulsing Globe ---
+            if (totalTime <= 1.0) {
+                const t = totalTime;
+                camera.position.z = 50 - (t * 5); // Slow drift
+                
+                // Pulse heartbeat
+                const pulse = 1 + Math.sin(t * Math.PI * 4) * 0.1;
+                globe.scale.set(pulse, pulse, pulse);
+            }
+            
+            // --- SHOT 2 (1-2.5s): Dolly-in, Shatter, Bullet-time ---
+            else if (totalTime > 1.0 && totalTime <= 2.5) {
+                const t = totalTime - 1.0; // 0 to 1.5
+                
+                if (t < 0.2) {
+                    // Fast dolly
+                    camera.position.z = THREE.MathUtils.lerp(camera.position.z, 20, t * 5);
+                    filterEl.style.filter = `blur(${t*10}px) contrast(1.2)`;
+                } else {
+                    filterEl.style.filter = `blur(0px) contrast(1.1)`;
+                }
+
+                if (t > 0.2 && globe.visible) {
+                    globe.visible = false; // Shatter!
+                    shardData.forEach(d => { d.mesh.visible = true; });
+                }
+
+                if (t > 0.2 && t < 0.5) {
+                    // Explode outward (Bullet time starts)
+                    const expT = (t - 0.2) / 0.3;
+                    shardData.forEach(d => {
+                        d.mesh.position.lerpVectors(d.startPos, d.explodePos, expT);
+                        d.mesh.rotation.x += d.rotSpeed.x * 0.1;
+                        d.mesh.rotation.y += d.rotSpeed.y * 0.1;
+                    });
+                    particles.rotation.y += 0.001 * delta; // slow mo
+                }
+                
+                if (t >= 0.5) {
+                    // Reassemble magnetically
+                    const reasT = (t - 0.5) / 1.0; // 0 to 1
+                    shardData.forEach(d => {
+                        d.mesh.position.lerpVectors(d.explodePos, d.finalPos, THREE.MathUtils.smoothstep(reasT, 0, 1));
+                        d.mesh.rotation.x += d.rotSpeed.x * 0.05;
+                    });
+                    coreLight.intensity = reasT * 2;
+                }
+            }
+            
+            // --- SHOT 3 (2.5-4s): Mascot, Blink, Wave ---
+            else if (totalTime > 2.5 && totalTime <= 4.0) {
+                const t = totalTime - 2.5; // 0 to 1.5
+                
+                camera.position.z = THREE.MathUtils.lerp(camera.position.z, 15, delta * 2);
+                camera.position.x = Math.sin(t) * 2; // slight drift
+                
+                shards.rotation.y = Math.sin(t * 2) * 0.2; // Tilt head
+                
+                // Pulse core
+                coreLight.intensity = 2 + Math.sin(t * 10) * 0.5;
+            }
+            
+            // --- SHOT 4 (4-5s): Push to Palm, Golden Burst ---
+            else if (totalTime > 4.0 && totalTime <= 5.0) {
+                const t = totalTime - 4.0; // 0 to 1
+                
+                camera.position.z = THREE.MathUtils.lerp(camera.position.z, 2, t); // Push through
+                camera.position.x = THREE.MathUtils.lerp(camera.position.x, 0, t);
+                
+                if (t > 0.2) {
+                    palmBurst.material.opacity = (t - 0.2) * 2;
+                    palmBurst.scale.setScalar(t * 20); // Expand burst
+                    
+                    // Background shift to warm
+                    scene.fog.color.setHex(0xF4B400); // Marigold
+                    renderer.setClearColor(0xF2994A);
+                    
+                    flare.material.opacity = (t - 0.2);
+                    flare.scale.x = 1 + t*2;
+                }
+                
+                // Chromatic aberration CSS effect
+                const ca = document.getElementById('chromatic-aberration');
+                ca.style.boxShadow = `inset 0 0 ${t * 200}px rgba(255,0,0,0.5), inset 0 0 ${t*100}px rgba(0,0,255,0.5)`;
+            }
+            
+            // --- SHOT 5 (5-6s): Whip-zoom back, Text Reveal ---
+            else if (totalTime > 5.0 && totalTime <= 6.0) {
+                const t = totalTime - 5.0; // 0 to 1
+                
+                if (t < 0.2) {
+                    camera.position.z = THREE.MathUtils.lerp(camera.position.z, 30, t * 10); // Whip back
+                }
+
+                // Letters assemble
+                const letters = document.querySelectorAll('.letter');
+                const revealProgress = Math.floor(t * letters.length * 1.5);
+                
+                letters.forEach((letter, i) => {
+                    if (i < revealProgress && !letter.classList.contains('visible')) {
+                        letter.classList.add('visible');
+                        playChime();
+                    }
+                });
+                
+                // Audio fade out hum
+                if (gainNode) gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
+            }
+            
+            // --- SHOT 6 (>6s): Redirect ---
+            else if (totalTime > 6.0 && totalTime < 7.0) {
+                const overlay = document.getElementById('fade-overlay');
+                overlay.style.opacity = '1';
+                
+                if (totalTime > 6.8) {
+                    proceedToApp();
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start
+        animate();
+    </script>
+</body>
+</html>

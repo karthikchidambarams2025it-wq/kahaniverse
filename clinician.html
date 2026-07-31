@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahaniverse — Clinician Console</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/clinician.css">
+  <link rel="stylesheet" href="css/a11y.css">
+</head>
+<body class="clinic-body">
+
+<!-- SIDEBAR -->
+<aside class="clinic-sidebar">
+  <div class="clinic-brand">
+    <div class="clinic-brand-name">🦚 KAHANIVERSE</div>
+    <div class="clinic-brand-sub">Clinician & Caregiver Console</div>
+  </div>
+  <nav class="clinic-nav" role="tablist">
+    <a href="#section-overview" class="clinic-nav-item active" onclick="showSection('overview',this)" role="tab">
+      <span class="clinic-nav-icon">📊</span> Overview
+    </a>
+    <a href="#section-timeline" class="clinic-nav-item" onclick="showSection('timeline',this)" role="tab">
+      <span class="clinic-nav-icon">⏱️</span> Session Timeline
+    </a>
+    <a href="#section-motivation" class="clinic-nav-item" onclick="showSection('motivation',this)" role="tab">
+      <span class="clinic-nav-icon">📈</span> Motivation Trends
+    </a>
+    <a href="#section-rewards" class="clinic-nav-item" onclick="showSection('rewards',this)" role="tab">
+      <span class="clinic-nav-icon">🎁</span> Reward Manager
+    </a>
+    <a href="#section-schedule" class="clinic-nav-item" onclick="showSection('schedule',this)" role="tab">
+      <span class="clinic-nav-icon">📅</span> Schedule Generator
+    </a>
+    <a href="#section-signs" class="clinic-nav-item" onclick="showSection('signs',this)" role="tab">
+      <span class="clinic-nav-icon">✋</span> Sign Transcript
+    </a>
+    <a href="#section-settings" class="clinic-nav-item" onclick="showSection('settings',this)" role="tab">
+      <span class="clinic-nav-icon">⚙️</span> Settings & Privacy
+    </a>
+  </nav>
+  <div style="padding:var(--s-lg);border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;">
+    <a href="communicate.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#0E7C7B,#4FE3D8);color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;">✋ Sign &amp; Talk</a>
+    <a href="learn.html" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:8px;text-decoration:none;color:rgba(255,255,255,0.7);font-size:0.85rem;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background=''">📚 Learn & Grow</a>
+    <a href="world-map.html" class="btn-clinic btn-clinic-outline" style="width:100%;justify-content:center;">← Child App</a>
+    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="clinic-main">
+
+  <!-- OVERVIEW -->
+  <section id="section-overview" class="clinic-section">
+    <div class="clinic-topbar">
+      <div>
+        <div class="clinic-title">Overview Dashboard</div>
+        <div class="clinic-sub">Session analytics for all children</div>
+      </div>
+      <div style="display:flex;gap:var(--s-md);align-items:center;">
+        <select class="world-input" id="child-select" onchange="switchChild()" style="width:200px;font-family:var(--font-clinic);">
+          <!-- filled by JS -->
+        </select>
+        <button class="btn-clinic" onclick="exportData()">⬇ Export Data</button>
+      </div>
+    </div>
+
+    <div class="clinic-stats" id="stats-row"></div>
+
+    <div class="clinic-grid-2" style="margin-top:var(--s-xl);">
+      <!-- World Progress -->
+      <div class="clinic-card" style="background:#fff;border:1px solid var(--sand);border-radius:var(--r-lg);padding:var(--s-xl);">
+        <div class="chart-title">WORLD PROGRESS</div>
+        <div id="world-progress"></div>
+      </div>
+      <!-- Reward Effectiveness -->
+      <div class="clinic-card" style="background:#fff;border:1px solid var(--sand);border-radius:var(--r-lg);padding:var(--s-xl);">
+        <div class="chart-title">TOP EFFECTIVE REWARDS</div>
+        <div id="reward-effectiveness"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section id="section-timeline" class="clinic-section" style="display:none;">
+    <div class="clinic-topbar">
+      <div><div class="clinic-title">Session Timeline</div><div class="clinic-sub">Reward given → behavior → next-task latency</div></div>
+    </div>
+    <div class="clinic-card" style="background:#fff;border:1px solid var(--sand);border-radius:var(--r-lg);padding:var(--s-xl);">
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </section>
+
+  <!-- MOTIVATION -->
+  <section id="section-motivation" class="clinic-section" style="display:none;">
+    <div class="clinic-topbar">
+      <div><div class="clinic-title">Motivation Trends</div><div class="clinic-sub">Engagement trending per child per week</div></div>
+    </div>
+    <div class="motivation-chart-wrap">
+      <div class="chart-title">WEEKLY MOTIVATION (0–5 SCALE)</div>
+      <div id="motivation-chart" style="height:180px;position:relative;"></div>
+      <div style="margin-top:var(--s-lg);font-size:0.82rem;color:var(--ink-faint);">
+        <span style="display:inline-flex;align-items:center;gap:6px;margin-right:var(--s-lg);"><span style="width:14px;height:3px;background:var(--peacock);display:inline-block;border-radius:2px;"></span> Motivation score</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:14px;height:3px;background:var(--marigold);border:1px dashed var(--marigold);display:inline-block;border-radius:2px;"></span> Target (3.5)</span>
+      </div>
+    </div>
+    <div id="trend-verdict" style="margin-top:var(--s-lg);padding:var(--s-lg);background:#fff;border:1px solid var(--sand);border-radius:var(--r-lg);"></div>
+  </section>
+
+  <!-- REWARDS -->
+  <section id="section-rewards" class="clinic-section" style="display:none;">
+    <div class="clinic-topbar">
+      <div><div class="clinic-title">Reward Manager</div><div class="clinic-sub">Override or lock AI reward suggestions per category</div></div>
+    </div>
+    <div class="consent-panel">
+      <div class="consent-title">⚠️ Camera-Based Affect Monitoring</div>
+      <div class="consent-body">Using the child's camera to infer smile/attention as an engagement signal is an optional, privacy-sensitive feature. It requires explicit parental and clinician consent. Data is not stored beyond the current session.</div>
+      <div style="display:flex;align-items:center;gap:var(--s-md);margin-top:var(--s-md);">
+        <span class="toggle" id="affect-toggle" onclick="toggleAffect(this)"></span>
+        <span style="font-size:0.82rem;font-weight:600;color:var(--ink);" id="affect-label">OFF — Camera affect monitoring disabled</span>
+      </div>
+    </div>
+    <div id="reward-cats"></div>
+  </section>
+
+  <!-- SCHEDULE -->
+  <section id="section-schedule" class="clinic-section" style="display:none;">
+    <div class="clinic-topbar">
+      <div><div class="clinic-title">Reinforcement Schedule Generator</div><div class="clinic-sub">ABA-informed scheduling per child history</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:240px 1fr;gap:var(--s-xl);align-items:start;">
+      <div class="clinic-card" style="background:#fff;border:1px solid var(--sand);border-radius:var(--r-lg);padding:var(--s-xl);">
+        <div class="chart-title" style="margin-bottom:var(--s-lg);">SCHEDULE TYPE</div>
+        <div style="display:flex;flex-direction:column;gap:var(--s-sm);" id="sched-type-btns"></div>
+        <div style="margin-top:var(--s-lg);">
+          <button class="btn-clinic" style="width:100%;" onclick="generateSchedule()">Generate ↗</button>
+          <button class="btn-clinic btn-clinic-outline" style="width:100%;margin-top:var(--s-sm);" onclick="printSchedule()">🖨 Print / Share</button>
+        </div>
+      </div>
+      <div class="clinic-card" style="background:#fff;border:1px solid var(--sand);border-radius:var(--r-lg);padding:var(--s-xl);" id="schedule-output">
+        <div class="chart-title">GENERATED SCHEDULE</div>
+        <p style="color:var(--ink-faint);font-size:0.85rem;margin-top:var(--s-md);">Select a schedule type and click Generate.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIGN TRANSCRIPT -->
+  <section id="section-signs" class="clinic-section" style="display:none;">
+    <div class="clinic-topbar">
+      <div><div class="clinic-title">Sign Language Transcript</div><div class="clinic-sub">Every sign the child confirmed during communicate sessions is recorded here.</div></div>
+      <button class="btn-clinic" onclick="exportSigns()">⬇ Export CSV</button>
+    </div>
+    <div class="clinic-card" style="background:#fff;border:1px solid var(--sand);border-radius:var(--r-lg);padding:var(--s-xl);">
+      <div id="sign-transcript-list"></div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="section-settings" class="clinic-section" style="display:none;">
+    <div class="clinic-topbar">
+      <div><div class="clinic-title">Settings & Privacy</div><div class="clinic-sub">Data management and API configuration</div></div>
+    </div>
+    <div class="clinic-grid-2" style="align-items:start;">
+      <div style="display:flex;flex-direction:column;gap:var(--s-lg);">
+        <div class="clinic-card" style="background:#fff;border:1px solid var(--sand);border-radius:var(--r-lg);padding:var(--s-xl);">
+          <div class="chart-title" style="margin-bottom:var(--s-lg);">DATA MANAGEMENT</div>
+          <div style="display:flex;flex-direction:column;gap:var(--s-sm);">
+            <button class="btn-clinic btn-clinic-outline" onclick="exportJSON()">⬇ Export All Data (JSON)</button>
+            <button class="btn-clinic btn-clinic-outline" style="border-color:var(--kumkum);color:var(--kumkum);" onclick="clearData()">🗑 Clear All Data</button>
+          </div>
+        </div>
+        <div class="consent-panel">
+          <div class="consent-title">🛡️ Privacy Notes</div>
+          <div class="consent-body">
+            • All data stored locally in the browser — no server upload.<br>
+            • Camera affect monitoring is opt-in only.<br>
+            • Global Plaza shows avatars only — no open text chat.<br>
+            • Clinical ratings are never shown to the child.
+          </div>
+        </div>
+      </div>
+      <div class="clinic-card" style="background:#fff;border:1px solid var(--sand);border-radius:var(--r-lg);padding:var(--s-xl);">
+        <div class="chart-title" style="margin-bottom:var(--s-lg);">API CONFIGURATION</div>
+        <div style="display:flex;flex-direction:column;gap:var(--s-md);">
+          <div>
+            <label style="font-size:0.75rem;font-weight:700;color:var(--ink-faint);display:block;margin-bottom:6px;">Anthropic API Key (for AI summaries)</label>
+            <input class="world-input" id="api-key" type="password" placeholder="sk-ant-…" style="font-family:var(--font-clinic);">
+          </div>
+          <button class="btn-clinic" onclick="saveKey()">Save Key</button>
+          <p style="font-size:0.72rem;color:var(--ink-faint);">Key stored in browser localStorage only. Used for AI-generated clinician reports.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="kv-toast" class="toast-container"></div>
+
+<script src="js/kahani-app.js"></script>
+<script src="js/ai-engine.js"></script>
+<script src="js/clinician-charts.js"></script>
+<script>
+KV.init();
+
+const SCHED_TYPES = [
+  { id:'VR', label:'Variable Ratio', desc:'Recommended for most children — unpredictable, highest motivation' },
+  { id:'FR', label:'Fixed Ratio', desc:'After every N correct responses' },
+  { id:'FI', label:'Fixed Interval', desc:'Every N minutes' },
+  { id:'VI', label:'Variable Interval', desc:'Variable time intervals' },
+];
+
+let currentProfile=null;
+let schedType='VR';
+
+// ── Section nav
+function showSection(id, linkEl){
+  document.querySelectorAll('.clinic-section').forEach(s=>s.style.display='none');
+  document.getElementById('section-'+id).style.display='block';
+  document.querySelectorAll('.clinic-nav-item').forEach(a=>a.classList.remove('active'));
+  if(linkEl) linkEl.classList.add('active');
+  if(id==='overview') renderOverview();
+  if(id==='timeline') renderTimeline();
+  if(id==='motivation') renderMotivation();
+  if(id==='rewards') renderRewards();
+  if(id==='schedule') renderSchedulePanel();
+  if(id==='signs') renderSigns();
+  return false;
+}
+
+// ── Child selector
+const sel=document.getElementById('child-select');
+KV.getProfiles().forEach(p=>{
+  const o=document.createElement('option'); o.value=p.id; o.textContent=p.name+(p.age?' ('+p.age+' yrs)':'');
+  if(p.id===KV.state.currentProfileId) o.selected=true;
+  sel.appendChild(o);
+});
+function switchChild(){ currentProfile=KV.getProfile(sel.value)||KV.getCurrentProfile(); renderOverview(); }
+currentProfile=KV.getCurrentProfile()||KV.getProfiles()[0];
+
+// ── Overview
+function renderOverview(){
+  if(!currentProfile) return;
+  const worlds=KV.getWorlds(currentProfile.id);
+  const totalStars=worlds.reduce((a,w)=>a+(w.stars||0),0);
+  const statsData=[
+    {val:currentProfile.totalXP||0, label:'Total XP', color:KV.WORLDS[0].color||'var(--peacock)', change:'+120 this week', up:true},
+    {val:currentProfile.sessions||0, label:'Sessions', color:'var(--mehendi)', change:'+3 this week', up:true},
+    {val:(currentProfile.avgMotivation||0)+'/5', label:'Avg Motivation', color:'var(--marigold)', change:currentProfile.avgMotivation>=3.5?'+0.4 trend':'Needs attention', up:currentProfile.avgMotivation>=3.5},
+    {val:totalStars+'⭐', label:'Stars Earned', color:'var(--turmeric)', change:worlds.filter(w=>w.stars>0).length+'/5 worlds', up:true},
+  ];
+  const row=document.getElementById('stats-row');
+  row.innerHTML=statsData.map(s=>`
+    <div class="clinic-stat-card" style="--stat-color:${s.color};">
+      <div class="clinic-stat-val">${s.val}</div>
+      <div class="clinic-stat-label">${s.label}</div>
+      <div class="clinic-stat-change ${s.up?'up':'down'}">${s.up?'↑':'↓'} ${s.change}</div>
+    </div>
+  `).join('');
+
+  // World progress bars
+  const wp=document.getElementById('world-progress');
+  wp.innerHTML=worlds.map(w=>`
+    <div style="margin-bottom:var(--s-md);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:0.82rem;font-weight:600;">${w.emoji} ${w.name}</span>
+        <span style="font-size:0.75rem;color:var(--ink-faint);">${'⭐'.repeat(w.stars||0)}${'☆'.repeat(3-(w.stars||0))}</span>
+      </div>
+      <div style="height:8px;background:var(--sand);border-radius:var(--r-full);overflow:hidden;">
+        <div style="height:100%;width:${(w.stars||0)/3*100}%;background:${w.color};border-radius:var(--r-full);transition:width 1s;"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Reward effectiveness
+  const re=document.getElementById('reward-effectiveness');
+  const prefs=currentProfile.prefs||[];
+  const rewards=KV.DEFAULT_REWARDS.filter(r=>prefs.includes(r.category)).slice(0,5);
+  re.innerHTML=(rewards.length?rewards:KV.DEFAULT_REWARDS.slice(0,5)).map((r,i)=>`
+    <div style="display:flex;align-items:center;gap:var(--s-md);margin-bottom:var(--s-sm);padding:var(--s-sm);border-radius:var(--r-md);background:${i===0?'rgba(14,124,123,0.05)':'transparent'};">
+      <span style="font-size:1.3rem;">${r.emoji}</span>
+      <div style="flex:1;">
+        <div style="font-size:0.82rem;font-weight:600;">${r.title}</div>
+        <div style="height:4px;background:var(--sand);border-radius:var(--r-full);margin-top:4px;overflow:hidden;">
+          <div style="height:100%;width:${90-i*15}%;background:${['var(--peacock)','var(--marigold)','var(--turmeric)','var(--mehendi)','var(--kumkum)'][i]};border-radius:var(--r-full);"></div>
+        </div>
+      </div>
+      <span style="font-size:0.72rem;font-weight:700;color:var(--ink-faint);">${90-i*15}%</span>
+    </div>
+  `).join('');
+}
+
+// ── Timeline
+function renderTimeline(){
+  const history=KV.state.rewardHistory.filter(h=>!currentProfile||h.profileId===currentProfile?.id).slice(-10).reverse();
+  const el=document.getElementById('timeline');
+  if(!history.length){
+    el.innerHTML='<p style="color:var(--ink-faint);font-size:0.88rem;">No session data yet. Complete a world to see data here.</p>';
+    return;
+  }
+  el.innerHTML=history.map(h=>{
+    const world=KV.WORLDS.find(w=>w.id===h.worldId);
+    return `
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-time">${KV.formatDate(h.timestamp)} · ${KV.formatTime(h.timestamp)}</div>
+        <div class="timeline-event">${world?.emoji||'🌍'} ${world?.name||'World '+h.worldId}</div>
+        <div class="timeline-detail">Accuracy: ${Math.round((h.accuracy||0)*100)}% · Stars: ${'⭐'.repeat(h.stars||0)}</div>
+        <span class="timeline-latency">Next-task latency: ~${h.latency||0}s</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Motivation chart (simple CSS bars)
+function renderSigns(){
+  const attempts = KV.state.signAttempts || [];
+  const el = document.getElementById('sign-transcript-list');
+  if(!attempts.length){
+    el.innerHTML = '<p style="color:var(--ink-faint);">No signs recorded yet.</p>';
+    return;
+  }
+  let html = '<table style="width:100%;text-align:left;border-collapse:collapse;"><thead><tr style="border-bottom:1px solid #eee;"><th>Time</th><th>Sign</th><th>Word</th><th>Session</th></tr></thead><tbody>';
+  attempts.forEach(a => {
+    html += `<tr><td style="padding:8px 0;">${KV.formatDate(a.timestamp)}</td><td>${a.sign || '—'}</td><td>${a.word}</td><td>${a.sessionId || '—'}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+function exportSigns(){
+  const attempts = KV.state.signAttempts || [];
+  let csv = 'Time,Sign,Word,Session\n' + attempts.map(a => `${new Date(a.timestamp).toISOString()},${a.sign||''},${a.word},${a.sessionId||''}`).join('\n');
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'sign_transcript.csv'; a.click();
+}
+
+function renderMotivation(){
+  const scores=[2.8,3.2,3.5,3.8,4.1,3.9,4.3];
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const chart=document.getElementById('motivation-chart');
+  chart.innerHTML=`
+    <div style="display:flex;align-items:flex-end;gap:8px;height:100%;">
+      ${scores.map((s,i)=>`
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div style="font-size:0.7rem;font-weight:700;color:var(--peacock);">${s.toFixed(1)}</div>
+          <div style="flex:1;width:100%;background:var(--sand);border-radius:4px 4px 0 0;position:relative;display:flex;align-items:flex-end;">
+            <div style="width:100%;height:${s/5*100}%;background:${s>=3.5?'var(--peacock)':'var(--kumkum)'};border-radius:4px 4px 0 0;transition:height 1s;"></div>
+            <div style="position:absolute;top:40%;left:0;right:0;height:1px;background:rgba(242,153,74,0.4);border-top:1px dashed var(--marigold);"></div>
+          </div>
+          <div style="font-size:0.68rem;color:var(--ink-faint);">${days[i]}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  const avg=scores.reduce((a,b)=>a+b,0)/scores.length;
+  const trend=scores[scores.length-1]-scores[0];
+  document.getElementById('trend-verdict').innerHTML=`
+    <div style="display:flex;align-items:center;gap:var(--s-md);flex-wrap:wrap;">
+      <div style="font-size:2rem;">${trend>0?'📈':'📉'}</div>
+      <div>
+        <div style="font-weight:700;font-size:0.88rem;color:${trend>0?'var(--mehendi)':'var(--kumkum)'};">Motivation is ${trend>0?'improving':'declining'} this week</div>
+        <div style="font-size:0.78rem;color:var(--ink-faint);margin-top:2px;">7-day avg: ${avg.toFixed(1)}/5 · Change: ${trend>0?'+':''}${trend.toFixed(1)} · ${avg>=3.5?'On track ✅':'Consider shorter sessions or different rewards ⚠️'}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── Rewards
+const CATEGORIES=['dance','festival','music','nature','animals','stories','badges'];
+const catEmojis={dance:'💃',festival:'🪔',music:'🎵',nature:'🌿',animals:'🐘',stories:'📖',badges:'⭐'};
+let lockedCats=new Set();
+function renderRewards(){
+  const el=document.getElementById('reward-cats');
+  el.innerHTML=CATEGORIES.map(cat=>`
+    <div class="reward-category-item ${lockedCats.has(cat)?'locked':''}" id="rcat-${cat}">
+      <div style="display:flex;align-items:center;gap:var(--s-md);">
+        <span style="font-size:1.4rem;">${catEmojis[cat]||'🎁'}</span>
+        <div>
+          <div style="font-size:0.88rem;font-weight:600;text-transform:capitalize;">${cat} Rewards</div>
+          <div style="font-size:0.72rem;color:var(--ink-faint);">${lockedCats.has(cat)?'Locked — AI will not suggest these':'Allowed — AI may suggest these'}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--s-md);">
+        <span class="toggle ${lockedCats.has(cat)?'':'on'}" onclick="toggleRewardCat('${cat}',this)"></span>
+        <span style="font-size:0.72rem;font-weight:700;color:var(--ink-faint);">${lockedCats.has(cat)?'Locked':'Allowed'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+function toggleRewardCat(cat,el){
+  if(lockedCats.has(cat)){ lockedCats.delete(cat); el.classList.add('on'); }
+  else{ lockedCats.add(cat); el.classList.remove('on'); }
+  renderRewards();
+  KV.showToast((lockedCats.has(cat)?'Locked':'Unlocked')+': '+cat+' rewards','info');
+}
+function toggleAffect(el){
+  el.classList.toggle('on');
+  const on=el.classList.contains('on');
+  KV.state.consent.cameraAffect=on;
+  KV.save();
+  document.getElementById('affect-label').textContent=on?'ON — Camera affect monitoring ENABLED (with consent)':'OFF — Camera affect monitoring disabled';
+  KV.showToast('Camera affect: '+(on?'ON':'OFF'),'info');
+}
+
+// ── Schedule
+function renderSchedulePanel(){
+  const btns=document.getElementById('sched-type-btns');
+  btns.innerHTML=SCHED_TYPES.map(s=>`
+    <button style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:var(--s-md);border:1.5px solid ${schedType===s.id?'var(--peacock)':'var(--sand)'};border-radius:var(--r-md);background:${schedType===s.id?'rgba(14,124,123,0.06)':'#fff'};cursor:pointer;transition:all 0.2s;width:100%;" onclick="selectSched('${s.id}',this)">
+      <span style="font-size:0.85rem;font-weight:700;color:${schedType===s.id?'var(--peacock)':'var(--ink)'}">${s.label}</span>
+      <span style="font-size:0.7rem;color:var(--ink-faint);text-align:left;">${s.desc}</span>
+    </button>
+  `).join('');
+}
+function selectSched(id,btn){ schedType=id; renderSchedulePanel(); }
+function generateSchedule(){
+  const rewards=KV.DEFAULT_REWARDS.filter(r=>!lockedCats.has(r.category)).slice(0,5);
+  const rows=[];
+  const types={VR:'After ~{n} correct responses',FR:'After {n} correct responses',FI:'At {t} minute mark',VI:'Around {t} minute mark'};
+  for(let i=1;i<=8;i++){
+    const r=rewards[i%rewards.length];
+    const n=schedType==='FR'?3:Math.max(2,2+Math.floor(Math.random()*3));
+    const t=schedType==='FI'?4*i:Math.max(3,3*i+Math.floor(Math.random()*3)-1);
+    const trigger=(types[schedType]||'After {n} responses').replace('{n}',n*i).replace('{t}',t);
+    rows.push({trigger,reward:r?.title||'Praise',emoji:r?.emoji||'⭐'});
+  }
+  const out=document.getElementById('schedule-output');
+  out.innerHTML=`
+    <div class="chart-title" style="margin-bottom:var(--s-lg);">GENERATED — ${SCHED_TYPES.find(s=>s.id===schedType)?.label.toUpperCase()}</div>
+    <table class="schedule-table">
+      <thead><tr><th>#</th><th>When to Reward</th><th>Reward</th></tr></thead>
+      <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.trigger}</td><td>${r.emoji} ${r.reward}</td></tr>`).join('')}</tbody>
+    </table>
+    <div style="margin-top:var(--s-lg);padding:var(--s-md);background:rgba(14,124,123,0.05);border-radius:var(--r-md);font-size:0.78rem;color:var(--ink-faint);">Note: This schedule is a recommendation. Clinical judgment always takes precedence. Adjust based on child's session performance.</div>
+  `;
+}
+function printSchedule(){
+  window.print();
+  KV.showToast('Opening print dialog…','info');
+}
+
+// ── Settings
+function exportData(){ exportJSON(); }
+function exportJSON(){
+  const data=JSON.stringify(KV.state,null,2);
+  const a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
+  a.download='kahaniverse-data.json';
+  a.click();
+  KV.showToast('Data exported!','success');
+}
+function clearData(){
+  if(!confirm('Clear ALL Kahaniverse data? This cannot be undone.')) return;
+  localStorage.removeItem('kahaniverse_v1'); location.reload();
+}
+function saveKey(){
+  const k=document.getElementById('api-key').value.trim();
+  localStorage.setItem('kahaniverse_api_key',k);
+  KV.showToast('API key saved!','success');
+}
+
+// ── Init
+renderOverview();
+</script>
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="learn.html" class="persistent-btn" aria-label="Learn and career">📚 Learn</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn" aria-label="Help and settings">❓ Help</a>
+</div>
+</body>
+</html>

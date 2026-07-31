@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahaniverse — Sticker Book</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/world.css">
+  <link rel="stylesheet" href="css/portal.css">
+  <link rel="stylesheet" href="css/a11y.css">
+  <style>
+    body { background:linear-gradient(180deg,#1A0A3D 0%,#2D1B69 50%,#F2994A 100%); min-height:100vh; color:#fff; }
+
+    .sticker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--s-lg);
+      padding: var(--s-xl);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .sticker-slot {
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: var(--r-xl);
+      padding: var(--s-lg);
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+      overflow: hidden;
+      min-height: 160px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-sm);
+    }
+
+    .sticker-slot.unlocked {
+      background: rgba(247,201,72,0.08);
+      border-color: rgba(247,201,72,0.3);
+      box-shadow: 0 4px 24px rgba(247,201,72,0.15);
+      cursor: pointer;
+    }
+    .sticker-slot.unlocked:hover {
+      transform: scale(1.08) translateY(-6px);
+      box-shadow: 0 12px 40px rgba(247,201,72,0.3);
+      border-color: var(--thread-gold);
+    }
+
+    .sticker-slot.locked {
+      filter: brightness(0.4) saturate(0.2);
+      cursor: not-allowed;
+    }
+
+    .sticker-emoji {
+      font-size: 3.5rem;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(247,201,72,0.4));
+    }
+
+    .sticker-slot.locked .sticker-emoji {
+      filter: blur(3px) brightness(0.3);
+    }
+
+    .sticker-name { font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; }
+    .sticker-cat  { font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .lock-icon {
+      position: absolute; top: var(--s-sm); right: var(--s-sm);
+      font-size: 1rem; opacity: 0.5;
+    }
+
+    .new-badge {
+      position: absolute; top: var(--s-sm); left: var(--s-sm);
+      background: var(--thread-gold); color: #000;
+      font-size: 0.6rem; font-weight: 800; padding: 2px 7px;
+      border-radius: var(--r-full); letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Sparkle burst on unlock */
+    .sparkle {
+      position: absolute;
+      width: 6px; height: 6px; border-radius: 50%;
+      pointer-events: none;
+      animation: sparklePop 0.7s ease-out forwards;
+    }
+    @keyframes sparklePop {
+      from { transform: translate(0,0) scale(1); opacity: 1; }
+      to   { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
+    }
+
+    /* Category tabs */
+    .cat-tabs {
+      display: flex; gap: var(--s-sm); flex-wrap: wrap; justify-content: center;
+      padding: var(--s-md) var(--s-xl) 0;
+    }
+    .cat-tab {
+      padding: 6px 16px; border-radius: var(--r-full);
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      font-family: var(--font-display); font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.7);
+    }
+    .cat-tab.active, .cat-tab:hover {
+      background: rgba(247,201,72,0.15); border-color: var(--thread-gold);
+      color: var(--thread-gold);
+    }
+
+    /* Gem counter */
+    .gem-counter {
+      background: rgba(79,227,216,0.08); border: 1px solid rgba(79,227,216,0.2);
+      border-radius: var(--r-full); padding: 6px 20px;
+      font-family: var(--font-display); font-size: 1rem; font-weight: 800;
+      color: var(--thread-cyan);
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav style="position:sticky;top:0;z-index:200;padding:var(--s-md) var(--s-xl);display:flex;align-items:center;justify-content:space-between;background:rgba(11,14,43,0.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(79,227,216,0.08);flex-wrap:wrap;gap:var(--s-md);">
+  <div style="display:flex;align-items:center;gap:var(--s-md);">
+    <a href="world-map.html" class="btn-ghost btn-sm">← World Map</a>
+    <a href="communicate.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#0E7C7B,#4FE3D8);color:#fff;font-weight:800;">✋ Sign &amp; Talk</a>
+    <a href="learn.html" class="btn-ghost btn-sm" style="background:rgba(14,124,123,0.1);border-color:rgba(14,124,123,0.3);color:#1AADA9;">📚 Learn & Grow</a>
+    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
+    <div>
+      <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;">📚 Sticker Book</div>
+      <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);">Your Indian Festival Collection</div>
+    </div>
+  </div>
+  <div class="gem-counter" id="gem-counter">💎 0 Sign-Gems</div>
+</nav>
+
+<!-- Progress bar -->
+<div style="padding:var(--s-lg) var(--s-xl) 0;max-width:900px;margin:0 auto;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s-sm);">
+    <span style="font-family:var(--font-display);font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.6);">Collection Progress</span>
+    <span style="font-family:var(--font-display);font-size:0.82rem;font-weight:800;color:var(--thread-gold);" id="progress-count">0 / 0</span>
+  </div>
+  <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:var(--r-full);overflow:hidden;">
+    <div id="progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--thread-cyan),var(--thread-gold));border-radius:var(--r-full);transition:width 1s;"></div>
+  </div>
+</div>
+
+<!-- Category tabs -->
+<div class="cat-tabs" id="cat-tabs"></div>
+
+<!-- Sticker grid -->
+<div class="sticker-grid" id="sticker-grid"></div>
+
+<div id="kv-toast" class="toast-container"></div>
+
+<script src="js/kahani-app.js"></script>
+<script src="js/audio-engine.js"></script>
+<script>
+KV.init();
+const profile = KV.getCurrentProfile();
+
+// Sign-Gems
+const gems = profile?.signGems || 0;
+document.getElementById('gem-counter').textContent = '💎 '+gems+' Sign-Gems';
+
+// All stickers
+const ALL_STICKERS = [
+  // Dance
+  { id:'s-d1', cat:'dance',   emoji:'💃', name:'Bharatanatyam',   cost:30, desc:'Classical dance master!' },
+  { id:'s-d2', cat:'dance',   emoji:'🕺', name:'Garba Dancer',    cost:40, desc:'Navratri champion!' },
+  { id:'s-d3', cat:'dance',   emoji:'🪷', name:'Lotus Dancer',    cost:50, desc:'Most graceful dancer!' },
+  // Festival
+  { id:'s-f1', cat:'festival',emoji:'🪔', name:'Diwali Diya',     cost:20, desc:'Festival of lights!' },
+  { id:'s-f2', cat:'festival',emoji:'🎨', name:'Holi Star',       cost:25, desc:'Color explosion!' },
+  { id:'s-f3', cat:'festival',emoji:'🚣', name:'Onam Sailor',     cost:35, desc:'Snake boat champion!' },
+  { id:'s-f4', cat:'festival',emoji:'🪁', name:'Monsoon Kite King',cost:45, desc:'Sky ruler!' },
+  // Music
+  { id:'s-m1', cat:'music',   emoji:'🥁', name:'Tabla Master',    cost:30, desc:'Beat of India!' },
+  { id:'s-m2', cat:'music',   emoji:'🎵', name:'Folk Singer',     cost:25, desc:'Voice of the valley!' },
+  { id:'s-m3', cat:'music',   emoji:'🪗', name:'Sitar Legend',    cost:50, desc:'String magician!' },
+  // Nature
+  { id:'s-n1', cat:'nature',  emoji:'🦚', name:'Peacock Spirit',  cost:60, desc:'Kahi\'s true form!' },
+  { id:'s-n2', cat:'nature',  emoji:'🌸', name:'Lotus Bloom',     cost:20, desc:'Purity of speech!' },
+  { id:'s-n3', cat:'nature',  emoji:'🐯', name:'Bengal Tiger',    cost:55, desc:'Fierce and brave!' },
+  // Animals
+  { id:'s-a1', cat:'animals', emoji:'🐘', name:'Baby Elephant',   cost:35, desc:'Memory keeper!' },
+  { id:'s-a2', cat:'animals', emoji:'🦁', name:'Lion of Gir',     cost:45, desc:'Forest guardian!' },
+  { id:'s-a3', cat:'animals', emoji:'🐒', name:'Monkey Wizard',   cost:30, desc:'Clever communicator!' },
+  // Stories
+  { id:'s-st1',cat:'stories', emoji:'📖', name:'Panchatantra',    cost:40, desc:'Ancient wisdom!' },
+  { id:'s-st2',cat:'stories', emoji:'⭐', name:'Speech Champion', cost:80, desc:'Ultimate achiever!' },
+  { id:'s-st3',cat:'stories', emoji:'🏆', name:'Kahi\'s Chosen',  cost:100,desc:'Legendary speaker!' },
+];
+
+const CATS = ['all','dance','festival','music','nature','animals','stories'];
+const CAT_LABELS = { all:'🌟 All', dance:'💃 Dance', festival:'🎆 Festival', music:'🎵 Music', nature:'🌿 Nature', animals:'🐘 Animals', stories:'📖 Stories' };
+let activeCat = 'all';
+
+// Unlocked stickers stored in profile
+const unlocked = new Set(profile?.unlockedStickers || []);
+
+// Cat tabs
+const tabsEl = document.getElementById('cat-tabs');
+CATS.forEach(cat => {
+  const btn = document.createElement('button');
+  btn.className = 'cat-tab' + (cat===activeCat?' active':'');
+  btn.textContent = CAT_LABELS[cat];
+  btn.onclick = () => { activeCat=cat; renderGrid(); document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); };
+  tabsEl.appendChild(btn);
+});
+
+function renderGrid() {
+  const grid = document.getElementById('sticker-grid');
+  const filtered = activeCat==='all' ? ALL_STICKERS : ALL_STICKERS.filter(s=>s.cat===activeCat);
+  const total = ALL_STICKERS.length;
+  const owned = ALL_STICKERS.filter(s=>unlocked.has(s.id)).length;
+
+  document.getElementById('progress-count').textContent = owned+' / '+total;
+  document.getElementById('progress-bar').style.width = (owned/total*100)+'%';
+
+  grid.innerHTML = '';
+  filtered.forEach(s => {
+    const isOwned = unlocked.has(s.id);
+    const canAfford = gems >= s.cost && !isOwned;
+    const div = document.createElement('div');
+    div.className = 'sticker-slot ' + (isOwned ? 'unlocked' : 'locked');
+    div.innerHTML = `
+      ${isOwned ? '<div class="new-badge">OWNED</div>' : '<div class="lock-icon">🔒</div>'}
+      <span class="sticker-emoji">${s.emoji}</span>
+      <div class="sticker-name">${isOwned ? s.name : '???'}</div>
+      <div class="sticker-cat">${s.cat}</div>
+      ${!isOwned ? `<div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:4px;">💎 ${s.cost} gems</div>` : ''}
+      ${!isOwned && canAfford ? '<div style="font-size:0.7rem;color:var(--thread-gold);font-weight:700;margin-top:2px;">Tap to unlock!</div>' : ''}
+    `;
+    if (!isOwned && canAfford) {
+      div.classList.remove('locked'); div.classList.add('unlocked');
+      div.onclick = () => unlockSticker(s, div);
+    } else if (isOwned) {
+      div.onclick = () => { KV.showToast(s.name+' — '+s.desc,'success',2000); if(typeof AudioEngine!=='undefined') AudioEngine.playChime(); };
+    } else {
+      div.onclick = () => KV.showToast('Need '+s.cost+' 💎 Sign-Gems to unlock!','warning',2000);
+    }
+    grid.appendChild(div);
+  });
+}
+
+function unlockSticker(s, el) {
+  unlocked.add(s.id);
+  // Update profile
+  const p = KV.getCurrentProfile();
+  if (p) {
+    p.unlockedStickers = [...unlocked];
+    p.signGems = (p.signGems || 0) - s.cost;
+    KV.save();
+  }
+  // Sparkle burst
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+  const colors = ['#F7C948','#4FE3D8','#E14FD8','#F2994A','#00FF88'];
+  for (let i=0;i<18;i++) {
+    const spark = document.createElement('div'); spark.className='sparkle';
+    const angle = (i/18)*Math.PI*2;
+    const dist  = 60 + Math.random()*40;
+    spark.style.cssText = `left:${cx}px;top:${cy}px;position:fixed;background:${colors[i%5]};z-index:9999;--sx:${Math.cos(angle)*dist}px;--sy:${Math.sin(angle)*dist}px;animation-delay:${Math.random()*0.2}s;`;
+    document.body.appendChild(spark);
+    setTimeout(()=>spark.remove(),900);
+  }
+  if (typeof AudioEngine!=='undefined') AudioEngine.playSitar();
+  KV.showToast('Unlocked: '+s.name+' '+s.emoji,'success',3000);
+  KV.launchKonfetti();
+  renderGrid();
+}
+
+renderGrid();
+</script>
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="learn.html" class="persistent-btn" aria-label="Learn and career">📚 Learn</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn" aria-label="Help and settings">❓ Help</a>
+</div>
+</body>
+</html>

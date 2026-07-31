@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kahaniverse</title>
+  <style>
+    body { background:#0B0E2B; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+    .spinner { width:48px; height:48px; border:3px solid rgba(79,227,216,0.1); border-top-color:#4FE3D8; border-radius:50%; animation:spin 0.9s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <script src="js/kahani-app.js"></script>
+  <script>
+    KV.init();
+    const profile = KV.getCurrentProfile();
+    if (profile) {
+      window.location.replace('world-map.html');
+    } else {
+      window.location.replace('intro.html');
+    }
+  </script>
+</body>
+</html>

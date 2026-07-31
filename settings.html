@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahaniverse — Settings & Privacy</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/world.css">
+  <link rel="stylesheet" href="css/clinician.css">
+  <link rel="stylesheet" href="css/a11y.css">
+  <style>
+    body { background:#F5F4F0; min-height:100vh; font-family:var(--font-clinic); }
+    .settings-wrap { max-width:760px; margin:0 auto; padding:var(--s-xl); }
+    .section-card { background:#fff; border:1px solid var(--sand); border-radius:var(--r-xl); padding:var(--s-xl); margin-bottom:var(--s-xl); }
+    .section-title { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-faint); margin-bottom:var(--s-lg); }
+    .setting-row { display:flex; align-items:center; justify-content:space-between; padding:var(--s-md) 0; border-bottom:1px solid var(--sand); gap:var(--s-md); flex-wrap:wrap; }
+    .setting-row:last-child { border-bottom:none; }
+    .setting-label { font-size:0.88rem; font-weight:600; color:var(--ink); }
+    .setting-desc  { font-size:0.72rem; color:var(--ink-faint); margin-top:2px; }
+  </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav style="position:sticky;top:0;z-index:200;padding:var(--s-md) var(--s-xl);display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--sand);">
+  <div style="display:flex;align-items:center;gap:var(--s-md);">
+    <a href="world-map.html" class="btn-ghost btn-sm" style="background:rgba(36,28,21,0.06);border-color:rgba(36,28,21,0.15);color:var(--ink);">← Back</a>
+    <a href="communicate.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#0E7C7B,#4FE3D8);color:#fff;font-weight:800;">✋ Sign &amp; Talk</a>
+    <a href="learn.html" class="btn-ghost btn-sm" style="background:rgba(14,124,123,0.1);border-color:rgba(14,124,123,0.3);color:#1AADA9;">📚 Learn & Grow</a>
+    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
+    <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;">🦚 Settings & Privacy</div>
+  </div>
+  <a href="clinician.html" class="btn-clinic btn-sm">📊 Clinician Console</a>
+</nav>
+
+<div class="settings-wrap">
+
+  <!-- Profile & Account -->
+  <div class="section-card">
+    <div class="section-title">Child Profiles</div>
+    <div id="profile-list"></div>
+    <div style="margin-top:var(--s-lg);">
+      <button class="btn-clinic" onclick="window.location.href='profile.html'">Manage Profiles</button>
+    </div>
+  </div>
+
+  <!-- Privacy -->
+  <div class="section-card">
+    <div class="section-title">Privacy Controls</div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">📷 Camera Affect Monitoring</div>
+        <div class="setting-desc">Allow camera-based smile & attention detection (opt-in, never stored beyond session). Requires parental consent.</div>
+      </div>
+      <span class="toggle" id="cam-toggle" onclick="toggleSetting('cameraAffect',this)"></span>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">🌍 Global Plaza Participation</div>
+        <div class="setting-desc">Allow child's avatar to appear in the supervised Global Plaza world (no open chat, avatars only).</div>
+      </div>
+      <span class="toggle on" id="plaza-toggle" onclick="toggleSetting('plazaEnabled',this)"></span>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">📊 Anonymous Usage Analytics</div>
+        <div class="setting-desc">Share anonymous interaction data to improve AI reinforcement models. No personal data is ever shared.</div>
+      </div>
+      <span class="toggle" id="analytics-toggle" onclick="toggleSetting('analytics',this)"></span>
+    </div>
+  </div>
+
+  <!-- Reward Categories -->
+  <div class="section-card">
+    <div class="section-title">Reward Category Controls</div>
+    <div id="reward-controls"></div>
+  </div>
+
+  <!-- API Config -->
+  <div class="section-card">
+    <div class="section-title">API Configuration</div>
+    <div class="setting-row">
+      <div style="flex:1;">
+        <div class="setting-label">Anthropic API Key</div>
+        <div class="setting-desc">Optional: enables AI-generated clinician session reports. Stored only in your browser.</div>
+        <input class="world-input" id="api-key-input" type="password" placeholder="sk-ant-…" style="margin-top:var(--s-sm);font-family:var(--font-clinic);">
+      </div>
+      <button class="btn-clinic" style="margin-top:auto;" onclick="saveApiKey()">Save</button>
+    </div>
+  </div>
+
+  <!-- Data Management -->
+  <div class="section-card">
+    <div class="section-title">Data Management</div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">⬇️ Export All Data</div>
+        <div class="setting-desc">Download a full backup of all profiles, sessions, and progress as JSON.</div>
+      </div>
+      <button class="btn-clinic btn-clinic-outline" onclick="exportData()">Export JSON</button>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">🗑️ Clear All Data</div>
+        <div class="setting-desc">Permanently delete all children's profiles, XP, sessions, and history. Cannot be undone.</div>
+      </div>
+      <button class="btn-clinic btn-clinic-outline" style="border-color:var(--kumkum);color:var(--kumkum);" onclick="clearAll()">Clear All</button>
+    </div>
+  </div>
+
+  <!-- About -->
+  <div class="section-card" style="text-align:center;">
+    <div style="font-size:3rem;margin-bottom:var(--s-md);">🦚</div>
+    <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;margin-bottom:var(--s-sm);">Kahaniverse</div>
+    <div style="font-size:0.8rem;color:var(--ink-faint);margin-bottom:var(--s-md);">AI-Personalized Speech Therapy World<br>Version 1.0 · All data stored locally · No server required</div>
+    <div style="font-size:0.72rem;color:var(--ink-faint);">
+      🔒 Privacy-first · No cloud storage · Camera opt-in only<br>
+      Built with ❤️ for speech & language therapy
+    </div>
+  </div>
+
+</div>
+
+<div id="kv-toast" class="toast-container"></div>
+
+<script src="js/kahani-app.js"></script>
+<script>
+KV.init();
+
+// Load settings from state
+const consent = KV.state.consent || {};
+if (consent.cameraAffect)    document.getElementById('cam-toggle').classList.add('on');
+if (consent.plazaEnabled !== false) document.getElementById('plaza-toggle').classList.add('on');
+if (consent.analytics)       document.getElementById('analytics-toggle').classList.add('on');
+
+const savedKey = localStorage.getItem('kahaniverse_api_key') || '';
+if (savedKey) document.getElementById('api-key-input').value = savedKey;
+
+// Profile list
+const pl = document.getElementById('profile-list');
+KV.getProfiles().forEach(p => {
+  const div = document.createElement('div');
+  div.className = 'setting-row';
+  const worlds = KV.getWorlds(p.id);
+  const stars  = worlds.reduce((a,w)=>a+(w.stars||0),0);
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;gap:var(--s-md);">
+      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,${p.color||'#F2994A'},${p.color||'#F7C948'});display:flex;align-items:center;justify-content:center;font-size:1.4rem;">${p.avatar||'🧒'}</div>
+      <div>
+        <div class="setting-label">${p.name}${p.age ? \` (\${p.age} yrs)\` : ''}</div>
+        <div class="setting-desc">${p.totalXP||0} XP · ⭐${stars} stars · ${p.sessions||0} sessions</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:var(--s-sm);">
+      <button class="btn-clinic btn-clinic-outline btn-sm" onclick="KV.setCurrentProfile('${p.id}');window.location.href='world-map.html'">Switch</button>
+    </div>
+  `;
+  pl.appendChild(div);
+});
+
+// Reward category toggles
+const CATEGORIES = ['dance','festival','music','nature','animals','stories','badges'];
+const catEmojis  = {dance:'💃',festival:'🪔',music:'🎵',nature:'🌿',animals:'🐘',stories:'📖',badges:'⭐'};
+let lockedCats   = new Set(JSON.parse(localStorage.getItem('kv_locked_cats')||'[]'));
+
+const rc = document.getElementById('reward-controls');
+CATEGORIES.forEach(cat => {
+  const row = document.createElement('div');
+  row.className = 'setting-row';
+  const isLocked = lockedCats.has(cat);
+  row.innerHTML = `
+    <div>
+      <div class="setting-label">${catEmojis[cat]||'🎁'} ${cat.charAt(0).toUpperCase()+cat.slice(1)} Rewards</div>
+      <div class="setting-desc">${isLocked ? 'Currently blocked — AI will not suggest these rewards' : 'Allowed — AI may suggest these as reinforcers'}</div>
+    </div>
+    <span class="toggle ${isLocked?'':'on'}" onclick="toggleRewardCat('${cat}',this)"></span>
+  `;
+  rc.appendChild(row);
+});
+
+function toggleRewardCat(cat, el) {
+  el.classList.toggle('on');
+  if (lockedCats.has(cat)) lockedCats.delete(cat);
+  else lockedCats.add(cat);
+  localStorage.setItem('kv_locked_cats', JSON.stringify([...lockedCats]));
+  KV.showToast((lockedCats.has(cat)?'Blocked: ':'Allowed: ')+cat+' rewards', 'info');
+}
+
+function toggleSetting(key, el) {
+  el.classList.toggle('on');
+  if (!KV.state.consent) KV.state.consent = {};
+  KV.state.consent[key] = el.classList.contains('on');
+  KV.save();
+  KV.showToast(key+': '+(el.classList.contains('on')?'ON':'OFF'), 'info');
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  localStorage.setItem('kahaniverse_api_key', key);
+  KV.showToast('API key saved!', 'success');
+}
+
+function exportData() {
+  const data = JSON.stringify(KV.state, null, 2);
+  const a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(data);
+  a.download = 'kahaniverse-backup.json';
+  a.click();
+  KV.showToast('Data exported!', 'success');
+}
+
+function clearAll() {
+  if (!confirm('Delete ALL Kahaniverse data? This cannot be undone.')) return;
+  localStorage.removeItem('kahaniverse_v1');
+  localStorage.removeItem('kv_locked_cats');
+  localStorage.removeItem('kahaniverse_api_key');
+  window.location.href = 'intro.html';
+}
+</script>
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="learn.html" class="persistent-btn" aria-label="Learn and career">📚 Learn</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn" aria-label="Help and settings">❓ Help</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,318 @@
+/*
+ * KAHANIVERSE — GLOBAL ACCESSIBILITY LAYER (a11y.css)
+ * WCAG 2.1 AA baseline for all pages
+ * Load this AFTER tokens.css on every page
+ */
+
+/* ── REDUCED MOTION (sensory safety) ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── SKIP TO MAIN CONTENT ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--s-md);
+  background: var(--thread-gold);
+  color: #000;
+  font-weight: 800;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 12px 24px;
+  border-radius: var(--r-full);
+  z-index: 9999;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: var(--s-md); }
+
+/* ── FOCUS VISIBLE (keyboard navigation) ── */
+:focus-visible {
+  outline: 3px solid var(--thread-gold);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* ── MINIMUM TAP TARGETS (44px WCAG 2.5.5) ── */
+button, a, [role="button"], [role="tab"], [role="menuitem"],
+input[type="checkbox"], input[type="radio"], select {
+  min-height: 44px;
+  min-width: 44px;
+}
+/* Exception for inline text links */
+a:not([class]) { min-height: auto; min-width: auto; }
+
+/* ── ICON + LABEL ENFORCEMENT ── */
+/* Any button with only an emoji must have aria-label */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* ── HIGH CONTRAST TEXT OVERRIDES ── */
+/* Fixes --ink-faint (#8B7355) on --paper (#FFF8EC) which fails AA */
+.text-on-paper,
+.world-body .ink-faint,
+.world-body [class*="faint"] {
+  color: #5C4333 !important; /* 5.1:1 on #FFF8EC — passes AA */
+}
+
+/* Portal text contrast fixes */
+.portal-body .muted,
+.portal-body .text-muted {
+  color: rgba(255, 255, 255, 0.72) !important; /* ~5.2:1 on #0B0E2B */
+}
+
+/* ── ARIA LIVE REGIONS ── */
+[aria-live="polite"],
+[aria-live="assertive"] {
+  /* Ensure live regions are not display:none — use visibility instead */
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px; width: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+}
+[aria-live].visible {
+  clip: auto;
+  clip-path: none;
+  height: auto; width: auto;
+  overflow: visible;
+  position: static;
+  white-space: normal;
+}
+
+/* ── SCREEN READER ONLY UTILITY ── */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── BREAK BUTTON (persistent, every camera screen) ── */
+.break-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 300;
+  background: rgba(255, 248, 236, 0.12);
+  border: 1.5px solid rgba(255, 248, 236, 0.25);
+  backdrop-filter: blur(12px);
+  color: #FFF8EC;
+  border-radius: var(--r-full);
+  padding: 10px 20px;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s;
+  min-height: 44px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.break-btn:hover, .break-btn:focus-visible {
+  background: rgba(255, 248, 236, 0.22);
+  border-color: rgba(255, 248, 236, 0.5);
+  transform: translateY(-2px);
+}
+.world-body .break-btn {
+  background: rgba(36,28,21,0.08);
+  border-color: rgba(36,28,21,0.15);
+  color: #4A3828;
+}
+
+/* ── BREAK / CALM OVERLAY ── */
+.calm-overlay {
+  position: fixed; inset: 0;
+  z-index: 500;
+  background: radial-gradient(ellipse at center, #1A3040 0%, #0B1820 60%, #050D15 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.calm-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+.calm-mascot {
+  font-size: 6rem;
+  animation: calmFloat 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .calm-mascot { animation: none; }
+}
+@keyframes calmFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+.calm-text {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #E8F4F3;
+  text-align: center;
+  max-width: 380px;
+  line-height: 1.5;
+}
+.calm-sub {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: rgba(232,244,243,0.65);
+  text-align: center;
+  max-width: 340px;
+  line-height: 1.7;
+}
+.breathing-ring {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 3px solid rgba(79,227,216,0.3);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.breathing-ring::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: rgba(79,227,216,0.06);
+  animation: breatheExpand 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .breathing-ring::before { animation: none; }
+}
+@keyframes breatheExpand {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+.breathing-label {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: rgba(79,227,216,0.8);
+  font-weight: 700;
+  animation: breatheLabel 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .breathing-label { animation: none; }
+}
+@keyframes breatheLabel {
+  0%, 100% { content: 'Breathe in…'; opacity: 0.7; }
+  50% { opacity: 1; }
+}
+.calm-continue-btn {
+  background: rgba(79,227,216,0.12);
+  border: 1.5px solid rgba(79,227,216,0.3);
+  color: #4FE3D8;
+  border-radius: var(--r-full);
+  padding: 14px 36px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s;
+  min-height: 52px;
+}
+.calm-continue-btn:hover, .calm-continue-btn:focus-visible {
+  background: rgba(79,227,216,0.22);
+  transform: translateY(-2px);
+}
+
+/* ── PERSISTENT BOTTOM DOCK (Home · Learn · Help) ── */
+/* Lives at bottom-center — never clashes with top navs */
+.persistent-nav {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 400;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: rgba(255, 248, 236, 0.95);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(242, 153, 74, 0.35);
+  border-radius: 999px;
+  padding: 8px 16px;
+  box-shadow: 0 8px 32px rgba(36,28,21,0.18), 0 2px 8px rgba(242,153,74,0.15);
+  pointer-events: all;
+}
+
+/* Portal pages (dark bg) */
+.portal-body .persistent-nav {
+  background: rgba(11, 14, 43, 0.92);
+  border-color: rgba(79,227,216,0.25);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(79,227,216,0.08);
+}
+
+.persistent-btn {
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  border-radius: var(--r-full);
+  padding: 8px 14px;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+  min-height: 40px;
+  white-space: nowrap;
+}
+.persistent-btn:hover, .persistent-btn:focus-visible {
+  background: rgba(14,124,123,0.12);
+  color: var(--peacock);
+}
+
+/* Divider dots between buttons */
+.persistent-nav .dot-sep {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(36,28,21,0.2);
+  flex-shrink: 0;
+}
+
+/* Portal mode button colours */
+.portal-body .persistent-btn {
+  color: rgba(255,255,255,0.8);
+}
+.portal-body .persistent-btn:hover {
+  background: rgba(79,227,216,0.12);
+  color: #4FE3D8;
+}
+.portal-body .dot-sep {
+  background: rgba(255,255,255,0.15);
+}
+
+/* ── ERROR → FRIENDLY REWRITES ── */
+/* Override any .error or .fail class to use warm language */
+.toast-error { background: rgba(192,57,43,0.9) !important; }
+.toast-error::before { content: ''; } /* no alarming prefix */
+
+/* ── LARGE TEXT MODE (child reading support) ── */
+@media (min-resolution: 1dppx) {
+  .child-text {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    line-height: 1.75;
+  }
+}

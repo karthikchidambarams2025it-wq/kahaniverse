@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahaniverse — Festival World</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/game.css">
+  <link rel="stylesheet" href="css/mascot.css">
+  <link rel="stylesheet" href="css/a11y.css">
+  <style>
+    /* WORLD 1 — DIWALI: Dark festive with diya glow */
+    body[data-world="1"] { background:linear-gradient(180deg,#1A0A3D 0%,#2D1B69 50%,#3D0B0B 100%); color:#fff; }
+    /* WORLD 2 — HOLI: Warm bright festival */
+    body[data-world="2"] { background:linear-gradient(180deg,#FFF8EC 0%,#FFE4B0 60%,#FDDBB4 100%); color:var(--ink); }
+    /* WORLD 3 — ONAM: Deep jungle river green */
+    body[data-world="3"] { background:linear-gradient(180deg,#052A1E 0%,#0E4A3A 50%,#1A7A5E 100%); color:#fff; }
+    /* WORLD 4 — MONSOON: Open sky blue */
+    body[data-world="4"] { background:linear-gradient(180deg,#4A90D9 0%,#87CEEB 50%,#E0F4FF 100%); color:var(--ink); }
+    /* WORLD 5 — GLOBAL PLAZA: Space festival blend */
+    body[data-world="5"] { background:linear-gradient(180deg,#0B0E2B 0%,#1A0A3D 30%,#0E7C7B 70%,#F2994A 100%); color:#fff; }
+
+    /* Diya particles for World 1 */
+    .diya-particle { position:fixed;border-radius:50%;pointer-events:none;animation:diyaRise linear infinite; }
+    @keyframes diyaRise { from{transform:translateY(0) scale(1);opacity:0.8} to{transform:translateY(-100vh) scale(0);opacity:0} }
+
+    /* Holi color splash (World 2) */
+    .holi-bg-splash { position:fixed;border-radius:50%;pointer-events:none;filter:blur(40px);opacity:0.25;animation:holiPulse 4s ease-in-out infinite; }
+    @keyframes holiPulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.3)} }
+
+    /* Onam petal drop (World 3) */
+    .petal-drop { position:fixed;font-size:1.5rem;pointer-events:none;animation:petalFall linear infinite; }
+    @keyframes petalFall { from{transform:translateY(-5vh) rotate(0deg);opacity:1} to{transform:translateY(105vh) rotate(360deg);opacity:0} }
+
+    /* Monsoon rain (World 4) */
+    .rain-drop { position:fixed;width:2px;background:rgba(74,144,217,0.5);pointer-events:none;border-radius:var(--r-full);animation:rainFall linear infinite; }
+    @keyframes rainFall { from{transform:translateY(-10px)}to{transform:translateY(105vh)} }
+
+    /* Star confetti (World 5) */
+    .star-fall { position:fixed;pointer-events:none;animation:starFall linear infinite; }
+    @keyframes starFall { from{transform:translateY(-20px) rotate(0deg);opacity:1}to{transform:translateY(105vh) rotate(720deg);opacity:0} }
+
+    /* Diwali diya grid */
+    .diya-grid { display:flex;flex-wrap:wrap;gap:var(--s-lg);justify-content:center;max-width:600px; }
+    .diya-btn {
+      width:100px;height:100px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      border-radius:var(--r-xl);
+      background:rgba(247,201,72,0.08);border:2px solid rgba(247,201,72,0.2);
+      cursor:pointer;transition:all var(--t-spring);
+      font-size:0.88rem;font-weight:700;
+      color:rgba(255,255,255,0.7);
+    }
+    .diya-btn:hover:not(:disabled){background:rgba(247,201,72,0.18);border-color:var(--thread-gold);transform:scale(1.1);box-shadow:0 0 24px rgba(247,201,72,0.3);}
+    .diya-btn.lit{background:rgba(247,201,72,0.25);border-color:var(--thread-gold);box-shadow:0 0 30px rgba(247,201,72,0.5);animation:diyaLit 1.5s ease-in-out infinite;}
+    .diya-btn.correct-ans{background:rgba(0,255,136,0.15);border-color:#00FF88;box-shadow:0 0 30px rgba(0,255,136,0.4);}
+    .diya-btn.wrong-ans{background:rgba(193,39,45,0.15);border-color:var(--kumkum);animation:wrongShake 0.5s ease;}
+    @keyframes diyaLit{0%,100%{box-shadow:0 0 20px rgba(247,201,72,0.3)}50%{box-shadow:0 0 40px rgba(247,201,72,0.7)}}
+    @keyframes wrongShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+    /* Holi color blobs */
+    .holi-blob {
+      width:90px;height:90px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:all var(--t-spring);
+      font-size:1.5rem;font-weight:800;color:#fff;
+      box-shadow:0 4px 20px rgba(0,0,0,0.15);
+      font-family:var(--font-display);
+    }
+    .holi-blob:hover:not(:disabled){transform:scale(1.2) rotate(10deg);box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+    .holi-blob.correct-ans{box-shadow:0 0 40px rgba(0,255,136,0.5);transform:scale(1.1);}
+    .holi-blob.wrong-ans{animation:wrongShake 0.5s ease;}
+
+    /* Onam word slots + petal words */
+    .onam-sentence { display:flex;flex-wrap:wrap;gap:var(--s-sm);justify-content:center;min-height:80px;align-items:center; }
+    .onam-slot {
+      min-width:80px;height:48px;border:2px dashed rgba(82,183,136,0.4);
+      border-radius:var(--r-xl);display:flex;align-items:center;justify-content:center;
+      font-family:var(--font-display);font-size:0.9rem;font-weight:700;color:#fff;
+      padding:0 var(--s-sm);transition:all 0.3s;background:rgba(82,183,136,0.08);
+    }
+    .onam-slot.filled{border-color:var(--onam-green);background:rgba(82,183,136,0.2);box-shadow:0 0 16px rgba(82,183,136,0.3);}
+    .petal-word {
+      background:linear-gradient(135deg,var(--onam-green),#3A7D44);
+      color:#fff;border-radius:var(--r-full);padding:var(--s-sm) var(--s-lg);
+      font-family:var(--font-display);font-size:0.9rem;font-weight:700;
+      cursor:pointer;transition:all var(--t-spring);
+      box-shadow:0 4px 14px rgba(0,0,0,0.15);
+    }
+    .petal-word:hover{transform:scale(1.1) translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.2);}
+    .petal-word:disabled{opacity:0.3;cursor:not-allowed;}
+
+    /* Monsoon kite */
+    .kite-zone { display:flex;flex-direction:column;align-items:center;gap:var(--s-xl); }
+    .kite-big { font-size:8rem;cursor:pointer;transition:all var(--t-spring);filter:drop-shadow(0 8px 20px rgba(0,0,0,0.2));animation:kiteFly 4s ease-in-out infinite; }
+    @keyframes kiteFly { 0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-30px) rotate(5deg)} }
+    .kite-big:hover{transform:scale(1.1) rotate(10deg) !important;filter:drop-shadow(0 8px 30px rgba(79,227,216,0.5));}
+
+    /* World 5 story */
+    .story-card {
+      max-width:560px;background:rgba(79,227,216,0.05);border:1px solid rgba(79,227,216,0.18);
+      border-radius:var(--r-xl);padding:var(--s-xl);
+      font-size:0.92rem;line-height:1.8;color:rgba(255,255,255,0.9);
+      margin-bottom:var(--s-xl);
+    }
+    .story-card-title{font-family:var(--font-display);font-size:0.75rem;font-weight:700;color:rgba(79,227,216,0.8);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:var(--s-sm);}
+  </style>
+</head>
+<body class="festival-body" id="page-body">
+
+<!-- TOP BAR -->
+<div class="festival-topbar" id="festival-topbar">
+  <div style="display:flex;align-items:center;gap:var(--s-md);">
+    <button class="btn-ghost btn-sm" onclick="confirmExit()">← Exit</button>
+    <div>
+      <div style="font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;opacity:0.6;" id="world-label">World 1</div>
+      <div style="font-family:var(--font-display);font-size:0.92rem;font-weight:800;" id="world-name">Diwali Lantern Bazaar</div>
+    </div>
+    <span id="world-emoji" style="font-size:1.5rem;">🪔</span>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:var(--s-xl);">
+    <div class="round-pips" id="round-pips"></div>
+    <div class="game-score" id="score">⭐ 0</div>
+    <div class="lives" id="lives"></div>
+    <div class="game-timer" id="timer"></div>
+    <a href="communicate.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#0E7C7B,#4FE3D8);color:#fff;font-weight:800;">✋ Sign &amp; Talk</a>
+    <a href="sign-detect.html" class="btn-ghost btn-sm" style="background:rgba(79,227,216,0.1);border-color:rgba(79,227,216,0.25);color:var(--thread-cyan,#4FE3D8);font-weight:800;">✋ Signs</a>
+    <a href="learn.html" class="btn-ghost btn-sm" style="background:rgba(14,124,123,0.1);border-color:rgba(14,124,123,0.25);color:#1AADA9;font-weight:800;">📚 Learn</a>
+    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
+  </div>
+</div>
+
+<!-- GAME ARENA -->
+<div class="game-arena" id="game-arena">
+  <div style="text-align:center;"><div style="font-size:3rem;margin-bottom:var(--s-lg);">⌛</div><div style="opacity:0.6;">Loading world…</div></div>
+</div>
+
+<!-- Kahi Companion -->
+<div id="kahi-companion" style="position:fixed;bottom:var(--s-xl);right:var(--s-xl);z-index:300;cursor:pointer;" onclick="kahiSayRandom()">
+  <div class="kahi-mascot kahi-md" style="animation-name:kahiFloat;">
+    <div class="kahi-body" style="font-size:3rem;">🦚</div>
+    <div class="kahi-bubble" id="kahi-comp-bubble" style="bottom:calc(100%+8px);"></div>
+  </div>
+</div>
+
+<!-- LEVEL COMPLETE OVERLAY -->
+<div id="complete-overlay" class="level-complete">
+  <div class="complete-panel">
+    <div style="font-size:4rem;margin-bottom:var(--s-md);" id="c-trophy">🎉</div>
+    <h2 style="font-family:var(--font-display);font-size:1.8rem;margin-bottom:var(--s-sm);">World Complete!</h2>
+    <div class="complete-stars" id="c-stars">⭐⭐⭐</div>
+    <div class="xp-earned" id="c-xp">+300 XP</div>
+    <p style="color:rgba(255,255,255,0.6);margin:var(--s-md) 0;" id="c-msg">Amazing work!</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s-md);margin:var(--s-lg) 0;background:rgba(255,255,255,0.04);border-radius:var(--r-lg);padding:var(--s-lg);">
+      <div style="text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:#00FF88;font-family:var(--font-display);" id="c-correct">0</div><div style="font-size:0.62rem;opacity:0.5;">Correct</div></div>
+      <div style="text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:var(--kumkum);font-family:var(--font-display);" id="c-wrong">0</div><div style="font-size:0.62rem;opacity:0.5;">Wrong</div></div>
+      <div style="text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:var(--thread-gold);font-family:var(--font-display);" id="c-acc">0%</div><div style="font-size:0.62rem;opacity:0.5;">Accuracy</div></div>
+    </div>
+    <div style="display:flex;gap:var(--s-md);justify-content:center;flex-wrap:wrap;">
+      <button class="btn-world btn-lg" onclick="nextWorld()">Next World 🌟</button>
+      <button class="btn-ghost" onclick="replayWorld()">Replay 🔄</button>
+      <button class="btn-ghost" onclick="window.location.href='world-map.html'">🗺️ Map</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAIL OVERLAY -->
+<div id="fail-overlay" class="level-complete">
+  <div class="complete-panel">
+    <div style="font-size:4rem;margin-bottom:var(--s-md);">😔</div>
+    <h2 style="font-family:var(--font-display);font-size:1.5rem;margin-bottom:var(--s-sm);" id="fail-msg">Don't Give Up!</h2>
+    <p style="color:rgba(255,255,255,0.6);">Practice makes perfect! Kahi believes in you! 🦚</p>
+    <div style="display:flex;gap:var(--s-md);justify-content:center;margin-top:var(--s-xl);">
+      <button class="btn-world" onclick="replayWorld()">Try Again 💪</button>
+      <button class="btn-ghost" onclick="window.location.href='world-map.html'">🗺️ Map</button>
+    </div>
+  </div>
+</div>
+
+<div id="kv-toast" class="toast-container"></div>
+<script src="js/kahani-app.js"></script>
+<script src="js/mascot.js"></script>
+<script src="js/ai-engine.js"></script>
+<script src="js/reward3d.js"></script>
+<script src="js/dynamic-director.js"></script>
+<script src="js/audio-engine.js"></script>
+<script src="js/gems.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+KV.init();
+const params  = new URLSearchParams(window.location.search);
+const worldId = parseInt(params.get('world')||'1');
+const worldDef = KV.getWorld(worldId);
+const profile  = KV.getCurrentProfile();
+
+// Apply world data-attr for CSS
+document.getElementById('page-body').setAttribute('data-world', worldId);
+document.getElementById('world-label').textContent = 'World ' + worldId;
+document.getElementById('world-name').textContent  = worldDef?.name || 'Festival World';
+document.getElementById('world-emoji').textContent = worldDef?.emoji || '🎊';
+
+// Game state
+let score=0, lives=3, round=0, totalRounds=5;
+let correct=0, wrong=0, answered=false;
+let timerSec=15, timerInt=null;
+// Phase 2: init dynamic director
+if (typeof DynamicDirector !== 'undefined') DynamicDirector.reset();
+// Phase 2: update nav gems
+if (typeof Gems !== 'undefined') Gems.updateNavGems(profile?.id);
+
+// ── UI Helpers ───────────────────────────────────────────────────
+function buildPips(n){
+  const el=document.getElementById('round-pips'); el.innerHTML='';
+  for(let i=0;i<n;i++){
+    const p=document.createElement('div'); p.className='pip'; p.id='pip'+i;
+    el.appendChild(p);
+  }
+}
+function updatePips(curr,total){
+  for(let i=0;i<total;i++){
+    const p=document.getElementById('pip'+i); if(!p) continue;
+    p.className='pip'+(i<curr?' done':i===curr?' current':'');
+  }
+}
+function updateLives(){
+  const el=document.getElementById('lives'); el.innerHTML='';
+  for(let i=0;i<3;i++){ const s=document.createElement('span'); s.className='life'+(i>=lives?' lost':''); s.textContent='❤️'; el.appendChild(s); }
+}
+function updateScore(){ document.getElementById('score').textContent='⭐ '+score; }
+function startTimer(secs,onExpire){
+  if (window._challengeMode !== true) return; // Timer default OFF for a11y
+  clearInterval(timerInt); timerSec=secs;
+  const el=document.getElementById('timer'); el.textContent=secs+'s'; el.className='game-timer';
+  timerInt=setInterval(()=>{
+    timerSec--; el.textContent=timerSec+'s';
+    if(timerSec<=5) el.className='game-timer urgent';
+    if(timerSec<=0){ clearInterval(timerInt); el.textContent=''; if(!answered) onExpire(); }
+  },1000);
+}
+function stopTimer(){ clearInterval(timerInt); document.getElementById('timer').textContent=''; }
+
+function onAnswer(isCorrect){
+  if(answered) return;
+  answered=true; stopTimer();
+
+  // Dynamic Director records answer (silently adjusts difficulty)
+  if (typeof DynamicDirector !== 'undefined') DynamicDirector.recordAnswer(isCorrect);
+
+  if(isCorrect){
+    correct++; score+=20; updateScore();
+    KV.showToast('✅ Correct! +20','success',1400);
+    KV.launchKonfetti();
+    kahiSay(['Yes! 🌟','Amazing! ⭐','Perfect! 💫'][Math.floor(Math.random()*3)]);
+    // Audio: tabla beat
+    if (typeof AudioEngine !== 'undefined') AudioEngine.playCorrect();
+    // Gems: award on correct answer
+    if (typeof Gems !== 'undefined') Gems.award('correct_answer', profile?.id);
+    // Streak sound after 3 in a row
+    if (correct > 0 && correct % 3 === 0 && typeof AudioEngine !== 'undefined') AudioEngine.playDholak();
+  } else {
+    wrong++; lives--; updateLives();
+    KV.showToast('Let\'s try that sign again 🌟','warning',1400);
+    kahiSay(['You can do it! 💙','Almost there! 🤗'][Math.floor(Math.random()*2)]);
+    // Audio: soft wrong thud
+    if (typeof AudioEngine !== 'undefined') AudioEngine.playWrong();
+    if(lives<=0){ setTimeout(showFail,1200); return; }
+  }
+  setTimeout(()=>{ round++; answered=false; loadRound(); },1400);
+}
+function showFail(){
+  document.getElementById('fail-msg').textContent = "Good try! Let's have another go! 💙";
+  document.getElementById('fail-overlay').classList.add('show');
+}
+function showComplete(){
+  stopTimer();
+  const accuracy=totalRounds>0?correct/totalRounds:0;
+  const result=KV.completeWorld(worldId,accuracy,profile?.id);
+  const stars=result?.stars||0; const xpE=result?.xpEarned||0;
+  document.getElementById('c-trophy').textContent=stars>=3?'🏆':stars>=2?'🌟':'⭐';
+  document.getElementById('c-stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('c-xp').textContent='+'+xpE+' XP';
+  document.getElementById('c-msg').textContent=stars>=3?'Perfect! You\'re incredible! 🎉':stars>=2?'Great job! Keep practicing! 💪':'You did it! Kahi is proud! 🦚';
+  document.getElementById('c-correct').textContent=correct;
+  document.getElementById('c-wrong').textContent=wrong;
+  document.getElementById('c-acc').textContent=Math.round(accuracy*100)+'%';
+  document.getElementById('complete-overlay').classList.add('show');
+  KV.launchKonfetti();
+  // Audio: sitar sting for level complete
+  if (typeof AudioEngine !== 'undefined') setTimeout(()=>AudioEngine.playSitar(), 200);
+  // Gems: award for world stars
+  if (typeof Gems !== 'undefined' && stars > 0) {
+    const gemKey = 'world_'+stars+'_star';
+    Gems.award(gemKey, profile?.id);
+    Gems.updateNavGems(profile?.id);
+  }
+  // Boss round report for clinician
+  if (typeof DynamicDirector !== 'undefined') {
+    const report = DynamicDirector.getSessionReport();
+    KV.state.lastSessionReport = report;
+    KV.save();
+  }
+  // AI selects personalized reward + 3D portal reveal after 1.8s
+  setTimeout(() => {
+    const reward = typeof AIEngine !== 'undefined'
+      ? AIEngine.selectRewards(profile?.id, 1)[0]
+      : KV.DEFAULT_REWARDS[0];
+    if (reward && typeof Reward3D !== 'undefined') {
+      new Reward3D().show(reward, null);
+    }
+  }, 1800);
+}
+function nextWorld(){ window.location.href = worldId<5?'level.html?world='+(worldId+1):'plaza.html'; }
+function replayWorld(){ window.location.href='level.html?world='+worldId; }
+function confirmExit(){ if(confirm('Exit? Progress this round will be lost.')) window.location.href='world-map.html'; }
+
+// Kahi companion
+const kahiMsgs=['Keep going! 💙','You\'re amazing! ⭐','Almost there! 🦚','Kahi believes in you! 🌟'];
+function kahiSay(text){
+  const b=document.getElementById('kahi-comp-bubble');
+  if(!b) return; b.textContent=text; b.classList.add('visible');
+  clearTimeout(window._kahiT); window._kahiT=setTimeout(()=>b.classList.remove('visible'),2800);
+}
+function kahiSayRandom(){ kahiSay(kahiMsgs[Math.floor(Math.random()*kahiMsgs.length)]); }
+
+function loadRound(){
+  if(round>=totalRounds){ showComplete(); return; }
+  updatePips(round,totalRounds);
+  switch(worldId){
+    case 1: renderDiwali(W1[round]); break;
+    case 2: renderHoli(W2[round]); break;
+    case 3: renderOnam(W3[round]); break;
+    case 4: renderMonsoon(W4[round]); break;
+    case 5: renderPlaza(W5[round]); break;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// WORLD 1 — DIWALI 🪔 (Articulation: match sound)
+// ═══════════════════════════════════════════════════
+const W1=[
+  {sound:'"Ba" sound 🔊',correct:0,options:[{e:'🐝',n:'Bee'},{e:'🐱',n:'Cat'},{e:'🐟',n:'Fish'}]},
+  {sound:'"Ma" sound 🔊',correct:1,options:[{e:'🐕',n:'Dog'},{e:'🌙',n:'Moon'},{e:'☀️',n:'Sun'}]},
+  {sound:'"Pa" sound 🔊',correct:2,options:[{e:'🌸',n:'Flower'},{e:'🐘',n:'Elephant'},{e:'🐦',n:'Parrot'}]},
+  {sound:'"Sa" sound 🔊',correct:0,options:[{e:'☀️',n:'Sun'},{e:'🎈',n:'Balloon'},{e:'🌊',n:'Wave'}]},
+  {sound:'"Ka" sound 🔊',correct:1,options:[{e:'🦁',n:'Lion'},{e:'🪁',n:'Kite'},{e:'🌺',n:'Flower'}]},
+];
+function renderDiwali(q){
+  const arena=document.getElementById('game-arena');
+  arena.innerHTML=`
+    <div style="text-align:center;width:100%;max-width:700px;" class="questionIn">
+      <div style="font-size:0.78rem;opacity:0.5;margin-bottom:var(--s-sm);">Round ${round+1} of ${totalRounds}</div>
+      <div class="question-card" style="border-color:rgba(247,201,72,0.3);background:rgba(247,201,72,0.06);">
+        <div class="q-label" style="color:var(--thread-gold);">🪔 Which word starts with this sound?</div>
+        <div class="q-text neon-gold" style="font-size:2rem;">${q.sound}</div>
+      </div>
+      <div class="diya-grid" style="max-width:440px;margin:0 auto;">
+        ${q.options.map((opt,i)=>`
+          <div class="diya-btn" onclick="handleMCQ(${i},${q.correct},this)" style="animation-delay:${i*0.1}s;">
+            <span style="font-size:2.5rem;">${opt.e}</span>
+            <span style="margin-top:4px;">${opt.n}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  startTimer(14,()=>{ wrong++;lives--;updateLives();if(lives<=0){showFail();}else{round++;answered=false;loadRound();} });
+}
+
+// ═══════════════════════════════════════════════════
+// WORLD 2 — HOLI 🎨 (Vocabulary: match color word)
+// ═══════════════════════════════════════════════════
+const W2=[
+  {img:'🌻',q:'This flower is…',correct:0,options:['Yellow','Blue','Red'],colors:['#F4B400','#4A90D9','#C1272D']},
+  {img:'🌊',q:'The ocean is…',correct:1,options:['Green','Blue','Orange'],colors:['#3A7D44','#4A90D9','#F2994A']},
+  {img:'🍎',q:'This apple is…',correct:2,options:['Yellow','Purple','Red'],colors:['#F4B400','#9B87F5','#C1272D']},
+  {img:'🌿',q:'Leaves are…',correct:0,options:['Green','Pink','White'],colors:['#3A7D44','#FF6B9D','#E0E0E0']},
+  {img:'🌸',q:'Cherry blossoms are…',correct:1,options:['Orange','Pink','Brown'],colors:['#F2994A','#FF6B9D','#8B5E3C']},
+];
+function renderHoli(q){
+  const arena=document.getElementById('game-arena');
+  arena.innerHTML=`
+    <div style="text-align:center;width:100%;max-width:700px;">
+      <div style="font-size:0.78rem;opacity:0.7;margin-bottom:var(--s-sm);">Round ${round+1} of ${totalRounds}</div>
+      <div class="question-card" style="background:rgba(242,153,74,0.08);border-color:rgba(242,153,74,0.25);">
+        <div class="q-label" style="color:var(--marigold);">🎨 What color is it?</div>
+        <span class="q-emoji">${q.img}</span>
+        <div class="q-text" style="color:var(--ink);">${q.q}</div>
+      </div>
+      <div class="options-grid col2" style="margin:0 auto;">
+        ${q.options.map((opt,i)=>`
+          <div class="option-btn" style="background:${q.colors[i]}20;border-color:${q.colors[i]}55;" onclick="handleMCQ(${i},${q.correct},this)">
+            <div style="width:50px;height:50px;border-radius:50%;background:${q.colors[i]};margin:0 auto var(--s-sm);box-shadow:0 4px 16px ${q.colors[i]}55;"></div>
+            <div class="option-label">${opt}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  startTimer(15,()=>{ wrong++;lives--;updateLives();if(lives<=0){showFail();}else{round++;answered=false;loadRound();} });
+}
+
+// ═══════════════════════════════════════════════════
+// WORLD 3 — ONAM 🚣 (Sentence: arrange word petals)
+// ═══════════════════════════════════════════════════
+const W3=[
+  {target:['The','sun','is','bright'],scramble:['bright','is','sun','The'],hint:'The ___ ___ is ___'},
+  {target:['I','love','to','sing'],scramble:['to','sing','love','I'],hint:'___ love to ___'},
+  {target:['Birds','can','fly','high'],scramble:['fly','Birds','high','can'],hint:'Birds can ___ ___'},
+  {target:['She','reads','every','day'],scramble:['day','reads','She','every'],hint:'___ reads ___ ___'},
+  {target:['We','play','with','friends'],scramble:['friends','play','We','with'],hint:'We ___ ___ ___'},
+];
+function renderOnam(q){
+  const arena=document.getElementById('game-arena');
+  let placed=[], sWords=[...q.scramble];
+
+  function render(){
+    arena.innerHTML=`
+      <div style="text-align:center;width:100%;max-width:680px;">
+        <div style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:var(--s-sm);">Round ${round+1} of ${totalRounds}</div>
+        <div class="question-card" style="background:rgba(82,183,136,0.08);border-color:rgba(82,183,136,0.25);margin-bottom:var(--s-xl);">
+          <div class="q-label" style="color:#52B788;">🚣 Arrange the flower petals to make a sentence!</div>
+          <div class="q-text" style="color:#fff;margin-top:var(--s-sm);font-size:1rem;opacity:0.7;">${q.hint}</div>
+        </div>
+        <div class="onam-sentence" id="onam-slots">
+          ${q.target.map((_,i)=>`<div class="onam-slot ${placed[i]?'filled':''}" id="slot${i}">${placed[i]||'—'}</div>`).join('')}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:var(--s-sm);justify-content:center;margin-top:var(--s-xl);" id="petal-bank">
+          ${sWords.map((w,i)=>`<button class="petal-word" onclick="placePetal('${w}',${i},this)">${w}</button>`).join('')}
+        </div>
+        <div style="margin-top:var(--s-md);">
+          <button class="btn-ghost btn-sm" onclick="resetPetals()" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);">Reset ↩</button>
+        </div>
+      </div>
+    `;
+  }
+
+  window._onamState={placed:[], target:q.target, sWords:[...q.scramble]};
+
+  window.placePetal=(word,idx,btn)=>{
+    const st=window._onamState;
+    if(st.placed.length>=st.target.length) return;
+    btn.disabled=true;
+    st.placed.push(word);
+    const i=st.placed.length-1;
+    const slot=document.getElementById('slot'+i);
+    if(slot){slot.textContent=word;slot.classList.add('filled');}
+    if(st.placed.length===st.target.length){
+      const correct=st.placed.every((w,i)=>w===st.target[i]);
+      if(correct){onAnswer(true);}
+      else{setTimeout(()=>{wrong++;lives--;updateLives();if(lives<=0){showFail();}else{window.resetPetals();}},600);}
+    }
+  };
+  window.resetPetals=()=>{
+    window._onamState.placed=[];
+    render();
+  };
+
+  render();
+  startTimer(22,()=>{ wrong++;lives--;updateLives();if(lives<=0){showFail();}else{round++;answered=false;loadRound();} });
+}
+
+// ═══════════════════════════════════════════════════
+// WORLD 4 — MONSOON 🪁 (Sign Clarity: gesture MCQ)
+// ═══════════════════════════════════════════════════
+const W4=[
+  {q:'Which gesture means "Hello"?',correct:0,options:[{e:'👋',n:'Open Palm'},{e:'👍',n:'Thumbs Up'},{e:'✊',n:'Fist'}]},
+  {q:'Which sign means "Yes"?',correct:1,options:[{e:'👎',n:'Thumbs Down'},{e:'👍',n:'Thumbs Up'},{e:'🖐️',n:'Raised Hand'}]},
+  {q:'"I need help" is shown by…',correct:2,options:[{e:'✌️',n:'V Sign'},{e:'👌',n:'OK Sign'},{e:'🖐️',n:'Raised Hand'}]},
+  {q:'"Ready!" gesture is…',correct:0,options:[{e:'✌️',n:'V Sign'},{e:'✊',n:'Fist'},{e:'👎',n:'Thumbs Down'}]},
+  {q:'"Thank you" sign is…',correct:1,options:[{e:'👋',n:'Wave'},{e:'🤟',n:'I Love You'},{e:'👌',n:'OK Sign'}]},
+];
+function renderMonsoon(q){
+  const arena=document.getElementById('game-arena');
+  arena.innerHTML=`
+    <div style="text-align:center;width:100%;max-width:680px;">
+      <div style="font-size:0.78rem;color:rgba(36,28,21,0.5);margin-bottom:var(--s-sm);">Round ${round+1} of ${totalRounds}</div>
+      <div style="font-size:7rem;animation:kiteFly 4s ease-in-out infinite;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.15));margin-bottom:var(--s-lg);">🪁</div>
+      <div class="question-card" style="background:rgba(79,195,247,0.08);border-color:rgba(79,195,247,0.25);margin-bottom:var(--s-xl);">
+        <div class="q-label" style="color:#4A90D9;">🪁 Kite Control: Pick the right sign!</div>
+        <div class="q-text" style="color:var(--ink);">${q.q}</div>
+      </div>
+      <div class="options-grid" style="margin:0 auto;">
+        ${q.options.map((opt,i)=>`
+          <div class="option-btn" onclick="handleMCQ(${i},${q.correct},this)">
+            <span class="option-emoji">${opt.e}</span>
+            <div class="option-label">${opt.n}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  startTimer(16,()=>{ wrong++;lives--;updateLives();if(lives<=0){showFail();}else{round++;answered=false;loadRound();} });
+}
+
+// ═══════════════════════════════════════════════════
+// WORLD 5 — GLOBAL PLAZA 🌍 (Comprehension)
+// ═══════════════════════════════════════════════════
+const W5_STORY=`Little Meera saw a peacock in her garden. The peacock had beautiful blue and green feathers. Meera clapped her hands and the peacock danced. She called her friend Ravi. Both of them watched the peacock dance together. It was a beautiful day.`;
+const W5=[
+  {q:'Where did Meera see the peacock?',correct:0,options:['Garden','School','Market','Temple']},
+  {q:'What color were the feathers?',correct:1,options:['Red and Yellow','Blue and Green','Pink and White','Orange and Black']},
+  {q:'What did Meera do when she saw the peacock?',correct:2,options:['She ran away','She cried','She clapped hands','She sang a song']},
+  {q:'Who did Meera call?',correct:1,options:['Her mother','Ravi','Her teacher','Her brother']},
+  {q:'How was the day according to the story?',correct:3,options:['Rainy','Sad','Busy','Beautiful']},
+];
+function renderPlaza(q){
+  const arena=document.getElementById('game-arena');
+  const isFirst=round===0;
+  arena.innerHTML=`
+    <div style="text-align:center;width:100%;max-width:680px;">
+      <div style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:var(--s-sm);">Question ${round+1} of ${totalRounds}</div>
+      ${isFirst?`<div class="story-card"><div class="story-card-title">🌍 Read this story carefully!</div>${W5_STORY}</div>`:''}
+      <div class="question-card" style="background:rgba(242,153,74,0.06);border-color:rgba(242,153,74,0.2);margin-bottom:var(--s-xl);">
+        <div class="q-label" style="color:var(--marigold);">📖 Story Question</div>
+        <div class="q-text" style="color:#fff;">${q.q}</div>
+      </div>
+      <div class="options-grid col2" style="margin:0 auto;">
+        ${q.options.map((opt,i)=>`
+          <div class="option-btn" onclick="handleMCQ(${i},${q.correct},this)">
+            <div class="option-label" style="font-size:1rem;">${opt}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  startTimer(20,()=>{ wrong++;lives--;updateLives();if(lives<=0){showFail();}else{round++;answered=false;loadRound();} });
+}
+
+// ── Shared MCQ handler
+function handleMCQ(chosen, correctIdx, el){
+  if(answered) return;
+  const opts=document.querySelectorAll('.option-btn, .diya-btn, .holi-blob');
+  opts[correctIdx]?.classList.add('correct-ans');
+  if(chosen!==correctIdx){ el.classList.add('wrong-ans'); onAnswer(false); }
+  else onAnswer(true);
+}
+
+// ── World-specific atmosphere
+function spawnAtmosphere(){
+  switch(worldId){
+    case 1: // Diya particles
+      setInterval(()=>{
+        const p=document.createElement('div'); p.className='diya-particle';
+        p.style.cssText=`left:${Math.random()*100}vw;bottom:0;width:${Math.random()*6+4}px;height:${Math.random()*6+4}px;background:${['#F7C948','#FF6B35','#FFB347'][Math.floor(Math.random()*3)]};animation-duration:${Math.random()*4+3}s;animation-delay:-${Math.random()*3}s;`;
+        document.body.appendChild(p); setTimeout(()=>p.remove(),7000);
+      },400); break;
+    case 2: // Holi splashes
+      ['#E14FD8','#4FE3D8','#F7C948','#52B788','#F2994A'].forEach((c,i)=>{
+        const s=document.createElement('div'); s.className='holi-bg-splash';
+        s.style.cssText=`width:${200+Math.random()*300}px;height:${200+Math.random()*300}px;background:${c};left:${Math.random()*80}%;top:${Math.random()*80}%;animation-delay:${i*0.8}s;`;
+        document.body.appendChild(s);
+      }); break;
+    case 3: // Petal drops
+      const petals=['🌸','🌺','🌼','🌷','💐'];
+      setInterval(()=>{
+        const p=document.createElement('div'); p.className='petal-drop';
+        p.style.cssText=`left:${Math.random()*100}vw;animation-duration:${Math.random()*5+4}s;animation-delay:-${Math.random()*4}s;`;
+        p.textContent=petals[Math.floor(Math.random()*petals.length)];
+        document.body.appendChild(p); setTimeout(()=>p.remove(),9000);
+      },600); break;
+    case 4: // Rain
+      for(let i=0;i<40;i++){
+        const r=document.createElement('div'); r.className='rain-drop';
+        r.style.cssText=`left:${Math.random()*100}vw;height:${Math.random()*20+10}px;animation-duration:${Math.random()*0.5+0.5}s;animation-delay:-${Math.random()*1}s;`;
+        document.body.appendChild(r);
+      } break;
+    case 5: // Stars
+      setInterval(()=>{
+        const s=document.createElement('div'); s.className='star-fall';
+        s.style.cssText=`left:${Math.random()*100}vw;animation-duration:${Math.random()*4+3}s;animation-delay:-${Math.random()*3}s;font-size:${Math.random()*1+0.8}rem;`;
+        s.textContent=['⭐','✨','🌟','💫'][Math.floor(Math.random()*4)];
+        document.body.appendChild(s); setTimeout(()=>s.remove(),7000);
+      },500); break;
+  }
+}
+
+// ── BOOT
+(function boot(){
+  if(!worldDef||!worldDef.unlocked){
+    document.getElementById('game-arena').innerHTML=`<div style="text-align:center;"><div style="font-size:4rem;margin-bottom:var(--s-lg);">🔒</div><h3>World ${worldId} is Locked!</h3><p style="opacity:0.6;margin:var(--s-md) 0;">Complete World ${worldId-1} first!</p><a href="world-map.html" class="btn-world">← World Map</a></div>`;
+    return;
+  }
+  totalRounds=5; buildPips(totalRounds); updateLives();
+  spawnAtmosphere();
+  setTimeout(()=>loadRound(),400);
+  setTimeout(()=>kahiSay('Welcome to '+worldDef.name+'! 🦚'),800);
+})();
+</script>
+<button class="btn-ghost" style="position:fixed;bottom:20px;left:20px;z-index:900;" onclick="initCalmOverlay()">⏸ Take a Break</button>
+<div id="calm-overlay" style="display:none;position:fixed;inset:0;background:var(--calm-bg,#F0F7F7);z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
+  <div style="font-size:5rem;margin-bottom:20px;">🧘</div>
+  <h2 style="color:var(--text-on-paper,#2C1810);font-family:var(--font-display);">Take a deep breath...</h2>
+  <button class="btn-world btn-lg" style="margin-top:30px;" onclick="document.getElementById('calm-overlay').style.display='none'">Ready to Continue</button>
+</div>
+<script>
+function initCalmOverlay() {
+  document.getElementById('calm-overlay').style.display = 'flex';
+}
+</script>
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="learn.html" class="persistent-btn" aria-label="Learn and career">📚 Learn</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn" aria-label="Help and settings">❓ Help</a>
+</div>
+</body>
+</html>

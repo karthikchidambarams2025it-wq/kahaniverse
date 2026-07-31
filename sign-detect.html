@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahaniverse — Live Sign Detection</title>
+  <meta name="description" content="Real-time sign language detection for speech therapy. AI-powered hand tracking with MediaPipe.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/a11y.css">
+  <style>
+    /* ── DESIGN TOKENS ── */
+    :root {
+      --void:        #0B0E2B;
+      --void-mid:    #131730;
+      --void-soft:   #1B2040;
+      --thread-cyan: #4FE3D8;
+      --thread-magenta: #E14FD8;
+      --thread-gold: #F7C948;
+      --marigold:    #F2994A;
+      --peacock:     #0E7C7B;
+      --kumkum:      #C1272D;
+      --correct:     #00E676;
+      --wrong:       #FF5252;
+      --font-display: 'Baloo 2', sans-serif;
+      --font-body:   'Nunito', sans-serif;
+      --font-clinic: 'IBM Plex Sans', sans-serif;
+      --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 28px; --r-full: 999px;
+      --s-xs: 4px; --s-sm: 8px; --s-md: 12px; --s-lg: 16px; --s-xl: 24px; --s-2xl: 40px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: var(--void);
+      color: #fff;
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── AMBIENT PARTICLES ── */
+    .star { position: fixed; border-radius: 50%; animation: starTwinkle var(--dur,3s) var(--delay,0s) ease-in-out infinite; }
+    @keyframes starTwinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.4)} }
+
+    /* ── TOP NAV ── */
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--s-md) var(--s-xl);
+      background: rgba(11,14,43,0.85);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(79,227,216,0.12);
+      flex-wrap: wrap; gap: var(--s-sm);
+    }
+    .nav-brand { font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: var(--s-sm); }
+    .nav-brand span { font-size: 1.5rem; }
+    .nav-badge {
+      background: rgba(79,227,216,0.08); border: 1px solid rgba(79,227,216,0.2);
+      border-radius: var(--r-full); padding: 4px 14px;
+      font-size: 0.75rem; font-weight: 700; color: var(--thread-cyan); letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.7); border-radius: var(--r-full);
+      padding: 6px 16px; font-family: var(--font-body); font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* ── MAIN LAYOUT ── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: var(--s-xl);
+      padding: var(--s-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      min-height: calc(100vh - 64px);
+    }
+    @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
+
+    /* ── LEFT PANEL — CAMERA STAGE ── */
+    .camera-stage {
+      display: flex; flex-direction: column; gap: var(--s-lg);
+    }
+
+    /* Target sign selector */
+    .target-bar {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(79,227,216,0.12);
+      border-radius: var(--r-xl);
+      padding: var(--s-lg) var(--s-xl);
+      display: flex; align-items: center; gap: var(--s-lg); flex-wrap: wrap;
+    }
+    .target-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); white-space: nowrap; }
+    .sign-pills { display: flex; gap: var(--s-sm); flex-wrap: wrap; flex: 1; }
+    .sign-pill {
+      background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: var(--r-full); padding: 6px 14px;
+      font-family: var(--font-display); font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; transition: all 0.25s; white-space: nowrap;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .sign-pill:hover { background: rgba(79,227,216,0.1); border-color: var(--thread-cyan); color: var(--thread-cyan); }
+    .sign-pill.active {
+      background: rgba(79,227,216,0.15); border-color: var(--thread-cyan);
+      color: var(--thread-cyan);
+      box-shadow: 0 0 16px rgba(79,227,216,0.25);
+    }
+
+    /* Camera viewport */
+    .camera-viewport {
+      position: relative;
+      background: #000;
+      border-radius: var(--r-2xl);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      border: 1.5px solid rgba(79,227,216,0.15);
+      box-shadow: 0 0 60px rgba(79,227,216,0.08), inset 0 0 40px rgba(0,0,0,0.5);
+    }
+
+    #cam-video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* Mirror for natural feel */
+      border-radius: var(--r-2xl);
+    }
+    #cam-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      transform: scaleX(-1);
+      pointer-events: none;
+      border-radius: var(--r-2xl);
+    }
+
+    /* Corner scan-lines decoration */
+    .scan-corner {
+      position: absolute; width: 32px; height: 32px;
+      border-color: var(--thread-cyan); border-style: solid; opacity: 0.6;
+      pointer-events: none; z-index: 5;
+    }
+    .scan-corner.tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
+    .scan-corner.tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
+    .scan-corner.bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
+    .scan-corner.br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
+
+    /* AI status pill */
+    .ai-status {
+      position: absolute; top: var(--s-lg); left: 50%; transform: translateX(-50%);
+      background: rgba(11,14,43,0.85); backdrop-filter: blur(12px);
+      border: 1px solid rgba(79,227,216,0.2); border-radius: var(--r-full);
+      padding: 6px 18px; font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px; z-index: 10; white-space: nowrap;
+    }
+    .ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--thread-cyan); animation: aiPulse 1.5s ease-in-out infinite; }
+    @keyframes aiPulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(79,227,216,0.6)} 50%{opacity:0.7;box-shadow:0 0 0 8px rgba(79,227,216,0)} }
+
+    /* Detected gesture display */
+    .gesture-display {
+      position: absolute; bottom: var(--s-xl); left: 50%; transform: translateX(-50%);
+      background: rgba(11,14,43,0.9); backdrop-filter: blur(16px);
+      border: 1px solid rgba(79,227,216,0.2); border-radius: var(--r-xl);
+      padding: var(--s-md) var(--s-xl); z-index: 10;
+      text-align: center; min-width: 200px;
+    }
+    .gesture-detected-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
+    .gesture-detected-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; color: var(--thread-cyan); }
+
+    /* Hold timer ring */
+    .hold-ring-wrap {
+      position: absolute; bottom: var(--s-xl); right: var(--s-xl); z-index: 10;
+    }
+    #hold-ring-svg { filter: drop-shadow(0 0 8px var(--thread-cyan)); }
+    .hold-pct { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-family: var(--font-display); font-size: 0.7rem; font-weight: 800; color: var(--thread-cyan); }
+
+    /* ── FEEDBACK BADGE ── */
+    .feedback-badge {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 20; pointer-events: none;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .feedback-badge.show { opacity: 1; }
+
+    .badge-icon {
+      font-size: 6rem;
+      filter: drop-shadow(0 0 40px currentColor);
+      animation: badgePop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+    @keyframes badgePop { from{transform:scale(0) rotate(-20deg)} to{transform:scale(1) rotate(0deg)} }
+
+    .badge-text {
+      font-family: var(--font-display); font-size: 2.5rem; font-weight: 800;
+      margin-top: var(--s-md);
+      animation: badgeSlideUp 0.5s 0.15s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes badgeSlideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .badge-sub {
+      font-family: var(--font-body); font-size: 1rem; font-weight: 600;
+      margin-top: var(--s-sm); opacity: 0.8;
+      animation: badgeSlideUp 0.5s 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    .feedback-badge.correct .badge-icon { color: var(--correct); }
+    .feedback-badge.correct .badge-text { color: var(--correct); text-shadow: 0 0 40px rgba(0,230,118,0.8); }
+    .feedback-badge.wrong   .badge-icon { color: var(--wrong); }
+    .feedback-badge.wrong   .badge-text { color: var(--wrong); }
+
+    /* Correct: golden radial glow behind */
+    .feedback-badge.correct::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(247,201,72,0.2) 0%, transparent 70%);
+    }
+    .feedback-badge.wrong::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at center, rgba(193,39,45,0.12) 0%, transparent 70%);
+    }
+
+    /* Correct particle burst */
+    .confetti-burst { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .confetti-particle {
+      position: absolute; width: 8px; height: 8px; border-radius: 2px;
+      top: 50%; left: 50%;
+      animation: confettiFly var(--dur) ease-out var(--delay) forwards;
+    }
+    @keyframes confettiFly {
+      0%   { transform: translate(-50%,-50%) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) rotate(720deg) scale(0); opacity: 0; }
+    }
+
+    /* ── CAMERA CONTROLS ── */
+    .camera-controls {
+      display: flex; gap: var(--s-md); align-items: center; flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--thread-cyan), var(--peacock));
+      border: none; color: #fff; border-radius: var(--r-full);
+      padding: 10px 24px; font-family: var(--font-display); font-size: 0.9rem; font-weight: 800;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 4px 20px rgba(79,227,216,0.3);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,227,216,0.4); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-danger {
+      background: rgba(193,39,45,0.15); border: 1px solid rgba(193,39,45,0.3);
+      color: #FF5252; border-radius: var(--r-full);
+      padding: 10px 20px; font-family: var(--font-display); font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-danger:hover { background: rgba(193,39,45,0.25); }
+
+    .sim-badge {
+      background: rgba(247,201,72,0.1); border: 1px solid rgba(247,201,72,0.25);
+      border-radius: var(--r-full); padding: 6px 14px;
+      font-size: 0.72rem; font-weight: 700; color: var(--thread-gold);
+      display: none; align-items: center; gap: 6px;
+    }
+    .sim-badge.show { display: flex; }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel { display: flex; flex-direction: column; gap: var(--s-lg); }
+
+    /* Session stats */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: var(--s-sm);
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--r-xl); padding: var(--s-lg); text-align: center;
+    }
+    .stat-val { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+    .stat-lbl { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); font-weight: 700; }
+    .stat-card.correct-card .stat-val { color: var(--correct); }
+    .stat-card.wrong-card   .stat-val { color: var(--wrong); }
+    .stat-card.acc-card     .stat-val { color: var(--thread-gold); }
+
+    /* Target info card */
+    .target-card {
+      background: rgba(79,227,216,0.04); border: 1.5px solid rgba(79,227,216,0.15);
+      border-radius: var(--r-xl); padding: var(--s-xl);
+    }
+    .target-card-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(79,227,216,0.6); margin-bottom: var(--s-sm); }
+    .target-sign-name { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: var(--s-md); margin-bottom: var(--s-sm); }
+    .target-sign-emoji { font-size: 3rem; }
+    .target-sign-desc { font-size: 0.82rem; color: rgba(255,255,255,0.55); line-height: 1.6; }
+
+    /* Hold progress bar */
+    .hold-bar-wrap {
+      background: rgba(255,255,255,0.06); border-radius: var(--r-full); height: 6px; overflow: hidden; margin-top: var(--s-md);
+    }
+    #hold-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--thread-cyan), var(--thread-gold)); border-radius: var(--r-full); transition: width 0.05s linear; }
+
+    /* ── TEACHER TRANSCRIPT ── */
+    .transcript-panel {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--r-xl); flex: 1; min-height: 0;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .transcript-header {
+      padding: var(--s-md) var(--s-xl);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .transcript-title { font-family: var(--font-display); font-size: 0.88rem; font-weight: 800; }
+    .transcript-count { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+    .transcript-list { flex: 1; overflow-y: auto; padding: var(--s-md); display: flex; flex-direction: column; gap: var(--s-sm); }
+    .transcript-list::-webkit-scrollbar { width: 4px; }
+    .transcript-list::-webkit-scrollbar-track { background: transparent; }
+    .transcript-list::-webkit-scrollbar-thumb { background: rgba(79,227,216,0.2); border-radius: 4px; }
+
+    /* Attempt row */
+    .attempt-row {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--r-lg); padding: var(--s-md) var(--s-lg);
+      display: flex; align-items: center; gap: var(--s-md);
+      animation: rowSlideIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+    @keyframes rowSlideIn { from{transform:translateX(20px);opacity:0} to{transform:translateX(0);opacity:1} }
+    .attempt-row.correct { border-color: rgba(0,230,118,0.2); background: rgba(0,230,118,0.04); }
+    .attempt-row.wrong   { border-color: rgba(255,82,82,0.15); background: rgba(255,82,82,0.03); }
+
+    .attempt-result { font-size: 1.3rem; flex-shrink: 0; }
+    .attempt-info { flex: 1; min-width: 0; }
+    .attempt-signs { font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .attempt-signs .target-s { color: rgba(255,255,255,0.5); }
+    .attempt-signs .detected-s { color: var(--thread-cyan); }
+    .attempt-time { font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-top: 2px; }
+
+    /* Teacher rating */
+    .teacher-rating { display: flex; gap: 4px; flex-shrink: 0; }
+    .rating-star { background: none; border: none; font-size: 1rem; cursor: pointer; opacity: 0.3; transition: all 0.15s; padding: 0; }
+    .rating-star.lit { opacity: 1; transform: scale(1.2); }
+
+    /* Empty state */
+    .transcript-empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; opacity: 0.4; gap: var(--s-sm);
+    }
+    .transcript-empty-icon { font-size: 3rem; }
+    .transcript-empty-text { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; }
+
+    /* ── BOTTOM CONTROL ROW ── */
+    .bottom-row {
+      display: flex; align-items: center; gap: var(--s-md); flex-wrap: wrap;
+      padding: var(--s-md) var(--s-xl);
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: var(--r-xl);
+    }
+    .bottom-row label { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em; }
+    .bottom-row select, .bottom-row input {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: #fff; border-radius: var(--r-full); padding: 6px 14px;
+      font-family: var(--font-body); font-size: 0.82rem; cursor: pointer;
+      outline: none; transition: all 0.2s;
+    }
+    .bottom-row select:focus, .bottom-row input:focus { border-color: var(--thread-cyan); }
+    .bottom-row select option { background: #1B2040; }
+
+    /* Toast */
+    .toast-area {
+      position: fixed; bottom: var(--s-xl); left: 50%; transform: translateX(-50%);
+      z-index: 200; display: flex; flex-direction: column; gap: var(--s-sm); pointer-events: none;
+    }
+    .toast {
+      background: rgba(11,14,43,0.95); backdrop-filter: blur(20px);
+      border: 1px solid rgba(79,227,216,0.2); border-radius: var(--r-full);
+      padding: 10px 22px; font-family: var(--font-display); font-size: 0.88rem; font-weight: 700;
+      animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      white-space: nowrap;
+    }
+    @keyframes toastIn { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+  </style>
+</head>
+<body>
+
+<!-- Stars background -->
+<div id="stars-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;"></div>
+
+<!-- ── TOP NAV ── -->
+<nav class="top-nav">
+  <div class="nav-brand">
+    <span>🦚</span> Kahaniverse
+    <span class="nav-badge">Sign Detect</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:var(--s-md);">
+    <div id="sim-badge" class="sim-badge">⚡ Simulation Mode</div>
+    <a href="communicate.html" class="btn-ghost">📷 Full Comm</a>
+    <a href="world-map.html" class="btn-ghost">🗺️ Map</a>
+    <a href="learn.html" class="btn-ghost" style="background:rgba(14,124,123,0.1);border-color:rgba(14,124,123,0.3);color:#1AADA9;">📚 Learn & Grow</a>
+    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
+  </div>
+</nav>
+
+<!-- ── MAIN GRID ── -->
+<div class="main-grid" style="position:relative;z-index:1;">
+
+  <!-- LEFT: CAMERA STAGE -->
+  <div class="camera-stage">
+
+    <!-- Target sign selector -->
+    <div class="target-bar">
+      <span class="target-label">🎯 Target Sign</span>
+      <div class="sign-pills" id="sign-pills"></div>
+    </div>
+
+    <!-- Camera viewport -->
+    <div class="camera-viewport" id="camera-viewport">
+      <video id="cam-video" autoplay muted playsinline></video>
+      <canvas id="cam-canvas"></canvas>
+
+      <!-- Scan corners -->
+      <div class="scan-corner tl"></div>
+      <div class="scan-corner tr"></div>
+      <div class="scan-corner bl"></div>
+      <div class="scan-corner br"></div>
+
+      <!-- AI status -->
+      <div class="ai-status">
+        <div class="ai-dot" id="ai-dot"></div>
+        <span id="ai-status-text">Initialising AI…</span>
+      </div>
+
+      <!-- Gesture display -->
+      <div class="gesture-display" id="gesture-display">
+        <div class="gesture-detected-label">Detected Sign</div>
+        <div class="gesture-detected-name" id="gesture-name">Waiting…</div>
+      </div>
+
+      <!-- Hold ring (top right) -->
+      <div class="hold-ring-wrap">
+        <svg id="hold-ring-svg" width="64" height="64" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+          <circle id="hold-ring-arc" cx="32" cy="32" r="26" fill="none"
+            stroke="#4FE3D8" stroke-width="4" stroke-linecap="round"
+            stroke-dasharray="163.4" stroke-dashoffset="163.4"
+            transform="rotate(-90 32 32)"/>
+        </svg>
+        <div class="hold-pct" id="hold-pct">0%</div>
+      </div>
+
+      <!-- Feedback badge overlay -->
+      <div class="feedback-badge" id="feedback-badge">
+        <div class="confetti-burst" id="confetti-burst"></div>
+        <div class="badge-icon" id="badge-icon"></div>
+        <div class="badge-text" id="badge-text"></div>
+        <div class="badge-sub"  id="badge-sub"></div>
+      </div>
+    </div>
+
+    <!-- Camera controls -->
+    <div class="camera-controls">
+      <button class="btn-primary" id="btn-start" onclick="startCamera()">
+        📷 Start Camera
+      </button>
+      <button class="btn-danger" id="btn-stop" onclick="stopCamera()" style="display:none;">
+        ⏹ Stop
+      </button>
+      <label style="display:flex;align-items:center;gap:8px;font-size:0.8rem;color:rgba(255,255,255,0.5);cursor:pointer;">
+        <input type="checkbox" id="chk-sim" onchange="toggleSim(this)"> Run in simulation (no camera)
+      </label>
+    </div>
+
+    <!-- Hold sensitivity -->
+    <div class="bottom-row">
+      <label for="sel-hold">Hold time</label>
+      <select id="sel-hold">
+        <option value="400">Fast (0.4s)</option>
+        <option value="600" selected>Normal (0.6s)</option>
+        <option value="900">Slow (0.9s)</option>
+        <option value="1200">Very slow (1.2s)</option>
+      </select>
+      <label for="sel-vocab" style="margin-left:var(--s-lg);">Vocabulary set</label>
+      <select id="sel-vocab" onchange="loadVocab(this.value)">
+        <option value="basic">Basic Gestures</option>
+        <option value="isl">Indian Sign Language (ISL)</option>
+        <option value="asl">ASL Alphabet (A-E)</option>
+      </select>
+      <button class="btn-ghost" onclick="clearTranscript()" style="margin-left:auto;">🗑 Clear Log</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: STATS + TEACHER TRANSCRIPT -->
+  <div class="right-panel">
+
+    <!-- Session stats -->
+    <div class="stats-row">
+      <div class="stat-card correct-card">
+        <div class="stat-val" id="stat-correct">0</div>
+        <div class="stat-lbl">Correct</div>
+      </div>
+      <div class="stat-card wrong-card">
+        <div class="stat-val" id="stat-wrong">0</div>
+        <div class="stat-lbl">Try Again</div>
+      </div>
+      <div class="stat-card acc-card">
+        <div class="stat-val" id="stat-acc">—</div>
+        <div class="stat-lbl">Accuracy</div>
+      </div>
+    </div>
+
+    <!-- Current target info -->
+    <div class="target-card">
+      <div class="target-card-label">Current Target Sign</div>
+      <div class="target-sign-name">
+        <span class="target-sign-emoji" id="t-emoji">👋</span>
+        <span id="t-name">Open Palm</span>
+      </div>
+      <div class="target-sign-desc" id="t-desc">Hold your hand open with all fingers spread wide. The AI will recognise when you hold steady.</div>
+      <div class="hold-bar-wrap"><div id="hold-bar"></div></div>
+      <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);margin-top:6px;font-weight:700;" id="hold-label">Hold steady to confirm…</div>
+    </div>
+
+    <!-- Teacher transcript -->
+    <div class="transcript-panel">
+      <div class="transcript-header">
+        <div class="transcript-title">📋 Teacher Transcript</div>
+        <div class="transcript-count" id="transcript-count">0 attempts</div>
+      </div>
+      <div class="transcript-list" id="transcript-list">
+        <div class="transcript-empty">
+          <div class="transcript-empty-icon">📋</div>
+          <div class="transcript-empty-text">Attempts appear here</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.3);text-align:center;">Start camera and make a sign<br>to see live results</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-area" id="toast-area"></div>
+
+<!-- ── SCRIPTS ── -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="js/kahani-app.js"></script>
+<script src="js/audio-engine.js"></script>
+<script src="js/gems.js"></script>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════
+   GESTURE CLASSIFIER — Modular, swap-friendly
+   Replace classifyLandmarks() to use a trained ML model
+   without changing camera, tracking, or feedback UI.
+══════════════════════════════════════════════════════════════ */
+const GestureClassifier = {
+
+  /* Entry point: receives 21 MediaPipe landmarks → returns gesture string */
+  classify(lm) {
+    if (!lm || lm.length < 21) return 'none';
+    return this._geometricRules(lm);
+  },
+
+  /* ── Geometric rule-based classifier (swap this for an ML model) ── */
+  _geometricRules(lm) {
+    const thumbUp    = lm[4].y < lm[3].y && lm[4].y < lm[2].y;
+    const thumbDown  = lm[4].y > lm[3].y && lm[4].y > lm[5].y;
+    const indexUp    = lm[8].y  < lm[6].y;
+    const middleUp   = lm[12].y < lm[10].y;
+    const ringUp     = lm[16].y < lm[14].y;
+    const pinkyUp    = lm[20].y < lm[18].y;
+    const allUp      = indexUp && middleUp && ringUp && pinkyUp;
+    const allDown    = !indexUp && !middleUp && !ringUp && !pinkyUp;
+    const thumbIndex = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+    const okSign     = thumbIndex < 0.065;
+    const thumbPinky = Math.hypot(lm[4].x - lm[20].x, lm[4].y - lm[20].y);
+    const ily        = thumbUp && indexUp && pinkyUp && !middleUp && !ringUp;
+
+    if (thumbUp  && !indexUp && !middleUp && !ringUp && !pinkyUp) return 'thumbs_up';
+    if (thumbDown && !indexUp && !middleUp)                       return 'thumbs_down';
+    if (allUp)                                                     return 'open_palm';
+    if (allDown)                                                   return 'fist';
+    if (indexUp && middleUp && !ringUp && !pinkyUp)               return 'v_sign';
+    if (indexUp && !middleUp && !ringUp && !pinkyUp)              return 'pointing';
+    if (okSign)                                                    return 'ok_sign';
+    if (ily)                                                       return 'i_love_you';
+    if (!indexUp && !middleUp && !ringUp && pinkyUp)              return 'pinky_up';
+    if (allUp && lm[0].y > 0.6)                                   return 'raised_hand';
+    return 'hand_detected';
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════
+   SIGN VOCABULARY SETS
+══════════════════════════════════════════════════════════════ */
+const VOCABS = {
+  basic: [
+    { id:'open_palm',  emoji:'🖐️', name:'Open Palm',   desc:'All fingers spread wide and open towards the camera.' },
+    { id:'thumbs_up',  emoji:'👍', name:'Thumbs Up',   desc:'Make a fist and stick your thumb up high.' },
+    { id:'thumbs_down',emoji:'👎', name:'Thumbs Down', desc:'Fist with thumb pointing towards the floor.' },
+    { id:'v_sign',     emoji:'✌️', name:'Victory / V', desc:'Index and middle fingers up like a peace sign.' },
+    { id:'fist',       emoji:'✊', name:'Fist',         desc:'Curl all fingers tight into a fist.' },
+    { id:'pointing',   emoji:'☝️', name:'Pointing',    desc:'Only your index finger pointing straight up.' },
+    { id:'ok_sign',    emoji:'👌', name:'OK Sign',      desc:'Touch your thumb and index tip together in a circle.' },
+    { id:'i_love_you', emoji:'🤟', name:'I Love You',   desc:'Thumb, index finger, and pinky all out at once.' },
+    { id:'raised_hand',emoji:'✋', name:'Raised Hand',  desc:'Open hand held out flat at camera level.' },
+  ],
+  isl: [
+    { id:'open_palm',  emoji:'🖐️', name:'ISL: Namaste', desc:'Open palm facing camera — greeting sign in ISL.' },
+    { id:'thumbs_up',  emoji:'👍', name:'ISL: Accha',    desc:'Thumbs up — meaning "good/okay" in ISL context.' },
+    { id:'v_sign',     emoji:'✌️', name:'ISL: 2',        desc:'V shape — number two or victory in ISL.' },
+    { id:'fist',       emoji:'✊', name:'ISL: Na',        desc:'Closed fist — negation/no in ISL.' },
+    { id:'pointing',   emoji:'☝️', name:'ISL: Ek',       desc:'Single index — number one in ISL.' },
+    { id:'i_love_you', emoji:'🤟', name:'ISL: Pyaar',    desc:'I love you sign — borrowed into ISL.' },
+  ],
+  asl: [
+    { id:'open_palm',  emoji:'🅱️', name:'ASL: B',  desc:'Four fingers straight up, thumb tucked across palm.' },
+    { id:'fist',       emoji:'🅰️', name:'ASL: A',  desc:'Closed fist with thumb resting on the side.' },
+    { id:'v_sign',     emoji:'🆄', name:'ASL: U',  desc:'Index and middle fingers straight up together.' },
+    { id:'pointing',   emoji:'🆇', name:'ASL: D',  desc:'Index up, others curve into O touching thumb.' },
+    { id:'ok_sign',    emoji:'🅾️', name:'ASL: O',  desc:'All fingers curve down to touch the thumb tip.' },
+  ],
+};
+
+let currentVocab     = VOCABS.basic;
+let targetSign       = currentVocab[0];
+
+/* ══════════════════════════════════════════════════════════════
+   FINGER COLORS & CONNECTIONS (per-finger colored skeleton)
+══════════════════════════════════════════════════════════════ */
+const FINGER_COLORS = ['#4FE3D8','#F7C948','#E14FD8','#52B788','#F2994A'];
+const FINGER_CHAINS = [
+  [0,1,2,3,4],
+  [0,5,6,7,8],
+  [0,9,10,11,12],
+  [0,13,14,15,16],
+  [0,17,18,19,20],
+];
+const PALM_CONNECTIONS = [[5,9],[9,13],[13,17],[0,5],[0,17]];
+
+/* ══════════════════════════════════════════════════════════════
+   HAND TRACKER STATE
+══════════════════════════════════════════════════════════════ */
+let videoEl, canvasEl, ctx;
+let mediapipeHands = null;
+let mediapipeCamera = null;
+let isRunning = false;
+let simInterval = null;
+let simMode = false;
+
+/* Hold-for-N-ms logic */
+let holdMs      = 600;         // from selector
+let holdStart   = null;
+let lastGesture = 'none';
+let holdPct     = 0;
+let judgingLocked = false;     // prevent repeat fire for same hold
+
+/* Stats */
+let totalCorrect = 0, totalWrong = 0, totalAttempts = 0;
+
+/* ══════════════════════════════════════════════════════════════
+   DRAW HAND SKELETON
+══════════════════════════════════════════════════════════════ */
+function drawSkeleton(lm) {
+  const W = canvasEl.width, H = canvasEl.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!lm) return;
+
+  // Palm connections (neutral white-ish)
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 2;
+  ctx.shadowBlur = 4; ctx.shadowColor = 'rgba(255,255,255,0.2)';
+  PALM_CONNECTIONS.forEach(([a,b]) => {
+    ctx.beginPath();
+    ctx.moveTo(lm[a].x * W, lm[a].y * H);
+    ctx.lineTo(lm[b].x * W, lm[b].y * H);
+    ctx.stroke();
+  });
+
+  // Finger chains — per-finger color
+  FINGER_CHAINS.forEach((chain, fi) => {
+    const col = FINGER_COLORS[fi];
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 14; ctx.shadowColor = col;
+    for (let i = 0; i < chain.length - 1; i++) {
+      const a = chain[i], b = chain[i+1];
+      ctx.beginPath();
+      ctx.moveTo(lm[a].x * W, lm[a].y * H);
+      ctx.lineTo(lm[b].x * W, lm[b].y * H);
+      ctx.stroke();
+    }
+    // Fingertip glow
+    const tip = lm[chain[chain.length - 1]];
+    const g = ctx.createRadialGradient(tip.x*W, tip.y*H, 0, tip.x*W, tip.y*H, 14);
+    g.addColorStop(0, col); g.addColorStop(1, 'transparent');
+    ctx.beginPath(); ctx.arc(tip.x*W, tip.y*H, 10, 0, Math.PI*2);
+    ctx.fillStyle = g; ctx.fill();
+    // Joint dots along chain
+    chain.forEach(idx => {
+      ctx.beginPath(); ctx.arc(lm[idx].x*W, lm[idx].y*H, 4, 0, Math.PI*2);
+      ctx.fillStyle = col; ctx.shadowBlur = 8; ctx.shadowColor = col; ctx.fill();
+    });
+  });
+
+  // Wrist / palm node
+  ctx.beginPath(); ctx.arc(lm[0].x*W, lm[0].y*H, 8, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 16; ctx.shadowColor = '#fff'; ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Confidence ring around wrist
+  drawConfidenceRing(lm[0], W, H);
+}
+
+function drawConfidenceRing(wrist, W, H) {
+  if (holdPct <= 0) return;
+  const cx = wrist.x * W, cy = wrist.y * H;
+  const r = 32;
+  // Background
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 5; ctx.shadowBlur = 0; ctx.stroke();
+  // Progress arc
+  const col = holdPct >= 1 ? '#00E676' : '#4FE3D8';
+  ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + holdPct*Math.PI*2);
+  ctx.strokeStyle = col; ctx.lineWidth = 5; ctx.shadowBlur = 12; ctx.shadowColor = col; ctx.stroke();
+  if (holdPct >= 1) {
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle = 'rgba(0,230,118,0.3)'; ctx.lineWidth = 10; ctx.stroke();
+  }
+  ctx.shadowBlur = 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HOLD TIMER LOGIC
+══════════════════════════════════════════════════════════════ */
+function updateHold(gesture) {
+  holdMs = parseInt(document.getElementById('sel-hold').value) || 600;
+
+  if (gesture === 'none' || gesture === 'hand_detected') {
+    holdStart = null; holdPct = 0; judgingLocked = false;
+    updateHoldUI(0); return;
+  }
+
+  if (gesture !== lastGesture) {
+    lastGesture = gesture; holdStart = Date.now(); holdPct = 0; judgingLocked = false;
+  } else if (holdStart && !judgingLocked) {
+    const elapsed = Date.now() - holdStart;
+    holdPct = Math.min(1, elapsed / holdMs);
+    updateHoldUI(holdPct);
+
+    if (holdPct >= 1) {
+      judgingLocked = true;
+      judgeGesture(gesture);
+    }
+  }
+}
+
+function updateHoldUI(pct) {
+  holdPct = pct;
+  const arc    = document.getElementById('hold-ring-arc');
+  const circ   = 163.4;
+  arc.setAttribute('stroke-dashoffset', circ - pct * circ);
+  arc.setAttribute('stroke', pct >= 1 ? '#00E676' : '#4FE3D8');
+  document.getElementById('hold-pct').textContent = Math.round(pct*100)+'%';
+  document.getElementById('hold-bar').style.width  = (pct*100)+'%';
+  document.getElementById('hold-label').textContent = pct >= 1
+    ? '✅ Locked in!' : pct > 0.5 ? 'Almost… hold steady!' : 'Hold steady to confirm…';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   JUDGEMENT ENGINE
+══════════════════════════════════════════════════════════════ */
+function judgeGesture(detectedId) {
+  const isCorrect = detectedId === targetSign.id;
+  recordAttempt(targetSign.id, detectedId, isCorrect);
+  showFeedback(isCorrect, detectedId);
+  // Reset hold timer so next sign can trigger again after feedback clears
+  setTimeout(() => {
+    holdStart = null; holdPct = 0; judgingLocked = false; updateHoldUI(0);
+  }, 2200);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FEEDBACK BADGE
+══════════════════════════════════════════════════════════════ */
+function showFeedback(isCorrect, detectedId) {
+  const badge = document.getElementById('feedback-badge');
+  badge.className = 'feedback-badge ' + (isCorrect ? 'correct' : 'wrong');
+  document.getElementById('badge-icon').textContent = isCorrect ? '✅' : '❌';
+  document.getElementById('badge-text').textContent = isCorrect ? 'Correct!' : 'Try again';
+
+  const detected = currentVocab.find(v=>v.id===detectedId);
+  document.getElementById('badge-sub').textContent = isCorrect
+    ? `Great ${targetSign.name}! 🌟`
+    : `Saw: ${detected?.name || detectedId} — target: ${targetSign.name}`;
+
+  if (isCorrect) {
+    spawnConfetti();
+    if (typeof AudioEngine !== 'undefined') AudioEngine.playCorrect();
+    if (typeof Gems !== 'undefined') {
+      try { Gems.award('correct_sign', KV?.getCurrentProfile()?.id); } catch(e){}
+    }
+  } else {
+    if (typeof AudioEngine !== 'undefined') AudioEngine.playWrong();
+  }
+
+  badge.classList.add('show');
+  setTimeout(() => badge.classList.remove('show'), 2000);
+}
+
+function spawnConfetti() {
+  const burst = document.getElementById('confetti-burst');
+  burst.innerHTML = '';
+  const colors = ['#F7C948','#4FE3D8','#E14FD8','#00E676','#F2994A','#fff'];
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement('div'); el.className = 'confetti-particle';
+    const angle = (i/40)*Math.PI*2;
+    const dist  = 80 + Math.random()*120;
+    el.style.cssText = [
+      `background:${colors[i%colors.length]}`,
+      `--tx:${Math.cos(angle)*dist}px`, `--ty:${Math.sin(angle)*dist}px`,
+      `--dur:${0.5+Math.random()*0.5}s`,
+      `--delay:${Math.random()*0.15}s`,
+      `width:${6+Math.random()*6}px`, `height:${6+Math.random()*6}px`,
+      `border-radius:${Math.random()>0.5?'50%':'3px'}`,
+    ].join(';');
+    burst.appendChild(el);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ATTEMPT RECORDING & STATS
+══════════════════════════════════════════════════════════════ */
+function recordAttempt(targetId, detectedId, isCorrect) {
+  totalAttempts++;
+  if (isCorrect) totalCorrect++; else totalWrong++;
+  updateStats();
+
+  const target   = currentVocab.find(v=>v.id===targetId);
+  const detected = currentVocab.find(v=>v.id===detectedId);
+  const timestamp = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  appendTranscriptRow({
+    idx: totalAttempts,
+    target,
+    detected,
+    isCorrect,
+    timestamp,
+  });
+
+  // Feed into KV app state if available
+  try {
+    if (window.KV && KV.state) {
+      if (!KV.state.signAttempts) KV.state.signAttempts = [];
+      KV.state.signAttempts.push({ target:targetId, detected:detectedId, isCorrect, ts: Date.now() });
+      KV.save();
+    }
+  } catch(e){}
+}
+
+function updateStats() {
+  document.getElementById('stat-correct').textContent = totalCorrect;
+  document.getElementById('stat-wrong').textContent   = totalWrong;
+  const acc = totalAttempts > 0 ? Math.round((totalCorrect/totalAttempts)*100)+'%' : '—';
+  document.getElementById('stat-acc').textContent = acc;
+}
+
+function appendTranscriptRow({ idx, target, detected, isCorrect, timestamp }) {
+  const list = document.getElementById('transcript-list');
+  const empty = list.querySelector('.transcript-empty');
+  if (empty) empty.remove();
+
+  const row = document.createElement('div');
+  row.className = 'attempt-row ' + (isCorrect ? 'correct' : 'wrong');
+  row.id = 'row-' + idx;
+  row.innerHTML = `
+    <div class="attempt-result">${isCorrect ? '✅' : '❌'}</div>
+    <div class="attempt-info">
+      <div class="attempt-signs">
+        <span class="target-s">Target: ${target?.emoji||'?'} ${target?.name||targetId}</span>
+        ${!isCorrect ? ` → <span class="detected-s">Got: ${detected?.emoji||'?'} ${detected?.name||detectedId}</span>` : ''}
+      </div>
+      <div class="attempt-time">#${idx} · ${timestamp}</div>
+    </div>
+    <div class="teacher-rating" data-row="${idx}">
+      ${[1,2,3,4,5].map(n=>`<button class="rating-star" data-n="${n}" onclick="rateRow(${idx},${n})">⭐</button>`).join('')}
+    </div>
+  `;
+  list.prepend(row);
+
+  const count = document.getElementById('transcript-count');
+  count.textContent = totalAttempts + ' attempt' + (totalAttempts!==1?'s':'');
+}
+
+function rateRow(rowIdx, rating) {
+  const wrap = document.querySelector(`[data-row="${rowIdx}"]`);
+  if (!wrap) return;
+  wrap.querySelectorAll('.rating-star').forEach((s,i) => s.classList.toggle('lit', i < rating));
+  showToast(`Rated #${rowIdx}: ${rating}/5 ⭐`);
+}
+
+function clearTranscript() {
+  totalCorrect = totalWrong = totalAttempts = 0;
+  updateStats();
+  const list = document.getElementById('transcript-list');
+  list.innerHTML = `<div class="transcript-empty">
+    <div class="transcript-empty-icon">📋</div>
+    <div class="transcript-empty-text">Attempts appear here</div>
+    <div style="font-size:0.75rem;color:rgba(255,255,255,0.3);text-align:center;">Start camera and make a sign<br>to see live results</div>
+  </div>`;
+  document.getElementById('transcript-count').textContent = '0 attempts';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MEDIAPIPE INIT
+══════════════════════════════════════════════════════════════ */
+async function startCamera() {
+  videoEl  = document.getElementById('cam-video');
+  canvasEl = document.getElementById('cam-canvas');
+  ctx      = canvasEl.getContext('2d');
+
+  document.getElementById('btn-start').disabled = true;
+  setStatus('Requesting camera…', false);
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{width:640,height:480,facingMode:'user'}, audio:false });
+    videoEl.srcObject = stream;
+    await videoEl.play();
+    canvasEl.width  = videoEl.videoWidth  || 640;
+    canvasEl.height = videoEl.videoHeight || 480;
+    isRunning = true;
+    document.getElementById('btn-stop').style.display = 'inline-flex';
+    document.getElementById('btn-start').style.display = 'none';
+
+    if (typeof Hands !== 'undefined' && typeof Camera !== 'undefined') {
+      initMediaPipe();
+    } else {
+      setStatus('Simulation (no MediaPipe)', true);
+      document.getElementById('sim-badge').classList.add('show');
+      startSimulation();
+    }
+  } catch(err) {
+    setStatus('Camera denied — simulation mode', true);
+    document.getElementById('sim-badge').classList.add('show');
+    document.getElementById('chk-sim').checked = true;
+    startSimulation();
+    document.getElementById('btn-start').disabled = false;
+  }
+}
+
+function initMediaPipe() {
+  setStatus('Loading AI model…', false);
+  mediapipeHands = new Hands({
+    locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+  });
+  mediapipeHands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.65,
+    minTrackingConfidence: 0.55,
+  });
+  mediapipeHands.onResults(onMediaPipeResults);
+
+  mediapipeCamera = new Camera(videoEl, {
+    onFrame: async () => {
+      if (isRunning && mediapipeHands) await mediapipeHands.send({ image: videoEl });
+    },
+    width: 640, height: 480,
+  });
+  mediapipeCamera.start().then(() => setStatus('AI tracking active', false));
+}
+
+function onMediaPipeResults(results) {
+  if (!canvasEl) return;
+  canvasEl.width  = videoEl.videoWidth  || 640;
+  canvasEl.height = videoEl.videoHeight || 480;
+
+  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+    const lm = results.multiHandLandmarks[0];
+    drawSkeleton(lm);
+    const gesture = GestureClassifier.classify(lm);
+    updateGestureDisplay(gesture, lm);
+    updateHold(gesture);
+  } else {
+    ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    updateGestureDisplay('none', null);
+    updateHold('none');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIMULATION MODE
+══════════════════════════════════════════════════════════════ */
+const SIM_GESTURES = ['open_palm','thumbs_up','thumbs_down','v_sign','fist','pointing','ok_sign','i_love_you'];
+let simIdx = 0;
+
+function startSimulation() {
+  simMode = true;
+  isRunning = true;
+  document.getElementById('btn-stop').style.display = 'inline-flex';
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('sim-badge').classList.add('show');
+  setStatus('Simulation mode — no camera', true);
+  drawSimHand();
+  scheduleNextSim();
+}
+
+function scheduleNextSim() {
+  if (!isRunning) return;
+  simInterval = setTimeout(() => {
+    const g = SIM_GESTURES[simIdx % SIM_GESTURES.length]; simIdx++;
+    updateGestureDisplay(g, null);
+    // Fake hold progression
+    let p = 0;
+    holdStart = Date.now(); lastGesture = g; judgingLocked = false;
+    const tick = setInterval(() => {
+      if (!isRunning) { clearInterval(tick); return; }
+      p += 0.07; holdPct = Math.min(1, p); updateHoldUI(holdPct);
+      if (holdPct >= 1) { clearInterval(tick); judgingLocked = true; judgeGesture(g); scheduleNextSim(); }
+    }, 50);
+  }, 3000 + Math.random()*1500);
+}
+
+function drawSimHand() {
+  if (!canvasEl || !ctx) return;
+  canvasEl.width = 640; canvasEl.height = 480;
+  const W = canvasEl.width, H = canvasEl.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Draw simulated hand silhouette
+  const cx = W*0.5, cy = H*0.55;
+  ctx.beginPath(); ctx.ellipse(cx, cy+20, 55, 70, 0, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(79,227,216,0.06)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(79,227,216,0.2)'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Finger stubs
+  FINGER_COLORS.forEach((col, fi) => {
+    const angles = [-0.4,-0.15,0,0.15,0.4];
+    const lengths = [55,70,75,70,60];
+    const startX = cx + Math.sin(angles[fi])*30;
+    const startY = cy - 40;
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(startX + Math.sin(angles[fi])*10, startY - lengths[fi]);
+    ctx.strokeStyle = col; ctx.lineWidth = 4; ctx.shadowBlur = 12; ctx.shadowColor = col; ctx.stroke();
+    ctx.beginPath(); ctx.arc(startX + Math.sin(angles[fi])*10, startY - lengths[fi], 7, 0, Math.PI*2);
+    ctx.fillStyle = col; ctx.fill(); ctx.shadowBlur = 0;
+  });
+}
+
+function stopCamera() {
+  isRunning = false;
+  if (videoEl?.srcObject) { videoEl.srcObject.getTracks().forEach(t=>t.stop()); videoEl.srcObject = null; }
+  if (mediapipeHands) { mediapipeHands.close?.(); mediapipeHands = null; }
+  if (mediapipeCamera) { mediapipeCamera = null; }
+  clearTimeout(simInterval);
+  if (ctx) ctx.clearRect(0, 0, canvasEl?.width||640, canvasEl?.height||480);
+  document.getElementById('btn-start').disabled = false;
+  document.getElementById('btn-start').style.display = 'inline-flex';
+  document.getElementById('btn-stop').style.display = 'none';
+  document.getElementById('sim-badge').classList.remove('show');
+  document.getElementById('gesture-name').textContent = 'Stopped';
+  setStatus('Camera stopped', false);
+  holdPct = 0; updateHoldUI(0);
+}
+
+function toggleSim(chk) {
+  if (chk.checked) { document.getElementById('sim-badge').classList.add('show'); startSimulation(); }
+  else stopCamera();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UI HELPERS
+══════════════════════════════════════════════════════════════ */
+function setStatus(text, isSim) {
+  document.getElementById('ai-status-text').textContent = text;
+  const dot = document.getElementById('ai-dot');
+  dot.style.background = isSim ? '#F7C948' : '#4FE3D8';
+  dot.style.animationName = isSim ? 'none' : 'aiPulse';
+  dot.style.opacity = isSim ? '1' : '';
+}
+
+function updateGestureDisplay(gesture, lm) {
+  const found = currentVocab.find(v=>v.id===gesture);
+  const el = document.getElementById('gesture-name');
+  if (gesture === 'none') { el.textContent = '—'; el.style.color = 'rgba(255,255,255,0.3)'; }
+  else if (found) { el.textContent = found.emoji + ' ' + found.name; el.style.color = 'var(--thread-cyan)'; }
+  else { el.textContent = gesture.replace(/_/g,' '); el.style.color = 'rgba(255,255,255,0.5)'; }
+}
+
+function setTargetSign(sign) {
+  targetSign = sign;
+  document.getElementById('t-emoji').textContent = sign.emoji;
+  document.getElementById('t-name').textContent  = sign.name;
+  document.getElementById('t-desc').textContent  = sign.desc;
+  holdStart = null; holdPct = 0; judgingLocked = false; updateHoldUI(0);
+  // Update pills
+  document.querySelectorAll('.sign-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.id === sign.id);
+  });
+  showToast('Target: ' + sign.emoji + ' ' + sign.name);
+}
+
+function loadVocab(vocabKey) {
+  currentVocab = VOCABS[vocabKey] || VOCABS.basic;
+  buildPills();
+  setTargetSign(currentVocab[0]);
+}
+
+function buildPills() {
+  const container = document.getElementById('sign-pills');
+  container.innerHTML = '';
+  currentVocab.forEach(sign => {
+    const btn = document.createElement('button');
+    btn.className = 'sign-pill' + (sign.id === targetSign?.id ? ' active' : '');
+    btn.dataset.id = sign.id;
+    btn.innerHTML = `${sign.emoji} ${sign.name}`;
+    btn.onclick = () => setTargetSign(sign);
+    container.appendChild(btn);
+  });
+}
+
+function showToast(msg) {
+  const area = document.getElementById('toast-area');
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  area.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STAR FIELD
+══════════════════════════════════════════════════════════════ */
+function buildStars() {
+  const bg = document.getElementById('stars-bg');
+  const cols = ['#4FE3D8','#F7C948','#E14FD8','#fff'];
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div'); s.className = 'star';
+    const sz = Math.random()*2.5 + 0.5;
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:${cols[i%cols.length]};--dur:${2+Math.random()*4}s;--delay:${Math.random()*4}s;`;
+    bg.appendChild(s);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+buildStars();
+try { if (window.KV) KV.init(); } catch(e){}
+loadVocab('basic');
+setStatus('Press Start Camera to begin', false);
+</script>
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="learn.html" class="persistent-btn" aria-label="Learn and career">📚 Learn</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn" aria-label="Help and settings">❓ Help</a>
+</div>
+</body>
+</html>

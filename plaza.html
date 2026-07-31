@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahaniverse — Global Plaza</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/world.css">
+  <link rel="stylesheet" href="css/mascot.css">
+  <link rel="stylesheet" href="css/a11y.css">
+  <style>
+    body { background:linear-gradient(180deg,var(--void) 0%,#1A0A3D 40%,#0E7C7B 80%,#F2994A 100%); min-height:100vh; color:#fff; overflow-x:hidden; }
+    .plaza-stage {
+      position:relative; min-height:60vh;
+      display:flex; align-items:flex-end; justify-content:center;
+      padding-bottom:60px;
+    }
+    .stage-bg {
+      position:absolute;inset:0;overflow:hidden;pointer-events:none;
+      background:radial-gradient(ellipse at 50% 100%,rgba(14,124,123,0.3),transparent 60%);
+    }
+
+    /* Avatars on stage */
+    .stage-avatar {
+      display:flex;flex-direction:column;align-items:center;
+      position:absolute;
+      animation:avatarStageBob 3s ease-in-out infinite;
+      animation-delay:var(--ad,0s);
+    }
+    @keyframes avatarStageBob { 0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)} }
+    .stage-avatar-face { font-size:3rem; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+    .stage-avatar-name {
+      font-family:var(--font-display);font-size:0.72rem;font-weight:700;
+      background:var(--marigold);color:#fff;
+      padding:2px 10px;border-radius:var(--r-full);margin-top:4px;
+    }
+    .stage-sign-caption {
+      position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+      background:rgba(11,14,43,0.9);border:1px solid var(--thread-cyan);
+      border-radius:var(--r-xl);padding:4px 14px;
+      font-family:var(--font-display);font-size:0.78rem;font-weight:700;
+      color:var(--thread-cyan);white-space:nowrap;
+      animation:captionBob 2s ease-in-out infinite;
+    }
+    @keyframes captionBob { 0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)} }
+
+    /* Bottom info bar */
+    .plaza-infobar {
+      position:fixed;bottom:0;left:0;right:0;
+      background:rgba(11,14,43,0.97);backdrop-filter:blur(20px);
+      border-top:1px solid rgba(79,227,216,0.12);
+      padding:var(--s-md) var(--s-xl);
+      display:flex;align-items:center;justify-content:space-between;gap:var(--s-md);flex-wrap:wrap;
+    }
+
+    /* Celebration row */
+    .celebration-emojis {
+      display:flex;gap:var(--s-sm);font-size:2rem;
+      animation:celebRow 2s ease-in-out infinite;
+    }
+    @keyframes celebRow { 0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)} }
+
+    /* Moderation notice */
+    .mod-notice {
+      background:rgba(58,125,68,0.12);border:1px solid rgba(58,125,68,0.3);
+      border-radius:var(--r-lg);padding:var(--s-sm) var(--s-lg);
+      font-size:0.78rem;color:rgba(255,255,255,0.6);
+      display:flex;align-items:center;gap:var(--s-sm);
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav style="position:sticky;top:0;z-index:200;padding:var(--s-md) var(--s-xl);display:flex;align-items:center;justify-content:space-between;background:rgba(11,14,43,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(79,227,216,0.08);">
+  <div style="display:flex;align-items:center;gap:var(--s-md);">
+    <a href="world-map.html" class="btn-ghost btn-sm">← World Map</a>
+    <a href="learn.html" class="btn-ghost btn-sm" style="background:rgba(14,124,123,0.1);border-color:rgba(14,124,123,0.3);color:#1AADA9;">📚 Learn & Grow</a>
+    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
+  </div>
+  <div style="text-align:center;">
+    <div class="kv-logo" style="font-size:1.4rem;opacity:1;transform:none;">🌍 GLOBAL PLAZA</div>
+    <div style="font-size:0.68rem;color:rgba(79,227,216,0.6);">A celebration of communication worldwide</div>
+  </div>
+  <div class="mod-notice">🛡️ Adult-supervised · Safe space</div>
+</nav>
+
+<!-- STAGE -->
+<div class="plaza-stage" id="plaza-stage">
+  <div class="stage-bg"></div>
+  <!-- Avatars placed by JS -->
+</div>
+
+<!-- Celebration section -->
+<div style="text-align:center;padding:var(--s-2xl) var(--s-xl);">
+  <div style="font-size:5rem;margin-bottom:var(--s-md);filter:drop-shadow(0 0 30px var(--thread-gold));">🦚</div>
+  <h1 class="k-h1 text-portal" style="margin-bottom:var(--s-md);">You're a Speech Champion!</h1>
+  <p style="font-size:1rem;color:rgba(255,255,255,0.7);max-width:500px;margin:0 auto var(--s-2xl);">You completed all 5 worlds and joined the Global Plaza! Children all over the world are celebrating with you! 🎉</p>
+  <div class="celebration-emojis" style="justify-content:center;margin-bottom:var(--s-xl);">
+    🎉🌟🎊⭐🏆🦚🎆🌈
+  </div>
+
+  <!-- Share sign panel -->
+  <div style="max-width:480px;margin:0 auto;background:rgba(79,227,216,0.04);border:1px solid rgba(79,227,216,0.15);border-radius:var(--r-xl);padding:var(--s-xl);">
+    <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:var(--s-lg);">Share your sign with the world!</div>
+    <div style="font-size:2rem;margin-bottom:var(--s-md);" id="share-gesture-emoji">🤲</div>
+    <div style="font-size:0.88rem;color:rgba(255,255,255,0.6);margin-bottom:var(--s-lg);">Pick a gesture and share it for your teacher to review:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:var(--s-sm);justify-content:center;margin-bottom:var(--s-lg);" id="share-picker"></div>
+    <button class="btn-portal" onclick="shareSign()">Share My Sign 🌍</button>
+  </div>
+</div>
+
+<div class="plaza-infobar">
+  <div>
+    <div style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;">Children online <span style="color:#00FF88;">● worldwide</span></div>
+    <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);">Supervised, no open chat, avatars only</div>
+  </div>
+  <div id="online-count" style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;color:var(--thread-gold);">Loading…</div>
+  <div style="display:flex;gap:var(--s-md);">
+    <a href="communicate.html" class="btn-portal btn-sm">📷 Sign with Teacher</a>
+    <a href="world-map.html" class="btn-ghost btn-sm">🗺️ World Map</a>
+  </div>
+</div>
+
+<div id="kv-toast" class="toast-container"></div>
+
+<script src="js/kahani-app.js"></script>
+<script>
+KV.init();
+const profile=KV.getCurrentProfile();
+
+// Simulated world children
+const WORLD_CHILDREN = [
+  {avatar:'🧒',name:'Aarav',city:'Mumbai',sign:'Hello! 👋'},
+  {avatar:'👧',name:'Mei',city:'Beijing',sign:'Yes! 👍'},
+  {avatar:'👦',name:'Liam',city:'London',sign:'Ready! ✌️'},
+  {avatar:'🧒♀️',name:'Priya',city:'Delhi',sign:'Thank you! 🤟'},
+  {avatar:'👶',name:'Kofi',city:'Accra',sign:'I need help 🖐️'},
+  {avatar:'🧑',name:'Sofia',city:'Madrid',sign:'Perfect! 👌'},
+  {avatar:'🧕',name:'Layla',city:'Cairo',sign:'Hello! 👋'},
+];
+
+// If profile exists, add them
+if(profile) WORLD_CHILDREN.unshift({avatar:profile.avatar||'🧒',name:profile.name+' (You)',city:'Here',sign:'I\'m here! 🌟'});
+
+// Place avatars on stage
+const stage=document.getElementById('plaza-stage');
+const stageW=window.innerWidth;
+const stageH=Math.max(window.innerHeight*0.6,400);
+stage.style.height=stageH+'px';
+
+WORLD_CHILDREN.forEach((child,i)=>{
+  const xPct = (i/(WORLD_CHILDREN.length-1||1))*0.8+0.1;
+  const el=document.createElement('div');
+  el.className='stage-avatar';
+  el.style.cssText=`left:${xPct*100}%;bottom:${40+Math.random()*80}px;--ad:${i*0.3}s;`;
+  el.innerHTML=`
+    <div style="position:relative;">
+      <div class="stage-sign-caption">${child.sign}</div>
+      <div class="stage-avatar-face">${child.avatar}</div>
+    </div>
+    <div class="stage-avatar-name">${child.name}</div>
+    <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);margin-top:2px;">${child.city}</div>
+  `;
+  stage.appendChild(el);
+});
+
+// Online count (simulated)
+let count=Math.floor(Math.random()*80+20);
+setInterval(()=>{ count+=Math.floor(Math.random()*5-2); count=Math.max(15,count); document.getElementById('online-count').textContent=count+' children'; },3000);
+document.getElementById('online-count').textContent=count+' children';
+
+// Share picker
+const sp=document.getElementById('share-picker');
+let shareSel='open_palm';
+Object.entries(KV.SIGN_DICT).filter(([k])=>k!=='none'&&k!=='active'&&KV.SIGN_DICT[k].text).forEach(([key,val])=>{
+  const btn=document.createElement('button');
+  btn.style.cssText=`font-size:1.5rem;background:rgba(79,227,216,0.08);border:1px solid rgba(79,227,216,0.15);border-radius:var(--r-lg);padding:var(--s-sm);cursor:pointer;transition:all 0.2s;`;
+  btn.textContent=val.emoji;
+  btn.title=val.text;
+  btn.onclick=()=>{
+    shareSel=key;
+    document.getElementById('share-gesture-emoji').textContent=val.emoji+' '+val.text;
+    document.querySelectorAll('#share-picker button').forEach(b=>b.style.borderColor='rgba(79,227,216,0.15)');
+    btn.style.borderColor='var(--thread-cyan)';
+  };
+  sp.appendChild(btn);
+});
+
+function shareSign(){
+  const info=KV.SIGN_DICT[shareSel];
+  KV.showToast('Shared! Your teacher will see: '+info?.text,'success',3000);
+  KV.launchKonfetti();
+}
+
+// Launch confetti on load
+setTimeout(()=>KV.launchKonfetti(),500);
+</script>
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="learn.html" class="persistent-btn" aria-label="Learn and career">📚 Learn</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn" aria-label="Help and settings">❓ Help</a>
+</div>
+</body>
+</html>

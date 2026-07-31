@@ -1,0 +1,369 @@
+/* ================================================================
+   KAHANIVERSE — WORLD MODE (Festival / Warm)
+   Used for: daily play, world map, in-level, profile select
+   ================================================================ */
+
+.world-body {
+  background: linear-gradient(180deg, #87CEEB 0%, #B8E4F5 30%, #FFF8EC 100%);
+  color: var(--ink);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ── WORLD GLASS CARD (warm) ── */
+.world-card {
+  background: rgba(255,248,236,0.75);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1.5px solid rgba(242,153,74,0.25);
+  border-radius: var(--r-xl);
+  box-shadow: 0 8px 32px rgba(36,28,21,0.12), inset 0 1px 0 rgba(255,255,255,0.6);
+  transition: all var(--t-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.world-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 16px 48px rgba(36,28,21,0.18), 0 0 0 2px rgba(242,153,74,0.3);
+  background: rgba(255,248,236,0.88);
+}
+
+/* ── TOP NAV ── */
+.world-topnav {
+  position: sticky;
+  top: 0; z-index: 200;
+  padding: var(--s-md) var(--s-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,248,236,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1.5px solid rgba(242,153,74,0.2);
+  gap: var(--s-md);
+  flex-wrap: wrap;
+}
+
+.brand-kv {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg,var(--peacock),var(--marigold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── PROFILE CHIP ── */
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: var(--s-xs) var(--s-md) var(--s-xs) var(--s-xs);
+  border-radius: var(--r-full);
+  background: rgba(242,153,74,0.1);
+  border: 1.5px solid rgba(242,153,74,0.25);
+  cursor: pointer;
+  transition: all var(--t-base);
+}
+.profile-chip:hover { background:rgba(242,153,74,0.18); border-color:var(--marigold); }
+
+.profile-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,var(--marigold),var(--turmeric));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  border: 2px solid rgba(255,255,255,0.6);
+  box-shadow: 0 2px 8px rgba(242,153,74,0.3);
+}
+
+/* ── WORLD XP BAR (nav) ── */
+.nav-xp-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  flex: 1;
+  max-width: 280px;
+}
+.nav-xp-label {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--turmeric);
+  white-space: nowrap;
+}
+
+/* ── FESTIVAL CLOUD BACKGROUND ── */
+.cloud {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  filter: blur(20px);
+  animation: cloudDrift linear infinite;
+  pointer-events: none;
+}
+@keyframes cloudDrift {
+  from { transform: translateX(-120%); }
+  to   { transform: translateX(120vw); }
+}
+
+/* ── FESTIVAL FLAG BUNTING ── */
+.bunting {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 40px;
+  display: flex;
+  gap: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bunting-flag {
+  width: 0; height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-top: 35px solid;
+  animation: flagSway 2s ease-in-out infinite;
+  animation-delay: var(--flag-delay, 0s);
+}
+@keyframes flagSway {
+  0%,100% { transform: rotate(-3deg); }
+  50%     { transform: rotate(3deg); }
+}
+
+/* ── DIYA (lamp) glow ── */
+.diya {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.diya::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,179,71,0.6) 0%, transparent 70%);
+  transform: translate(-50%,-50%);
+  animation: diyaFlicker 1.5s ease-in-out infinite;
+}
+@keyframes diyaFlicker {
+  0%,100% { transform:translate(-50%,-50%) scale(1); opacity:0.8; }
+  33%     { transform:translate(-50%,-50%) scale(1.15); opacity:1; }
+  66%     { transform:translate(-50%,-50%) scale(0.9); opacity:0.7; }
+}
+
+/* ── HOLI COLOR SPLASH ── */
+.color-splash {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: splashBurst 0.6s ease-out forwards;
+}
+@keyframes splashBurst {
+  from { transform:scale(0); opacity:1; }
+  to   { transform:scale(3); opacity:0; }
+}
+
+/* ── FLOWER PETAL ── */
+.petal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px; height: 60px;
+  border-radius: 50% 0 50% 0;
+  font-size: 1.5rem;
+  cursor: grab;
+  transition: all var(--t-spring);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.petal:hover { transform: scale(1.15) rotate(10deg); }
+.petal.placed { cursor: default; animation: petalPlace 0.4s ease-out; }
+@keyframes petalPlace {
+  from { transform: scale(1.3) rotate(20deg); }
+  to   { transform: scale(1) rotate(0deg); }
+}
+
+/* ── KITE ── */
+.kite {
+  font-size: 4rem;
+  animation: kiteFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+  cursor: pointer;
+  transition: all var(--t-spring);
+}
+@keyframes kiteFloat {
+  0%,100% { transform: translateY(0) rotate(-5deg); }
+  50%     { transform: translateY(-20px) rotate(5deg); }
+}
+.kite:hover { transform: scale(1.2) rotate(15deg) !important; }
+
+/* ── WORLD ISLAND ── */
+.island {
+  position: absolute;
+  cursor: pointer;
+  transition: all var(--t-spring);
+  transform-origin: center bottom;
+}
+.island:hover:not(.locked) { transform: scale(1.08) translateY(-8px); }
+.island.locked { filter: saturate(0) opacity(0.5); cursor: not-allowed; }
+
+.island-bubble {
+  text-align: center;
+  position: relative;
+}
+
+.island-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: rgba(255,248,236,0.92);
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+  border: 1.5px solid rgba(242,153,74,0.3);
+  white-space: nowrap;
+  margin-top: var(--s-sm);
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.island-emoji {
+  font-size: 4rem;
+  display: block;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+  animation: islandBob 3s ease-in-out infinite;
+  animation-delay: var(--island-delay, 0s);
+}
+@keyframes islandBob {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-10px); }
+}
+
+.island-stars { font-size: 0.9rem; letter-spacing: 2px; margin-top: 2px; }
+
+/* ── HOLOGRAPHIC MIST (locked island) ── */
+.island-mist {
+  position: absolute; inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(79,227,216,0.15) 0%, transparent 70%);
+  animation: mistPulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes mistPulse {
+  0%,100% { transform: scale(1); opacity: 0.6; }
+  50%     { transform: scale(1.2); opacity: 1; }
+}
+
+/* ── AVATAR (walking) ── */
+.world-avatar {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 1.2s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none;
+}
+.avatar-emoji {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2));
+  animation: avatarBounce 0.5s ease-in-out infinite alternate;
+}
+@keyframes avatarBounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-6px); }
+}
+.avatar-name {
+  font-family: var(--font-display);
+  font-size: 0.75rem; font-weight: 700;
+  background: var(--marigold);
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: var(--r-full);
+  margin-top: 2px;
+  box-shadow: 0 2px 8px rgba(242,153,74,0.4);
+}
+
+/* ── PATH BETWEEN ISLANDS ── */
+.island-path {
+  position: absolute;
+  border-top: 3px dashed rgba(242,153,74,0.4);
+  transform-origin: left center;
+  pointer-events: none;
+  animation: pathMarch 1s linear infinite;
+}
+@keyframes pathMarch {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: 20; }
+}
+
+/* ── PROFILE CARD (profile select screen) ── */
+.profile-select-card {
+  padding: var(--s-xl);
+  border-radius: var(--r-2xl);
+  background: rgba(255,248,236,0.8);
+  border: 2px solid rgba(242,153,74,0.2);
+  cursor: pointer;
+  transition: all var(--t-spring);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.profile-select-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--grad-color, var(--marigold));
+  border-radius: var(--r-full) var(--r-full) 0 0;
+}
+.profile-select-card:hover {
+  transform: translateY(-10px) scale(1.03);
+  border-color: var(--marigold);
+  box-shadow: 0 20px 60px rgba(242,153,74,0.25);
+  background: rgba(255,248,236,0.95);
+}
+.profile-select-card.selected {
+  border-color: var(--peacock);
+  box-shadow: 0 0 0 3px rgba(14,124,123,0.2);
+}
+
+.profile-big-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  margin: 0 auto var(--s-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem;
+  border: 3px solid rgba(255,255,255,0.8);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+/* ── CLINICIAN CARD ── */
+.clinic-card {
+  background: var(--paper);
+  border: 1px solid var(--sand);
+  border-radius: var(--r-lg);
+  padding: var(--s-xl);
+  box-shadow: 0 2px 12px rgba(36,28,21,0.08);
+}
+
+/* ── WORLD FORM ── */
+.world-input {
+  background: rgba(255,248,236,0.8);
+  border: 1.5px solid rgba(242,153,74,0.25);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  padding: 0.65rem var(--s-md);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  width: 100%;
+  transition: all var(--t-base);
+}
+.world-input:focus {
+  outline: none;
+  border-color: var(--peacock);
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 0 0 3px rgba(14,124,123,0.12);
+}

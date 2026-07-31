@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahaniverse — Choose Your Story</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/world.css">
+  <link rel="stylesheet" href="css/mascot.css">
+  <link rel="stylesheet" href="css/a11y.css">
+  <style>
+    body { min-height:100vh; background:linear-gradient(180deg,#4A90D9 0%,#87CEEB 30%,#FFF8EC 100%); }
+    .profile-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:var(--s-xl); padding:var(--s-xl); max-width:1000px; margin:0 auto; }
+    .add-card { display:flex;flex-direction:column;align-items:center;justify-content:center; gap:var(--s-md);
+      min-height:200px; border:2px dashed rgba(242,153,74,0.35); border-radius:var(--r-2xl);
+      background:rgba(255,248,236,0.5); cursor:pointer; transition:all var(--t-spring);
+      font-family:var(--font-display); font-size:0.9rem; font-weight:700; color:var(--ink-faint); }
+    .add-card:hover { border-color:var(--marigold); background:rgba(255,248,236,0.9); transform:scale(1.03); color:var(--ink); }
+    .add-icon { font-size:3rem; }
+  </style>
+</head>
+<body class="world-body">
+
+<!-- TOP BAR -->
+<nav class="world-topnav" style="position:relative;">
+  <a href="intro.html" class="brand-kv" style="text-decoration:none;position:absolute;left:50%;transform:translateX(-50%);">🦚 KAHANIVERSE</a>
+  <div style="display:flex;align-items:center;gap:var(--s-md);margin-left:auto;">
+    <a href="communicate.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#0E7C7B,#4FE3D8);color:#fff;font-weight:800;">✋ Sign &amp; Talk</a>
+    <a href="clinician.html" class="btn-ghost btn-sm" style="background:rgba(36,28,21,0.06);border-color:rgba(36,28,21,0.15);color:var(--ink);">📊 Clinician Console</a>
+    <a href="learn.html" class="btn-ghost btn-sm" style="background:rgba(14,124,123,0.1);border-color:rgba(14,124,123,0.3);color:#1AADA9;">📚 Learn & Grow</a>
+    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
+  </div>
+</nav>
+
+<div style="text-align:center;padding:var(--s-2xl) var(--s-xl) var(--s-lg);">
+  <!-- Kahi Greeting -->
+  <div style="font-size:5rem;animation:kahiFloat 4s ease-in-out infinite;display:inline-block;filter:drop-shadow(0 4px 16px rgba(14,124,123,0.3));">🦚</div>
+  <h1 class="k-h1" style="margin:var(--s-md) 0 var(--s-sm);">Who's playing <span class="text-peacock">today?</span></h1>
+  <p style="color:var(--ink-faint);font-size:1rem;">Tap your name to begin your adventure!</p>
+</div>
+
+<!-- Profile Grid -->
+<div class="profile-grid" id="profile-grid"></div>
+
+<!-- Add Profile Modal -->
+<div id="add-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(36,28,21,0.5);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;">
+  <div class="world-card" style="padding:var(--s-2xl);max-width:440px;width:90%;margin:var(--s-xl);">
+    <h2 class="k-h2" style="margin-bottom:var(--s-xl);">New Child Profile 🌟</h2>
+    <div style="display:flex;flex-direction:column;gap:var(--s-md);">
+      <div>
+        <label style="font-size:0.8rem;font-weight:700;color:var(--ink-faint);display:block;margin-bottom:6px;">Child's Name *</label>
+        <input class="world-input" id="f-name" placeholder="e.g. Aarav" maxlength="30">
+      </div>
+      <div>
+        <label style="font-size:0.8rem;font-weight:700;color:var(--ink-faint);display:block;margin-bottom:6px;">Age</label>
+        <input class="world-input" id="f-age" type="number" min="2" max="18" placeholder="e.g. 7">
+      </div>
+      <div>
+        <label style="font-size:0.8rem;font-weight:700;color:var(--ink-faint);display:block;margin-bottom:6px;">Diagnosis (optional)</label>
+        <input class="world-input" id="f-diag" placeholder="e.g. Phonological Disorder">
+      </div>
+      <div>
+        <label style="font-size:0.8rem;font-weight:700;color:var(--ink-faint);display:block;margin-bottom:6px;">Avatar</label>
+        <div style="display:flex;gap:var(--s-sm);flex-wrap:wrap;" id="avatar-picker">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:var(--s-md);margin-top:var(--s-xl);">
+      <button class="btn-world" onclick="saveNewProfile()">Create Profile 🌟</button>
+      <button class="btn-ghost" style="background:rgba(36,28,21,0.06);border-color:rgba(36,28,21,0.15);color:var(--ink);" onclick="closeAdd()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="kv-toast" class="toast-container"></div>
+
+<script src="js/kahani-app.js"></script>
+<script>
+KV.init();
+const AVATARS = ['🧒','👧','👦','🧒♀️','👶','🧑','🧕','👲','🧒','🧝'];
+const COLORS  = ['#F2994A','#E14FD8','#4FE3D8','#F7C948','#3A7D44','#C1272D','#52B788','#4A90D9','#9B87F5','#FF6B9D'];
+
+let selectedAvatar = '🧒';
+let selectedColor  = '#F2994A';
+
+function renderProfiles() {
+  const grid = document.getElementById('profile-grid');
+  grid.innerHTML = '';
+  const profiles = KV.getProfiles();
+  profiles.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'profile-select-card';
+    el.style.setProperty('--grad-color', p.color||'#F2994A');
+    el.onclick = ()=>selectProfile(p.id);
+    const worlds = KV.getWorlds(p.id);
+    const totalStars = worlds.reduce((a,w)=>a+(w.stars||0),0);
+    const lastPlayed = p.lastPlayed ? KV.formatDate(p.lastPlayed) : 'Never';
+    el.innerHTML = `
+      <div class="profile-big-avatar" style="background:linear-gradient(135deg,${p.color||'#F2994A'},${p.color||'#F7C948'});"> ${p.avatar||'🧒'} </div>
+      <div style="font-family:var(--font-display);font-size:1.3rem;font-weight:800;margin-bottom:4px;">${p.name}</div>
+      <div style="font-size:0.8rem;color:var(--ink-faint);margin-bottom:var(--s-md);">${p.age?p.age+' yrs • ':''} ${p.diagnosis||'Speech Therapy'}</div>
+      <div style="display:flex;gap:var(--s-md);justify-content:center;flex-wrap:wrap;">
+        <div style="text-align:center;"><div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--turmeric);">${p.totalXP||0}</div><div style="font-size:0.62rem;color:var(--ink-faint);">XP</div></div>
+        <div style="text-align:center;"><div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--kumkum);">${p.streak||0}🔥</div><div style="font-size:0.62rem;color:var(--ink-faint);">Streak</div></div>
+        <div style="text-align:center;"><div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--peacock);">⭐${totalStars}</div><div style="font-size:0.62rem;color:var(--ink-faint);">Stars</div></div>
+      </div>
+      <div style="margin-top:var(--s-md);font-size:0.72rem;color:var(--ink-faint);">Last played: ${lastPlayed}</div>
+      <div style="margin-top:var(--s-md);">
+        <span class="k-badge badge-world">${KV.getPlayerLevelName(p.totalXP||0)}</span>
+      </div>
+    `;
+    grid.appendChild(el);
+  });
+
+  // Add new card
+  const addEl = document.createElement('div');
+  addEl.className = 'add-card';
+  addEl.onclick = ()=>{ document.getElementById('add-modal').style.display='flex'; };
+  addEl.innerHTML = `<div class="add-icon">➕</div><div>Add New Child</div>`;
+  grid.appendChild(addEl);
+}
+
+function selectProfile(id) {
+  KV.setCurrentProfile(id);
+  document.body.style.opacity='0';
+  document.body.style.transition='opacity 0.6s';
+  setTimeout(()=>{ window.location.href='world-map.html'; }, 600);
+}
+
+// ── Add profile avatar picker
+const pickerEl = document.getElementById('avatar-picker');
+AVATARS.forEach((a,i)=>{
+  const btn=document.createElement('button');
+  btn.style.cssText=`font-size:1.8rem;background:${i===0?'rgba(242,153,74,0.2)':'rgba(0,0,0,0.05)'};border:2px solid ${i===0?'var(--marigold)':'transparent'};border-radius:var(--r-md);padding:6px;cursor:pointer;transition:all 0.2s;`;
+  btn.textContent=a;
+  btn.onclick=()=>{
+    selectedAvatar=a; selectedColor=COLORS[i];
+    document.querySelectorAll('#avatar-picker button').forEach((b,j)=>{
+      b.style.background=j===i?'rgba(242,153,74,0.2)':'rgba(0,0,0,0.05)';
+      b.style.borderColor=j===i?'var(--marigold)':'transparent';
+    });
+  };
+  pickerEl.appendChild(btn);
+});
+
+function saveNewProfile() {
+  const name=document.getElementById('f-name').value.trim();
+  const age=parseInt(document.getElementById('f-age').value)||0;
+  const diag=document.getElementById('f-diag').value.trim();
+  if(!name) { KV.showToast('Please enter a name!','warning'); return; }
+  const p=KV.addProfile({ name, age, avatar:selectedAvatar, color:selectedColor, diagnosis:diag });
+  closeAdd();
+  renderProfiles();
+  KV.showToast('Welcome, '+name+'! 🌟','success');
+}
+
+function closeAdd() { document.getElementById('add-modal').style.display='none'; }
+
+renderProfiles();
+</script>
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="learn.html" class="persistent-btn" aria-label="Learn and career">📚 Learn</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn" aria-label="Help and settings">❓ Help</a>
+</div>
+</body>
+</html>

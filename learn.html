@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn Signs — Kahaniverse</title>
+  <meta name="description" content="Learn Indian Sign Language basics with fun levels, tasks and games for children.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/a11y.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Nunito',sans-serif;
+  background:#FFF8F0;
+  color:#2C3E50;
+  min-height:100vh;
+  background-image:
+    radial-gradient(circle at 10% 20%,rgba(255,107,157,.07),transparent 40%),
+    radial-gradient(circle at 85% 75%,rgba(46,204,113,.06),transparent 40%),
+    radial-gradient(circle at 50% 50%,rgba(247,220,111,.05),transparent 50%);
+}
+
+/* NAV */
+nav{
+  display:flex;align-items:center;gap:8px;
+  padding:0 16px;height:52px;
+  background:#fff;border-bottom:3px solid #F7DC6F;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+  position:sticky;top:0;z-index:100;
+}
+.brand{font-family:'Fredoka',cursive;font-size:1.1rem;font-weight:700;color:#9B59B6;text-decoration:none;white-space:nowrap;}
+.nav-links{display:flex;gap:3px;overflow-x:auto;flex:1;}
+.nav-links::-webkit-scrollbar{display:none;}
+.nl{font-size:.68rem;font-weight:700;white-space:nowrap;color:#7F8C8D;text-decoration:none;padding:4px 9px;border-radius:99px;border:1.5px solid transparent;transition:all .2s;}
+.nl:hover,.nl.cur{color:#9B59B6;border-color:#9B59B6;background:rgba(155,89,182,.08);}
+
+/* HERO */
+.hero{
+  background:linear-gradient(135deg,#FF6B9D,#9B59B6);
+  padding:28px 24px 22px;text-align:center;
+}
+.hero h1{font-family:'Fredoka',cursive;font-size:2rem;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;}
+.hero h1 .b{display:inline-block;animation:bop 1.3s infinite;}
+@keyframes bop{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.hero p{color:rgba(255,255,255,.88);font-size:.95rem;line-height:1.6;margin-bottom:18px;}
+.xp-bar-wrap{max-width:380px;margin:0 auto;}
+.xp-info{display:flex;justify-content:space-between;font-size:.75rem;font-weight:800;color:rgba(255,255,255,.85);margin-bottom:5px;}
+.xp-rail{height:12px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;}
+.xp-fill{height:100%;background:#F7DC6F;border-radius:99px;transition:width .6s ease;box-shadow:0 0 8px rgba(247,220,111,.5);}
+
+/* PROGRESS PILLS */
+.progress-row{display:flex;gap:10px;justify-content:center;padding:18px 20px 0;flex-wrap:wrap;}
+.prog-pill{
+  background:#fff;border:2px solid #E8D5F5;
+  border-radius:99px;padding:6px 16px;
+  font-size:.75rem;font-weight:800;color:#9B59B6;
+  display:flex;align-items:center;gap:5px;
+}
+.prog-pill.done{background:linear-gradient(135deg,#2ECC71,#3498DB);border-color:transparent;color:#fff;}
+.prog-pill .star{font-size:.9rem;}
+
+/* SECTION TITLE */
+.sec-title{
+  max-width:900px;margin:28px auto 0;padding:0 20px;
+  font-family:'Fredoka',cursive;font-size:1.15rem;font-weight:700;
+  color:#9B59B6;display:flex;align-items:center;gap:8px;
+}
+.sec-title::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,#E8D5F5,transparent);margin-left:10px;}
+
+/* LEVEL CARDS GRID */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;
+  max-width:900px;
+  margin:14px auto 0;
+  padding:0 20px;
+}
+
+/* LEVEL CARD */
+.card{
+  background:#fff;
+  border:2.5px solid #E8D5F5;
+  border-radius:20px;
+  overflow:hidden;
+  transition:all .2s;
+  position:relative;
+}
+.card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(155,89,182,.15);}
+.card.locked{opacity:.55;pointer-events:none;}
+.card.done{border-color:#2ECC71;box-shadow:0 4px 16px rgba(46,204,113,.15);}
+
+.card-hdr{
+  padding:14px 16px 10px;
+  display:flex;align-items:center;gap:10px;
+}
+.lvl-badge{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fredoka',cursive;font-size:1rem;font-weight:700;color:#fff;
+  flex-shrink:0;
+}
+.card-title{font-family:'Fredoka',cursive;font-size:1rem;font-weight:700;color:#2C3E50;}
+.card-sub{font-size:.7rem;color:#7F8C8D;margin-top:1px;}
+.lock-ico{position:absolute;top:12px;right:14px;font-size:1.2rem;}
+.done-ico{position:absolute;top:12px;right:14px;font-size:1.2rem;}
+
+/* SIGN GRID inside card */
+.sign-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+  padding:0 12px 12px;
+}
+.sign-tile{
+  background:#F8F0FF;border:2px solid #E8D5F5;
+  border-radius:12px;padding:8px 4px;
+  text-align:center;cursor:default;
+  transition:all .15s;
+}
+.sign-tile:hover{background:#F3E5FF;border-color:#FF6B9D;transform:scale(1.05);}
+.st-em{font-size:1.6rem;display:block;margin-bottom:3px;}
+.st-word{font-family:'Fredoka',cursive;font-size:.78rem;font-weight:700;color:#9B59B6;display:block;}
+.st-how{font-size:.5rem;color:#95A5A6;line-height:1.3;display:block;margin-top:2px;}
+
+/* CARD FOOTER */
+.card-foot{
+  padding:10px 12px 12px;
+  display:flex;gap:8px;align-items:center;
+  border-top:2px solid #F3E5FF;
+}
+.stars{font-size:1rem;letter-spacing:2px;}
+.btn-practice{
+  background:linear-gradient(135deg,#FF6B9D,#9B59B6);
+  border:none;border-radius:99px;padding:7px 16px;
+  font-family:'Fredoka',cursive;font-size:.82rem;font-weight:700;
+  color:#fff;cursor:pointer;transition:all .2s;
+  box-shadow:0 3px 10px rgba(255,107,157,.3);
+  text-decoration:none;display:inline-block;
+}
+.btn-practice:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(255,107,157,.45);}
+.btn-done{
+  background:linear-gradient(135deg,#2ECC71,#3498DB);
+  border:none;border-radius:99px;padding:7px 16px;
+  font-family:'Fredoka',cursive;font-size:.82rem;font-weight:700;
+  color:#fff;cursor:pointer;transition:all .2s;
+  box-shadow:0 3px 10px rgba(46,204,113,.3);
+}
+.btn-done:hover{box-shadow:0 5px 14px rgba(46,204,113,.45);}
+.btn-locked{
+  background:#E8D5F5;border:none;border-radius:99px;padding:7px 16px;
+  font-family:'Fredoka',cursive;font-size:.82rem;font-weight:700;
+  color:#9B59B6;cursor:not-allowed;
+}
+
+/* TASK MODAL */
+.modal-bg{
+  position:fixed;inset:0;z-index:900;
+  background:rgba(44,62,80,.6);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-bg.on{opacity:1;pointer-events:all;}
+.modal{
+  background:#fff;border-radius:24px;
+  max-width:480px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.2);
+  animation:slideUp .3s ease;
+  overflow:hidden;
+}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.modal-hdr{
+  background:linear-gradient(135deg,#FF6B9D,#9B59B6);
+  padding:18px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-hdr h2{font-family:'Fredoka',cursive;font-size:1.2rem;font-weight:700;color:#fff;}
+.modal-close{background:rgba(255,255,255,.2);border:none;border-radius:99px;width:30px;height:30px;font-size:1rem;color:#fff;cursor:pointer;}
+.modal-body{padding:20px;}
+.task-prompt{
+  background:linear-gradient(135deg,rgba(255,107,157,.08),rgba(155,89,182,.06));
+  border:2px solid #FF6B9D;border-radius:14px;
+  padding:14px 16px;margin-bottom:16px;
+  font-family:'Fredoka',cursive;font-size:1.05rem;font-weight:700;color:#2C3E50;
+  text-align:center;line-height:1.6;
+}
+.task-sign{text-align:center;margin-bottom:16px;}
+.task-em{font-size:4rem;display:block;margin-bottom:6px;animation:bop 1.5s infinite;}
+.task-word{font-family:'Fredoka',cursive;font-size:1.5rem;font-weight:700;color:#9B59B6;}
+.task-how{
+  font-size:.82rem;color:#7F8C8D;line-height:1.6;
+  background:#F8F0FF;border-radius:10px;padding:10px 12px;
+  margin-bottom:16px;
+}
+.task-how strong{color:#9B59B6;}
+.task-btns{display:flex;gap:10px;}
+.btn-try{
+  flex:1;background:linear-gradient(135deg,#FF6B9D,#9B59B6);
+  border:none;border-radius:99px;padding:11px;
+  font-family:'Fredoka',cursive;font-size:.95rem;font-weight:700;
+  color:#fff;cursor:pointer;transition:all .2s;text-align:center;
+  box-shadow:0 3px 12px rgba(255,107,157,.35);text-decoration:none;display:block;
+}
+.btn-try:hover{transform:translateY(-2px);}
+.btn-got{
+  flex:1;background:linear-gradient(135deg,#2ECC71,#3498DB);
+  border:none;border-radius:99px;padding:11px;
+  font-family:'Fredoka',cursive;font-size:.95rem;font-weight:700;
+  color:#fff;cursor:pointer;transition:all .2s;
+  box-shadow:0 3px 12px rgba(46,204,113,.3);
+}
+.btn-got:hover{transform:translateY(-2px);}
+
+/* CELEBRATION */
+.celebration{
+  position:fixed;inset:0;z-index:950;
+  background:rgba(255,248,240,.96);backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;text-align:center;padding:30px;
+  opacity:0;pointer-events:none;transition:opacity .4s;
+}
+.celebration.on{opacity:1;pointer-events:all;}
+.cel-em{font-size:5rem;animation:bop 1s infinite;}
+.cel-title{font-family:'Fredoka',cursive;font-size:2rem;font-weight:700;color:#9B59B6;}
+.cel-sub{font-size:.95rem;color:#7F8C8D;line-height:1.7;}
+.cel-stars{font-size:2rem;letter-spacing:4px;}
+.btn-next{
+  background:linear-gradient(135deg,#FF6B9D,#9B59B6);
+  border:none;border-radius:99px;padding:13px 32px;
+  font-family:'Fredoka',cursive;font-size:1.05rem;font-weight:700;
+  color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(255,107,157,.35);
+  transition:all .2s;margin-top:4px;
+}
+.btn-next:hover{transform:translateY(-2px);}
+
+/* SPACER */
+.spacer{height:80px;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav aria-label="Site navigation">
+  <a href="index.html" class="brand">🦚 Kahaniverse</a>
+  <div class="nav-links">
+    <a href="index.html"        class="nl">🏠 Home</a>
+    <a href="world-map.html"    class="nl">🗺️ Map</a>
+    <a href="communicate.html"  class="nl">✋ Sign Talk</a>
+    <a href="sign-detect.html"  class="nl">🔍 Detect</a>
+    <a href="learn.html"        class="nl cur" aria-current="page">📚 Learn</a>
+    <a href="clinician.html"    class="nl">📊 Clinic</a>
+    <a href="sticker-book.html" class="nl">⭐ Stickers</a>
+    <a href="plaza.html"        class="nl">🏛️ Plaza</a>
+    <a href="settings.html"     class="nl">⚙️ Help</a>
+    <a href="about.html"        class="nl">📄 About</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1><span class="b">📚</span> Sign Language Adventure!</h1>
+  <p>Learn everyday signs level by level.<br>Complete tasks to earn ⭐ stars and unlock new levels!</p>
+  <div class="xp-bar-wrap">
+    <div class="xp-info">
+      <span id="xp-lbl">0 XP earned</span>
+      <span id="xp-max">Next reward at 100 XP</span>
+    </div>
+    <div class="xp-rail"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- PROGRESS PILLS -->
+<div class="progress-row" id="progress-row"></div>
+
+<!-- LEVEL 1 — Greetings -->
+<div class="sec-title">⭐ Level 1 — Hello &amp; Greetings</div>
+<div class="cards">
+  <div class="card" id="card-0">
+    <div class="card-hdr">
+      <div class="lvl-badge" style="background:linear-gradient(135deg,#FF6B9D,#9B59B6)">1</div>
+      <div><div class="card-title">Say Hello!</div><div class="card-sub">3 greetings to learn</div></div>
+    </div>
+    <div class="sign-grid">
+      <div class="sign-tile"><span class="st-em">👋</span><span class="st-word">HELLO</span><span class="st-how">Open hand, wave out</span></div>
+      <div class="sign-tile"><span class="st-em">🙏</span><span class="st-word">THANK YOU</span><span class="st-how">Pinky+index+thumb out</span></div>
+      <div class="sign-tile"><span class="st-em">👍</span><span class="st-word">GOOD</span><span class="st-how">Thumb pointing up</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="stars" id="stars-0">☆☆☆</div>
+      <button class="btn-practice" onclick="openTask(0)">▶ Start Level</button>
+    </div>
+  </div>
+
+  <div class="card" id="card-1">
+    <div class="card-hdr">
+      <div class="lvl-badge" style="background:linear-gradient(135deg,#F39C12,#F7DC6F)">2</div>
+      <div><div class="card-title">Yes &amp; No</div><div class="card-sub">2 important answers</div></div>
+    </div>
+    <div class="sign-grid">
+      <div class="sign-tile"><span class="st-em">✊</span><span class="st-word">YES</span><span class="st-how">Fist — nod up and down</span></div>
+      <div class="sign-tile"><span class="st-em">👎</span><span class="st-word">NO</span><span class="st-how">Thumb pointing down</span></div>
+      <div class="sign-tile"><span class="st-em">👌</span><span class="st-word">OKAY</span><span class="st-how">Thumb + index circle</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="stars" id="stars-1">☆☆☆</div>
+      <button class="btn-practice" onclick="openTask(1)">▶ Start Level</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL 2 — Daily Needs -->
+<div class="sec-title" style="margin-top:24px;">🌟 Level 2 — Everyday Needs</div>
+<div class="cards">
+  <div class="card" id="card-2">
+    <div class="card-hdr">
+      <div class="lvl-badge" style="background:linear-gradient(135deg,#2ECC71,#3498DB)">3</div>
+      <div><div class="card-title">Ask for Help</div><div class="card-sub">When you need something</div></div>
+    </div>
+    <div class="sign-grid">
+      <div class="sign-tile"><span class="st-em">🙋</span><span class="st-word">HELP ME</span><span class="st-how">Raise hand high</span></div>
+      <div class="sign-tile"><span class="st-em">💧</span><span class="st-word">WATER</span><span class="st-how">Only pinky up</span></div>
+      <div class="sign-tile"><span class="st-em">☝️</span><span class="st-word">I WANT</span><span class="st-how">1 finger pointing up</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="stars" id="stars-2">☆☆☆</div>
+      <button class="btn-practice" onclick="openTask(2)">▶ Start Level</button>
+    </div>
+  </div>
+
+  <div class="card" id="card-3">
+    <div class="card-hdr">
+      <div class="lvl-badge" style="background:linear-gradient(135deg,#3498DB,#9B59B6)">4</div>
+      <div><div class="card-title">More or Stop</div><div class="card-sub">Express what you need</div></div>
+    </div>
+    <div class="sign-grid">
+      <div class="sign-tile"><span class="st-em">✌️</span><span class="st-word">MORE</span><span class="st-how">Two fingers up (peace)</span></div>
+      <div class="sign-tile"><span class="st-em">✋</span><span class="st-word">STOP</span><span class="st-how">Open palm facing out</span></div>
+      <div class="sign-tile"><span class="st-em">🍎</span><span class="st-word">FOOD</span><span class="st-how">Point to mouth</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="stars" id="stars-3">☆☆☆</div>
+      <button class="btn-practice" onclick="openTask(3)">▶ Start Level</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL 3 — Feelings -->
+<div class="sec-title" style="margin-top:24px;">💖 Level 3 — Feelings &amp; Emotions</div>
+<div class="cards">
+  <div class="card" id="card-4">
+    <div class="card-hdr">
+      <div class="lvl-badge" style="background:linear-gradient(135deg,#E74C3C,#FF6B9D)">5</div>
+      <div><div class="card-title">Show Love &amp; Joy</div><div class="card-sub">Express your feelings</div></div>
+    </div>
+    <div class="sign-grid">
+      <div class="sign-tile"><span class="st-em">❤️</span><span class="st-word">LOVE</span><span class="st-how">Hands crossed on chest</span></div>
+      <div class="sign-tile"><span class="st-em">😊</span><span class="st-word">HAPPY</span><span class="st-how">Circular hand on chest</span></div>
+      <div class="sign-tile"><span class="st-em">😢</span><span class="st-word">SAD</span><span class="st-how">Fingers slide down cheeks</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="stars" id="stars-4">☆☆☆</div>
+      <button class="btn-practice" onclick="openTask(4)">▶ Start Level</button>
+    </div>
+  </div>
+
+  <div class="card" id="card-5">
+    <div class="card-hdr">
+      <div class="lvl-badge" style="background:linear-gradient(135deg,#F39C12,#E74C3C)">6</div>
+      <div><div class="card-title">School Signs</div><div class="card-sub">Signs used in class every day</div></div>
+    </div>
+    <div class="sign-grid">
+      <div class="sign-tile"><span class="st-em">📚</span><span class="st-word">BOOK</span><span class="st-how">Open palms like a book</span></div>
+      <div class="sign-tile"><span class="st-em">✏️</span><span class="st-word">WRITE</span><span class="st-how">Pretend to write on palm</span></div>
+      <div class="sign-tile"><span class="st-em">🎓</span><span class="st-word">TEACHER</span><span class="st-how">Flat hand from forehead out</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="stars" id="stars-5">☆☆☆</div>
+      <button class="btn-practice" onclick="openTask(5)">▶ Start Level</button>
+    </div>
+  </div>
+</div>
+
+<!-- BONUS: Practice with AI -->
+<div class="sec-title" style="margin-top:24px;">🤖 Bonus — Practice with AI</div>
+<div class="cards" style="margin-bottom:12px;">
+  <div class="card" style="border-color:#F7DC6F;">
+    <div class="card-hdr">
+      <div class="lvl-badge" style="background:linear-gradient(135deg,#F39C12,#F7DC6F)">🤖</div>
+      <div><div class="card-title">Sign & Talk AI</div><div class="card-sub">Use real AI to practice with your teacher</div></div>
+    </div>
+    <div style="padding:0 12px 12px;">
+      <p style="font-size:.82rem;color:#7F8C8D;line-height:1.7;">Show any sign you learned to the camera. The AI will read it and your teacher will hear it! This is the most fun way to practice everything you've learned.</p>
+    </div>
+    <div class="card-foot" style="border-top:2px solid #FFF8E1;">
+      <div style="font-size:.82rem;font-weight:800;color:#F39C12;">Ready to try for real?</div>
+      <a href="communicate.html" class="btn-practice" style="background:linear-gradient(135deg,#F39C12,#F7DC6F);color:#fff;text-decoration:none;">✋ Open Sign &amp; Talk</a>
+    </div>
+  </div>
+
+  <div class="card" style="border-color:#D5F5E3;">
+    <div class="card-hdr">
+      <div class="lvl-badge" style="background:linear-gradient(135deg,#2ECC71,#3498DB)">🔍</div>
+      <div><div class="card-title">Sign Detector</div><div class="card-sub">Test if AI can read your signs</div></div>
+    </div>
+    <div style="padding:0 12px 12px;">
+      <p style="font-size:.82rem;color:#7F8C8D;line-height:1.7;">Open the Sign Detector and try each sign you learned. See if the AI recognises it! Great for checking that you're doing the signs correctly.</p>
+    </div>
+    <div class="card-foot" style="border-top:2px solid #D5F5E3;">
+      <div style="font-size:.82rem;font-weight:800;color:#2ECC71;">Check your signs!</div>
+      <a href="sign-detect.html" class="btn-practice" style="background:linear-gradient(135deg,#2ECC71,#3498DB);text-decoration:none;">🔍 Open Detector</a>
+    </div>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- TASK MODAL -->
+<div class="modal-bg" id="modal" role="dialog" aria-modal="true" aria-label="Level task">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2 id="modal-title">Level Task</h2>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="task-prompt" id="task-prompt">Practice this sign!</div>
+      <div class="task-sign">
+        <span class="task-em" id="task-em">👋</span>
+        <div class="task-word" id="task-word">HELLO</div>
+      </div>
+      <div class="task-how" id="task-how">
+        <strong>How to do it:</strong> Open your hand and wave it out towards the person.
+      </div>
+      <div class="task-btns">
+        <a href="communicate.html" class="btn-try" id="btn-try">✋ Practice with AI</a>
+        <button class="btn-got" onclick="markDone()">✅ I got it!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="celebration" id="cel" role="dialog" aria-modal="true">
+  <div class="cel-em" id="cel-em">🎉</div>
+  <div class="cel-title" id="cel-title">Amazing!</div>
+  <div class="cel-stars" id="cel-stars">⭐⭐⭐</div>
+  <div class="cel-sub" id="cel-sub">You completed the level!</div>
+  <button class="btn-next" onclick="closeCelebration()">▶ Keep Going!</button>
+</div>
+
+<!-- BOTTOM DOCK -->
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html"       class="persistent-btn">🏠 Home</a>
+  <span class="dot-sep"      aria-hidden="true"></span>
+  <a href="communicate.html" class="persistent-btn">✋ Sign Talk</a>
+  <span class="dot-sep"      aria-hidden="true"></span>
+  <a href="settings.html"    class="persistent-btn">❓ Help</a>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  SIGN LANGUAGE LEARNING GAME
+// ═══════════════════════════════════════════════
+
+/* LEVEL DATA */
+const LEVELS = [
+  {
+    title: 'Say Hello!', color: 'linear-gradient(135deg,#FF6B9D,#9B59B6)',
+    tasks: [
+      { em:'👋', word:'HELLO',     how:'Raise your open hand and wave it gently outward — like saying hi to a friend!', prompt:'Can you say HELLO with your hand? 👋' },
+      { em:'🙏', word:'THANK YOU', how:'Hold out your pinky, index finger, and thumb — tuck the middle two fingers down. That\'s THANK YOU!', prompt:'Show me THANK YOU — use 3 fingers! 🙏' },
+      { em:'👍', word:'GOOD',      how:'Make a fist and stick your thumb straight up! That means GOOD or "thumbs up!"', prompt:'Give me a thumbs up for GOOD! 👍' },
+    ]
+  },
+  {
+    title: 'Yes & No', color: 'linear-gradient(135deg,#F39C12,#F7DC6F)',
+    tasks: [
+      { em:'✊', word:'YES',  how:'Make a fist and nod it up and down — like your hand is nodding yes!', prompt:'Show YES — make your fist nod! ✊' },
+      { em:'👎', word:'NO',   how:'Point your thumb straight down. That means NO or "not good."', prompt:'Show NO with a thumbs down! 👎' },
+      { em:'👌', word:'OKAY', how:'Touch the tip of your thumb to the tip of your index finger to make an "O" shape. That means OKAY!', prompt:'Make the OK sign with your fingers! 👌' },
+    ]
+  },
+  {
+    title: 'Ask for Help', color: 'linear-gradient(135deg,#2ECC71,#3498DB)',
+    tasks: [
+      { em:'🙋', word:'HELP ME', how:'Raise your open hand high above your shoulder — like asking for permission in class!', prompt:'Raise your hand to say HELP ME! 🙋' },
+      { em:'💧', word:'WATER',   how:'Keep all fingers curled down except your pinky — stick only the pinky up! That means water.', prompt:'Show WATER — only your pinky up! 💧' },
+      { em:'☝️', word:'I WANT',  how:'Point one finger straight up to the sky! It means "I want" or "I need that!"', prompt:'Point one finger up to say I WANT! ☝️' },
+    ]
+  },
+  {
+    title: 'More or Stop', color: 'linear-gradient(135deg,#3498DB,#9B59B6)',
+    tasks: [
+      { em:'✌️', word:'MORE',  how:'Hold up your index and middle fingers — the peace sign! That means MORE.', prompt:'Show MORE with peace fingers! ✌️' },
+      { em:'✋', word:'STOP',  how:'Hold your open palm facing outward — like telling someone to stop!', prompt:'Hold your open hand out for STOP! ✋' },
+      { em:'🍎', word:'FOOD',  how:'Bring your fingers together and tap them to your lips — like putting food in your mouth!', prompt:'Point to your mouth for FOOD! 🍎' },
+    ]
+  },
+  {
+    title: 'Show Love & Joy', color: 'linear-gradient(135deg,#E74C3C,#FF6B9D)',
+    tasks: [
+      { em:'❤️', word:'LOVE',  how:'Cross both hands over your chest — like giving yourself a hug. That means LOVE!', prompt:'Cross your hands on your heart for LOVE! ❤️' },
+      { em:'😊', word:'HAPPY', how:'Put your open hand on your chest and make small upward circles — like happiness rising!', prompt:'Make a circle on your chest for HAPPY! 😊' },
+      { em:'😢', word:'SAD',   how:'Put your fingertips on your cheeks and slide them down — like tears falling.', prompt:'Slide fingers down cheeks for SAD! 😢' },
+    ]
+  },
+  {
+    title: 'School Signs', color: 'linear-gradient(135deg,#F39C12,#E74C3C)',
+    tasks: [
+      { em:'📚', word:'BOOK',    how:'Put your palms together and open them outward — like opening a book!', prompt:'Open your hands like a book! 📚' },
+      { em:'✏️', word:'WRITE',   how:'Pinch your index finger and thumb together and pretend to write on your other palm.', prompt:'Pretend to write on your hand! ✏️' },
+      { em:'🎓', word:'TEACHER', how:'Put a flat hand near your forehead then move it forward — like the teacher sharing knowledge!', prompt:'Move your hand from forehead out for TEACHER! 🎓' },
+    ]
+  },
+];
+
+/* STATE */
+const STORAGE_KEY = 'kh_learn_progress';
+let progress = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+let currentLevel = 0, currentTask = 0, totalXP = parseInt(localStorage.getItem('kh_xp') || '0');
+
+/* ── INIT ── */
+function init() {
+  updateXPBar();
+  buildProgressPills();
+  updateCards();
+}
+
+function saveProgress() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  localStorage.setItem('kh_xp', totalXP);
+}
+
+/* XP BAR */
+function updateXPBar() {
+  const pct = Math.min((totalXP % 100), 100);
+  document.getElementById('xp-fill').style.width = pct + '%';
+  document.getElementById('xp-lbl').textContent = totalXP + ' XP earned';
+}
+
+/* PROGRESS PILLS */
+function buildProgressPills() {
+  const row = document.getElementById('progress-row');
+  row.innerHTML = '';
+  LEVELS.forEach((lv, i) => {
+    const done = progress[i] && progress[i].completed;
+    const pill = document.createElement('div');
+    pill.className = 'prog-pill' + (done ? ' done' : '');
+    pill.innerHTML = `<span class="star">${done ? '⭐' : '○'}</span> Level ${i+1}: ${lv.title}`;
+    row.appendChild(pill);
+  });
+}
+
+/* CARD STATES */
+function updateCards() {
+  LEVELS.forEach((_, i) => {
+    const card = document.getElementById('card-' + i);
+    if (!card) return;
+    const p = progress[i] || {};
+    const stars = p.stars || 0;
+    const completed = p.completed || false;
+
+    // Stars display
+    const starEl = document.getElementById('stars-' + i);
+    if (starEl) starEl.textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+
+    // Done icon
+    const oldDone = card.querySelector('.done-ico');
+    if (oldDone) oldDone.remove();
+    if (completed) {
+      card.classList.add('done');
+      const ico = document.createElement('span');
+      ico.className = 'done-ico'; ico.textContent = '✅';
+      card.appendChild(ico);
+    }
+  });
+  buildProgressPills();
+}
+
+/* ── OPEN TASK MODAL ── */
+function openTask(lvlIdx) {
+  currentLevel = lvlIdx;
+  currentTask = 0;
+  showTaskStep();
+  document.getElementById('modal').classList.add('on');
+}
+
+function showTaskStep() {
+  const lv = LEVELS[currentLevel];
+  const task = lv.tasks[currentTask];
+  document.getElementById('modal-title').textContent = `Level ${currentLevel + 1} · Task ${currentTask + 1} of ${lv.tasks.length}`;
+  document.getElementById('task-prompt').textContent = task.prompt;
+  document.getElementById('task-em').textContent = task.em;
+  document.getElementById('task-word').textContent = task.word;
+  document.getElementById('task-how').innerHTML = `<strong>How to do it:</strong> ${task.how}`;
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('on');
+}
+
+/* ── MARK DONE ── */
+function markDone() {
+  const lv = LEVELS[currentLevel];
+  if (currentTask < lv.tasks.length - 1) {
+    // Move to next task in same level
+    currentTask++;
+    showTaskStep();
+  } else {
+    // Level complete!
+    closeModal();
+    completeLevel();
+  }
+}
+
+function completeLevel() {
+  const stars = 3; // award 3 stars on completion
+  const xpGained = (currentLevel + 1) * 15 + (stars * 5);
+  totalXP += xpGained;
+
+  if (!progress[currentLevel]) progress[currentLevel] = {};
+  progress[currentLevel].completed = true;
+  progress[currentLevel].stars = stars;
+  saveProgress();
+  updateXPBar();
+  updateCards();
+
+  const lv = LEVELS[currentLevel];
+  const cel = document.getElementById('cel');
+  document.getElementById('cel-em').textContent = ['🎉','🌟','🏆','🎊','💪','🎓'][currentLevel] || '🎉';
+  document.getElementById('cel-title').textContent = `Level ${currentLevel + 1} Complete!`;
+  document.getElementById('cel-stars').textContent = '⭐'.repeat(stars);
+  document.getElementById('cel-sub').textContent = `Amazing job! You learned "${lv.title}"! +${xpGained} XP earned!`;
+  cel.classList.add('on');
+}
+
+function closeCelebration() {
+  document.getElementById('cel').classList.remove('on');
+}
+
+/* ── START ── */
+init();
+</script>
+</body>
+</html>

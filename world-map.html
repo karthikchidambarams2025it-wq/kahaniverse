@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kahaniverse — World Map</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/world.css">
+  <link rel="stylesheet" href="css/mascot.css">
+  <link rel="stylesheet" href="css/a11y.css">
+  <style>
+    body { background:linear-gradient(180deg,#4A90D9 0%,#87CEEB 25%,#B8E4F5 55%,#E8F5D0 80%,#FFF8EC 100%); min-height:100vh; overflow-x:hidden; }
+
+    /* ── WORLD MAP CANVAS ── */
+    #world-map {
+      position:relative; width:100%; min-height:calc(100vh - 80px);
+      overflow:hidden;
+    }
+
+    /* ── SKY LAYER ── */
+    .sky-layer { position:absolute;inset:0;overflow:hidden;pointer-events:none; }
+    .cloud-shape {
+      position:absolute; background:rgba(255,255,255,0.75);
+      border-radius:50px; filter:blur(6px);
+      animation:cloudMove linear infinite;
+    }
+    @keyframes cloudMove { from{transform:translateX(-20%)} to{transform:translateX(110vw)} }
+
+    /* ── BUNTING FLAGS ── */
+    .flag-row {
+      position:absolute; top:0; left:0; right:0;
+      display:flex; padding:0 var(--s-md); z-index:5; pointer-events:none;
+    }
+    .flag-tri {
+      width:0; height:0;
+      border-left:20px solid transparent;
+      border-right:20px solid transparent;
+      border-top:32px solid;
+      margin:0 2px;
+      animation:flagSway 2s ease-in-out infinite;
+      animation-delay:var(--fd,0s);
+    }
+
+    /* ── ISLAND ARTWORK ── */
+    .island-zone {
+      position:absolute;
+      display:flex; flex-direction:column; align-items:center;
+      cursor:pointer;
+      transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+      z-index:10;
+    }
+    .island-zone:not(.locked):hover { transform:scale(1.12) translateY(-10px); filter:brightness(1.05); }
+    .island-zone.locked { cursor:not-allowed; }
+
+    .island-art {
+      font-size:5rem;
+      filter:drop-shadow(0 6px 16px rgba(0,0,0,0.2));
+      animation:islandBob 3s ease-in-out infinite;
+      animation-delay:var(--id,0s);
+      position:relative;
+    }
+
+    .island-ground {
+      width:120px; height:30px;
+      border-radius:50%;
+      margin-top:-8px;
+      box-shadow:0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .island-label-card {
+      margin-top:var(--s-sm);
+      background:rgba(255,248,236,0.92);
+      border:1.5px solid rgba(242,153,74,0.3);
+      border-radius:var(--r-full);
+      padding:5px 16px;
+      font-family:var(--font-display);
+      font-size:0.82rem; font-weight:700;
+      color:var(--ink);
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+      white-space:nowrap;
+      text-align:center;
+    }
+
+    .island-stars-row { font-size:0.85rem; letter-spacing:3px; margin-top:3px; }
+    .island-xp-pill {
+      font-size:0.65rem; font-weight:800;
+      background:var(--turmeric); color:var(--ink);
+      padding:2px 8px; border-radius:var(--r-full);
+      margin-top:3px;
+    }
+
+    /* Locked mist */
+    .island-mist {
+      position:absolute; inset:-30px; border-radius:50%;
+      background:radial-gradient(ellipse,rgba(79,227,216,0.18) 0%,transparent 70%);
+      animation:mistPulse 3s ease-in-out infinite;
+      pointer-events:none; z-index:-1;
+    }
+    @keyframes mistPulse { 0%,100%{transform:scale(1);opacity:0.5} 50%{transform:scale(1.3);opacity:1} }
+    .locked-overlay {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-70%);
+      font-size:2rem; pointer-events:none;
+      filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+    }
+
+    /* ── PATH (dashed rope between islands) ── */
+    #island-paths { position:absolute; inset:0; pointer-events:none; z-index:5; overflow:visible; }
+
+    /* ── AVATAR ── */
+    #avatar-walker {
+      position:absolute; z-index:20;
+      display:flex; flex-direction:column; align-items:center;
+      pointer-events:none;
+      transition:left 1s cubic-bezier(0.4,0,0.2,1), top 1s cubic-bezier(0.4,0,0.2,1);
+    }
+    .avatar-face { font-size:2.2rem; animation:avatarBounce 0.6s ease-in-out infinite alternate; }
+    @keyframes avatarBounce { from{transform:translateY(0)} to{transform:translateY(-8px)} }
+    .avatar-name-tag {
+      font-family:var(--font-display); font-size:0.72rem; font-weight:800;
+      background:var(--marigold); color:#fff;
+      padding:2px 10px; border-radius:var(--r-full);
+      margin-top:2px; box-shadow:0 2px 8px rgba(242,153,74,0.4);
+    }
+
+    /* ── KAHI COMPANION ON MAP ── */
+    #kahi-map {
+      position:absolute; bottom:10%; right:5%; z-index:25;
+      animation:kahiFloat 4s ease-in-out infinite;
+      cursor:pointer;
+    }
+    @keyframes kahiFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+
+    /* ── WORLD ENTER PANEL ── */
+    #enter-panel {
+      position:fixed; bottom:0; left:0; right:0; z-index:300;
+      background:rgba(255,248,236,0.97);
+      backdrop-filter:blur(20px);
+      border-top:2px solid rgba(242,153,74,0.3);
+      padding:var(--s-lg) var(--s-xl);
+      display:flex; align-items:center; justify-content:space-between; gap:var(--s-lg);
+      transform:translateY(100%);
+      transition:transform var(--t-spring);
+      flex-wrap:wrap;
+    }
+    #enter-panel.show { transform:translateY(0); }
+
+    /* ── GROUND / GRASS ── */
+    .ground-strip {
+      position:absolute; bottom:0; left:0; right:0; height:120px;
+      background:linear-gradient(180deg,transparent,rgba(82,183,136,0.3),rgba(58,125,68,0.4));
+      pointer-events:none;
+    }
+    .ground-strip::before {
+      content:'';
+      position:absolute; top:0; left:0; right:0; height:30px;
+      background:linear-gradient(180deg,transparent,rgba(82,183,136,0.2));
+    }
+  </style>
+</head>
+<body class="world-body">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- TOP NAV: 2-row child-friendly layout -->
+<nav id="topnav" style="
+  position:sticky;top:0;z-index:200;
+  background:rgba(255,248,236,0.97);
+  backdrop-filter:blur(16px);
+  border-bottom:3px solid var(--marigold);
+  box-shadow:0 4px 20px rgba(36,28,21,0.12);
+  padding:0;
+" aria-label="Main navigation">
+
+  <!-- ROW 1: Brand center + XP left + profile right -->
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:10px 20px;gap:12px;">
+
+    <!-- Left: XP bar + Streak -->
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="text-align:center;min-width:40px;">
+        <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;color:var(--kumkum);" id="streak-count">0🔥</div>
+        <div style="font-size:0.58rem;color:var(--ink-faint);font-weight:700;">Streak</div>
+      </div>
+      <div class="nav-xp-wrap" style="flex:1;max-width:200px;">
+        <span class="nav-xp-label">⭐</span>
+        <div class="xp-bar-outer" style="flex:1;">
+          <div class="xp-bar-fill" id="xp-fill" style="width:0%;"></div>
+        </div>
+        <span class="nav-xp-label" id="xp-num">0 XP</span>
+      </div>
+    </div>
+
+    <!-- Center: Brand -->
+    <a href="intro.html" class="brand-kv" style="text-decoration:none;font-size:1.3rem;white-space:nowrap;">🦚 KAHANIVERSE</a>
+
+    <!-- Right: Profile chip -->
+    <div style="display:flex;justify-content:flex-end;">
+      <div class="profile-chip" id="profile-chip" onclick="window.location.href='profile.html'" style="cursor:pointer;">
+        <div class="profile-avatar" id="nav-avatar">🧒</div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:0.85rem;font-weight:700;" id="nav-name">Player</div>
+          <div style="font-size:0.62rem;color:var(--ink-faint);" id="nav-level-name">Kahi's Friend</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Action buttons — evenly spaced, child-friendly -->
+  <div style="
+    display:flex;align-items:center;justify-content:center;
+    gap:8px;flex-wrap:wrap;
+    padding:8px 20px 12px;
+    border-top:1px solid rgba(242,153,74,0.2);
+    background:rgba(255,248,236,0.6);
+  ">
+    <a href="index.html" class="btn-ghost btn-sm" style="background:rgba(14,124,123,0.08);border-color:rgba(14,124,123,0.2);color:var(--peacock);font-size:0.82rem;">🏠 Home</a>
+    <a href="communicate.html" class="btn-peacock btn-sm" style="
+      background:linear-gradient(135deg,#00F0C8,#0EA5E9);
+      color:#04081A; font-weight:900; font-size:0.82rem;
+      box-shadow:0 0 18px rgba(0,240,200,0.5);
+      animation:wmGlow 2s ease-in-out infinite alternate;
+      border:none; position:relative;
+    ">✋ Sign &amp; Talk AI
+      <span style="position:absolute;top:-7px;right:-7px;background:#FF5C8A;color:#fff;font-size:0.48rem;font-weight:900;padding:2px 5px;border-radius:99px;">NEW</span>
+    </a>
+    <style>@keyframes wmGlow{from{box-shadow:0 0 12px rgba(0,240,200,.4)}to{box-shadow:0 0 28px rgba(0,240,200,.8)}}</style>
+    <a href="sign-detect.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#4FE3D8,#0E7C7B);font-size:0.82rem;">🔍 Sign Detect</a>
+    <a href="learn.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#F7C948,#E07B2A);color:#241C15;font-size:0.82rem;">📚 Learn &amp; Grow</a>
+    <a href="sticker-book.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#FF6B9D,#E14FD8);font-size:0.82rem;">⭐ Stickers</a>
+    <a href="clinician.html" class="btn-ghost btn-sm" style="background:rgba(36,28,21,0.05);border-color:rgba(36,28,21,0.12);color:var(--ink-soft);font-size:0.82rem;">📊 Clinician</a>
+    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
+  </div>
+
+</nav>
+
+<!-- WORLD MAP -->
+<div id="world-map">
+  <!-- Sky Clouds -->
+  <div class="sky-layer" id="clouds"></div>
+
+  <!-- Festival flag bunting -->
+  <div class="flag-row" id="flags"></div>
+
+  <!-- SVG paths between islands -->
+  <svg id="island-paths" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible;"></svg>
+
+  <!-- Islands (positioned by JS) -->
+  <div id="islands-layer"></div>
+
+  <!-- Avatar walker -->
+  <div id="avatar-walker">
+    <div class="avatar-face" id="avatar-face">🧒</div>
+    <div class="avatar-name-tag" id="avatar-name">Me</div>
+  </div>
+
+  <!-- Kahi companion on map -->
+  <div id="kahi-map" onclick="kahiSayRandom()">
+    <div style="font-size:3.5rem;filter:drop-shadow(0 4px 12px rgba(14,124,123,0.3));">🦚</div>
+    <div id="kahi-map-bubble" style="display:none;position:absolute;bottom:calc(100%+8px);right:0;background:rgba(255,248,236,0.97);border:2px solid var(--marigold);border-radius:var(--r-xl);padding:var(--s-sm) var(--s-md);font-family:var(--font-display);font-size:0.82rem;font-weight:700;color:var(--ink);white-space:nowrap;box-shadow:0 4px 16px rgba(242,153,74,0.25);min-width:180px;text-align:center;"></div>
+  </div>
+
+  <!-- Ground strip -->
+  <div class="ground-strip"></div>
+</div>
+
+<!-- ISLAND ENTER PANEL (slides up on click) -->
+<div id="enter-panel">
+  <div>
+    <div style="display:flex;align-items:center;gap:var(--s-sm);margin-bottom:4px;">
+      <span id="ep-emoji" style="font-size:2rem;">🪔</span>
+      <div>
+        <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;" id="ep-name">World Name</div>
+        <div style="font-size:0.78rem;color:var(--ink-faint);" id="ep-skill">Skill: —</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:var(--s-md);flex-wrap:wrap;">
+      <div style="text-align:center;"><div id="ep-stars" style="font-size:1.1rem;letter-spacing:3px;">☆☆☆</div><div style="font-size:0.62rem;color:var(--ink-faint);">Stars</div></div>
+      <div style="text-align:center;"><div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--turmeric);" id="ep-xp">+100 XP</div><div style="font-size:0.62rem;color:var(--ink-faint);">Reward</div></div>
+      <div style="text-align:center;"><div style="font-size:1rem;font-weight:700;" id="ep-festival">Diwali</div><div style="font-size:0.62rem;color:var(--ink-faint);">Festival</div></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:var(--s-md);align-items:center;flex-wrap:wrap;">
+    <button class="btn-world btn-lg" id="ep-play" onclick="enterWorld()">🎮 Enter World!</button>
+    <button class="btn-ghost btn-sm" style="background:rgba(36,28,21,0.06);border-color:rgba(36,28,21,0.15);color:var(--ink);" onclick="closePanel()">✕</button>
+    <a class="btn-ghost btn-sm" href="communicate.html" style="background:rgba(14,124,123,0.08);border-color:rgba(14,124,123,0.2);color:var(--peacock);">📷 Sign First</a>
+  </div>
+</div>
+
+<div id="kv-toast" class="toast-container"></div>
+
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="learn.html" class="persistent-btn" aria-label="Learn and career">📚 Learn</a>
+  <span class="dot-sep" aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn" aria-label="Help and settings">❓ Help</a>
+</div>
+
+<script src="js/kahani-app.js"></script>
+<script src="js/mascot.js"></script>
+<script>
+KV.init();
+const profile = KV.getCurrentProfile();
+if(!profile) { window.location.href='profile.html'; }
+
+const worlds  = KV.getWorlds(profile.id);
+let selectedWorld = null;
+
+// ── TOP BAR ─────────────────────────────────────────────────────
+document.getElementById('nav-avatar').textContent  = profile.avatar || '🧒';
+document.getElementById('nav-name').textContent    = profile.name   || 'Player';
+document.getElementById('nav-level-name').textContent = KV.getPlayerLevelName(profile.totalXP||0);
+document.getElementById('streak-count').textContent   = (profile.streak||0)+'🔥';
+document.getElementById('avatar-face').textContent    = profile.avatar || '🧒';
+document.getElementById('avatar-name').textContent    = profile.name   || 'Me';
+
+const maxXP = 1500;
+const xpPct = Math.min(100, Math.round(((profile.totalXP||0)/maxXP)*100));
+document.getElementById('xp-fill').style.width = xpPct+'%';
+document.getElementById('xp-num').textContent  = (profile.totalXP||0)+' XP';
+
+// ── CLOUDS ───────────────────────────────────────────────────────
+const cloudsEl = document.getElementById('clouds');
+for(let i=0;i<5;i++){
+  const c=document.createElement('div'); c.className='cloud-shape';
+  const w=Math.random()*200+120, h=Math.random()*50+30;
+  c.style.cssText=`width:${w}px;height:${h}px;top:${Math.random()*35+3}%;left:${Math.random()*100-20}%;animation-duration:${Math.random()*40+30}s;animation-delay:-${Math.random()*40}s;opacity:${Math.random()*0.3+0.5};`;
+  cloudsEl.appendChild(c);
+}
+
+// ── FLAG BUNTING ─────────────────────────────────────────────────
+const flagColors=['#F2994A','#E14FD8','#4FE3D8','#F7C948','#3A7D44','#C1272D','#52B788','#4A90D9'];
+const flagsEl=document.getElementById('flags');
+for(let i=0;i<40;i++){
+  const f=document.createElement('div'); f.className='flag-tri';
+  f.style.cssText=`border-top-color:${flagColors[i%flagColors.length]};--fd:${(i*0.15)%2}s;`;
+  flagsEl.appendChild(f);
+}
+
+// ── ISLAND POSITIONS (% of map area) ────────────────────────────
+const ISLAND_POSITIONS = [
+  { x:12, y:58 },  // World 1 — Diwali
+  { x:32, y:38 },  // World 2 — Holi
+  { x:54, y:52 },  // World 3 — Onam
+  { x:72, y:32 },  // World 4 — Monsoon
+  { x:88, y:50 },  // World 5 — Plaza
+];
+const ISLAND_GROUNDS = ['#8B5E3C','#52B788','#8B5E3C','#A0C4D8','#3A7D44'];
+const ISLAND_GROUND_COLORS = ['#6B3F1E','#3A7D44','#6B3F1E','#7B9EAF','#2A5D34'];
+
+const mapEl    = document.getElementById('world-map');
+const mapH     = Math.max(window.innerHeight - 80, 600);
+mapEl.style.minHeight = mapH+'px';
+
+const islandsLayer = document.getElementById('islands-layer');
+const svg = document.getElementById('island-paths');
+const points = [];
+
+worlds.forEach((world,i)=>{
+  const pos = ISLAND_POSITIONS[i];
+  const x = pos.x/100 * window.innerWidth;
+  const y = pos.y/100 * mapH;
+  points.push({x,y});
+
+  const zone = document.createElement('div');
+  zone.className = 'island-zone'+(world.unlocked?'':' locked');
+  zone.id = 'island-'+world.id;
+  zone.style.cssText = `left:${x}px;top:${y}px;transform:translate(-50%,-50%);--id:${i*0.4}s;`;
+  zone.onclick = ()=>selectWorld(world);
+
+  const starsStr = '⭐'.repeat(world.stars||0)+'☆'.repeat(3-(world.stars||0));
+
+  zone.innerHTML = `
+    ${!world.unlocked?'<div class="island-mist"></div>':''}
+    ${!world.unlocked?'<div class="locked-overlay">🔒</div>':''}
+    <div class="island-art" style="font-size:${4.5+i*0.2}rem;">${world.emoji}</div>
+    <div class="island-ground" style="background:linear-gradient(135deg,${ISLAND_GROUNDS[i]},${ISLAND_GROUND_COLORS[i]});filter:${world.unlocked?'none':'grayscale(1) opacity(0.5)'};"></div>
+    <div class="island-label-card" style="border-color:${world.unlocked?world.color:'rgba(0,0,0,0.1)'};color:${world.unlocked?'var(--ink)':'var(--ink-faint)'};">
+      ${world.name}
+    </div>
+    <div class="island-stars-row" style="color:${world.unlocked?world.color:'rgba(0,0,0,0.2)'};">${starsStr}</div>
+    ${world.unlocked?`<div class="island-xp-pill">+${world.xp} XP</div>`:''}
+  `;
+  islandsLayer.appendChild(zone);
+});
+
+// ── SVG PATHS ────────────────────────────────────────────────────
+svg.setAttribute('viewBox',`0 0 ${window.innerWidth} ${mapH}`);
+for(let i=0;i<points.length-1;i++){
+  const a=points[i], b=points[i+1];
+  // Bezier control point
+  const cx=(a.x+b.x)/2, cy=Math.min(a.y,b.y)-60;
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  const unlocked = worlds[i].stars>0;
+  path.setAttribute('d',`M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`);
+  path.setAttribute('stroke', unlocked?worlds[i].color:'rgba(36,28,21,0.12)');
+  path.setAttribute('stroke-width','3');
+  path.setAttribute('stroke-dasharray','12 8');
+  path.setAttribute('fill','none');
+  path.setAttribute('opacity', unlocked?'0.8':'0.4');
+  svg.appendChild(path);
+}
+
+// ── AVATAR WALK ──────────────────────────────────────────────────
+const avatarEl = document.getElementById('avatar-walker');
+const currentWorldId = profile.currentWorld || 1;
+const ci = Math.min(currentWorldId-1, points.length-1);
+avatarEl.style.left = points[ci].x-18+'px';
+avatarEl.style.top  = points[ci].y-80+'px';
+
+// ── SELECT WORLD ─────────────────────────────────────────────────
+function selectWorld(w) {
+  if(!w.unlocked) {
+    KV.showToast('Complete World '+(w.id-1)+' first! 🔒','warning');
+    // Walk avatar to locked island and show mist
+    const pos = ISLAND_POSITIONS[w.id-1];
+    const x = pos.x/100 * window.innerWidth;
+    const y = pos.y/100 * mapH;
+    avatarEl.style.left = x-18+'px';
+    avatarEl.style.top  = y-80+'px';
+    return;
+  }
+  selectedWorld = w;
+
+  // Walk avatar to island
+  const pos = ISLAND_POSITIONS[w.id-1];
+  const x = pos.x/100 * window.innerWidth;
+  const y = pos.y/100 * mapH;
+  avatarEl.style.left = x-18+'px';
+  avatarEl.style.top  = y-80+'px';
+
+  // Highlight island
+  document.querySelectorAll('.island-zone').forEach(el=>el.style.filter='');
+  document.getElementById('island-'+w.id).style.filter='drop-shadow(0 0 20px '+w.color+')';
+
+  // Fill panel
+  document.getElementById('ep-emoji').textContent   = w.emoji;
+  document.getElementById('ep-name').textContent    = w.name;
+  document.getElementById('ep-skill').textContent   = 'Skill: '+w.skill;
+  document.getElementById('ep-stars').textContent   = '⭐'.repeat(w.stars||0)+'☆'.repeat(3-(w.stars||0));
+  document.getElementById('ep-xp').textContent      = '+'+w.xp+' XP';
+  document.getElementById('ep-festival').textContent= w.festival;
+  document.getElementById('enter-panel').classList.add('show');
+
+  kahiSay('Let\'s go to '+w.name+'! 🎉');
+}
+
+function closePanel() {
+  document.getElementById('enter-panel').classList.remove('show');
+  document.querySelectorAll('.island-zone').forEach(el=>el.style.filter='');
+  selectedWorld = null;
+}
+
+function enterWorld() {
+  if(!selectedWorld) return;
+  // Portal transition ring
+  const ring = document.createElement('div');
+  ring.className='portal-ring';
+  document.body.appendChild(ring);
+  setTimeout(()=>ring.classList.add('expand'),50);
+  setTimeout(()=>{ window.location.href='level.html?world='+selectedWorld.id; }, 800);
+}
+
+// ── KAHI MAP BUBBLE ─────────────────────────────────────────────
+const kahiLines = [
+  'Click an island to explore! 🗺️','Which world shall we visit? ✨',
+  'I\'ll fly with you wherever you go! 🦚','Your adventure awaits! 🌟',
+  'Every island has a surprise! 🎁','Ready to sign and play? 🤲',
+];
+let kahiShowing=false;
+function kahiSayRandom() {
+  kahiSay(kahiLines[Math.floor(Math.random()*kahiLines.length)]);
+}
+function kahiSay(text) {
+  const b=document.getElementById('kahi-map-bubble');
+  b.textContent=text; b.style.display='block';
+  clearTimeout(window._kahiTimer);
+  window._kahiTimer=setTimeout(()=>{ b.style.display='none'; },3500);
+}
+
+// Initial Kahi greeting
+setTimeout(()=>kahiSay('Welcome to Kahaniverse! 🦚 Tap an island!'),800);
+
+// Click anywhere on map to close panel
+mapEl.addEventListener('click', e=>{
+  if(e.target.closest('.island-zone')||e.target.closest('#enter-panel')) return;
+  closePanel();
+});
+</script>
+</body>
+</html>

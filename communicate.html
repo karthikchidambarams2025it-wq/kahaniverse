@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign & Talk AI — Kahaniverse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/a11y.css">
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<style>
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #F0F4FF;
+  color: #2C3E50;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-image:
+    radial-gradient(circle at 10% 10%, rgba(255,107,157,.07), transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(46,204,113,.06), transparent 40%);
+}
+
+/* === NAV — fixed height 52px === */
+nav {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 3px solid #F7DC6F;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  z-index: 10;
+}
+.brand {
+  font-family: 'Fredoka', cursive;
+  font-size: 1.1rem; font-weight: 700;
+  color: #9B59B6; text-decoration: none;
+  white-space: nowrap;
+}
+.nav-links { display: flex; gap: 3px; overflow-x: auto; flex: 1; }
+.nav-links::-webkit-scrollbar { display: none; }
+.nl {
+  font-size: .68rem; font-weight: 700; white-space: nowrap;
+  color: #7F8C8D; text-decoration: none;
+  padding: 4px 9px; border-radius: 99px;
+  border: 1.5px solid transparent; transition: all .2s;
+}
+.nl:hover, .nl.cur { color: #9B59B6; border-color: #9B59B6; background: rgba(155,89,182,.08); }
+
+/* === HERO — fixed height 64px === */
+.hero {
+  height: 64px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #FF6B9D, #9B59B6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  gap: 12px;
+}
+.hero h1 {
+  font-family: 'Fredoka', cursive;
+  font-size: 1.3rem; font-weight: 700; color: #fff;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero h1 .b { display: inline-block; animation: bop 1.2s infinite; }
+@keyframes bop { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.hero-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.live-tag {
+  background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.4);
+  border-radius: 99px; padding: 4px 12px;
+  font-size: .72rem; font-weight: 700; color: #fff;
+  display: flex; align-items: center; gap: 5px;
+}
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: #F7DC6F; animation: pulse 1.4s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.pause-btn {
+  background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.4);
+  border-radius: 99px; padding: 6px 16px;
+  font-family: 'Fredoka', cursive; font-size: .85rem;
+  color: #fff; cursor: pointer; transition: all .2s;
+}
+.pause-btn:hover { background: rgba(255,255,255,.35); }
+
+/* === MAIN AREA — fills remaining height === */
+/* remaining = 100vh - 52px nav - 64px hero - 48px dock = calc(100vh - 164px) */
+.main {
+  height: calc(100vh - 52px - 64px - 48px);
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  overflow: hidden;
+}
+
+/* === LEFT PANEL (child) === */
+.left {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-right: 3px solid #F3E5FF;
+  overflow: hidden;
+}
+.left-hdr {
+  background: linear-gradient(135deg, #FF6B9D, #9B59B6);
+  padding: 7px 14px;
+  font-family: 'Fredoka', cursive; font-size: .85rem; font-weight: 700;
+  color: #fff; flex-shrink: 0;
+}
+
+/* Camera */
+.cam-box {
+  position: relative;
+  background: #1a0a2e;
+  height: 210px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+#webcam  { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
+#overlay { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); }
+.cam-cover {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #F3E5FF, #FCE4EC);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; padding: 16px; text-align: center;
+  transition: opacity .3s;
+}
+.cam-cover.gone { opacity: 0; pointer-events: none; }
+.cam-cover-em { font-size: 3rem; animation: bop 1.5s infinite; }
+.cam-cover p { font-size: .78rem; color: #9B59B6; line-height: 1.5; }
+.btn-start {
+  background: linear-gradient(135deg, #FF6B9D, #9B59B6);
+  border: none; border-radius: 99px; padding: 10px 24px;
+  font-family: 'Fredoka', cursive; font-size: .95rem; font-weight: 700;
+  color: #fff; cursor: pointer; transition: all .2s;
+  box-shadow: 0 4px 14px rgba(255,107,157,.35);
+}
+.btn-start:hover { transform: translateY(-2px); }
+.btn-demo {
+  background: #fff; border: 2px solid #F39C12;
+  border-radius: 99px; padding: 7px 20px;
+  font-family: 'Fredoka', cursive; font-size: .88rem; font-weight: 700;
+  color: #F39C12; cursor: pointer; transition: all .2s;
+}
+.btn-demo:hover { background: #F7DC6F; }
+.cam-note { font-size: .6rem; color: #95A5A6; }
+
+/* Detection card */
+.det-card {
+  margin: 8px 10px 0;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, rgba(255,107,157,.08), rgba(155,89,182,.06));
+  border: 2px solid #FF6B9D;
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+.det-lbl { font-size: .6rem; font-weight: 800; color: #9B59B6; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 5px; }
+.det-word {
+  font-family: 'Fredoka', cursive;
+  font-size: 1.5rem; font-weight: 700;
+  color: #2C3E50; min-height: 30px;
+  display: flex; align-items: center; gap: 7px;
+}
+.det-ph { color: #ccc; font-size: .9rem; font-family: 'Nunito', sans-serif; font-weight: 600; }
+.hold-lbl { font-size: .65rem; font-weight: 700; color: #7F8C8D; margin: 7px 0 3px; }
+.hold-rail { height: 9px; background: #F3E5FF; border-radius: 99px; overflow: hidden; }
+.hold-bar  { height: 100%; width: 0; background: linear-gradient(90deg, #FF6B9D, #9B59B6); border-radius: 99px; transition: width .08s linear; }
+
+/* Demo buttons */
+.demo-area {
+  margin: 6px 10px 0;
+  padding: 8px 10px;
+  background: #FFFDE7; border: 2px solid #F7DC6F;
+  border-radius: 14px; flex-shrink: 0;
+  display: none;
+}
+.demo-area.on { display: block; }
+.demo-ttl { font-family: 'Fredoka', cursive; font-size: .75rem; font-weight: 700; color: #F39C12; margin-bottom: 7px; }
+.demo-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.dg {
+  background: #fff; border: 2px solid #F7DC6F;
+  border-radius: 10px; padding: 6px 3px; text-align: center;
+  cursor: pointer; transition: all .18s;
+}
+.dg:hover { background: #F7DC6F; transform: scale(1.05); }
+.dg em { font-style: normal; font-size: 1.2rem; display: block; }
+.dg span { font-size: .52rem; font-weight: 800; color: #2C3E50; }
+
+/* Sign library */
+.sign-lib {
+  margin: 6px 10px 0;
+  padding: 8px 10px;
+  background: #F8F0FF; border: 2px solid #E8D5F5;
+  border-radius: 14px;
+  flex: 1; overflow-y: auto; min-height: 0;
+}
+.sign-lib::-webkit-scrollbar { width: 3px; }
+.sign-lib::-webkit-scrollbar-thumb { background: #E8D5F5; border-radius: 99px; }
+.lib-ttl { font-family: 'Fredoka', cursive; font-size: .72rem; font-weight: 700; color: #9B59B6; margin-bottom: 6px; }
+.sgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.sp {
+  background: #fff; border: 2px solid #E8D5F5;
+  border-radius: 10px; padding: 5px 2px; text-align: center; transition: all .15s;
+}
+.sp.on { background: #F3E5FF; border-color: #FF6B9D; transform: scale(1.08); }
+.sp-em { font-size: 1rem; display: block; }
+.sp-w  { font-size: .48rem; font-weight: 800; color: #9B59B6; display: block; }
+.sp-h  { font-size: .4rem; color: #95A5A6; }
+
+/* TTS row */
+.tts-row { margin: 6px 10px 10px; flex-shrink: 0; }
+.tts-btn {
+  width: 100%; border-radius: 99px; padding: 7px;
+  font-family: 'Fredoka', cursive; font-size: .82rem; font-weight: 700;
+  cursor: pointer; border: 2px solid #FF6B9D;
+  color: #FF6B9D; background: rgba(255,107,157,.06); transition: all .2s;
+}
+.tts-btn:hover { background: rgba(255,107,157,.14); }
+.tts-btn.off { color: #95A5A6; border-color: #ddd; background: transparent; }
+
+/* === RIGHT PANEL (teacher/chat) === */
+.right {
+  display: flex;
+  flex-direction: column;
+  background: #F0FFF8;
+  overflow: hidden;
+  height: 100%;
+}
+.right-hdr {
+  background: linear-gradient(135deg, #2ECC71, #3498DB);
+  padding: 7px 14px;
+  font-family: 'Fredoka', cursive; font-size: .85rem; font-weight: 700;
+  color: #fff; flex-shrink: 0;
+}
+.chat-hdr {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; background: #fff;
+  border-bottom: 2px solid #D5F5E3;
+  flex-shrink: 0;
+}
+.t-ava {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, #2ECC71, #3498DB);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+.t-name { font-family: 'Fredoka', cursive; font-size: .95rem; font-weight: 700; }
+.t-sub  { font-size: .68rem; color: #7F8C8D; display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+.on-dot { width: 6px; height: 6px; border-radius: 50%; background: #2ECC71; box-shadow: 0 0 4px #2ECC71; }
+
+/* *** MESSAGES — THE KEY PART *** */
+#msgs {
+  flex: 1;
+  min-height: 0;          /* MUST have this for overflow to work */
+  overflow-y: auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#msgs::-webkit-scrollbar { width: 4px; }
+#msgs::-webkit-scrollbar-thumb { background: #D5F5E3; border-radius: 99px; }
+
+/* Bubbles */
+.sys {
+  align-self: center; text-align: center;
+  background: rgba(247,220,111,.18); border: 2px dashed #F7DC6F;
+  border-radius: 12px; padding: 8px 14px;
+  font-size: .78rem; font-weight: 700; color: #F39C12; max-width: 88%;
+}
+.crow { display: flex; justify-content: flex-end; align-items: flex-end; gap: 7px; }
+.c-ava {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B9D, #9B59B6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.bc {
+  background: linear-gradient(135deg, #FF6B9D, #9B59B6);
+  color: #fff; border-radius: 18px 18px 4px 18px;
+  padding: 10px 14px; max-width: 70%;
+  font-size: .9rem; font-weight: 700; line-height: 1.5;
+  box-shadow: 0 3px 14px rgba(255,107,157,.3);
+  animation: pop .25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop { from{opacity:0;transform:scale(.85) translateY(8px)} to{opacity:1;transform:none} }
+.bc .ts { font-size: .6rem; opacity: .8; margin-top: 3px; font-weight: 400; }
+
+.trow { display: flex; align-items: flex-end; gap: 7px; }
+.t-ava-sm {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, #2ECC71, #3498DB);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+.bt {
+  background: #fff; color: #2C3E50;
+  border: 2px solid #D5F5E3;
+  border-radius: 18px 18px 18px 4px;
+  padding: 10px 14px; max-width: 70%;
+  font-size: .9rem; line-height: 1.5;
+  box-shadow: 0 2px 10px rgba(46,204,113,.12);
+  animation: pop .25s cubic-bezier(.34,1.56,.64,1);
+}
+.bt .ts { font-size: .6rem; color: #95A5A6; margin-top: 3px; }
+.hear-btn {
+  background: none; border: none; font-size: .65rem; font-weight: 800;
+  color: #3498DB; cursor: pointer; padding: 2px 0 0; display: block;
+  font-family: 'Nunito', sans-serif;
+}
+.hear-btn:hover { text-decoration: underline; }
+
+/* Quick replies */
+.qr-lbl { font-size: .62rem; font-weight: 800; color: #95A5A6; padding: 4px 16px; text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; }
+.qr-row { display: flex; gap: 5px; padding: 3px 16px 5px; flex-wrap: wrap; flex-shrink: 0; }
+.qbtn {
+  background: #fff; border: 2px solid #D5F5E3;
+  border-radius: 99px; padding: 5px 12px;
+  font-size: .72rem; font-weight: 800; color: #3498DB;
+  cursor: pointer; transition: all .18s; white-space: nowrap;
+}
+.qbtn:hover { background: linear-gradient(135deg,#2ECC71,#3498DB); color: #fff; border-color: transparent; }
+
+/* Input bar */
+.ibar {
+  display: flex; gap: 7px; align-items: center;
+  padding: 9px 12px;
+  background: #fff; border-top: 2px solid #D5F5E3;
+  flex-shrink: 0;
+}
+.i-pre { font-family: 'Fredoka', cursive; font-size: .8rem; font-weight: 700; color: #2ECC71; white-space: nowrap; }
+#ti {
+  flex: 1; border: 2px solid #D5F5E3; border-radius: 99px;
+  padding: 8px 14px; font-family: 'Nunito', sans-serif; font-size: .88rem;
+  color: #2C3E50; outline: none; background: #F0FFF8; transition: border-color .2s;
+}
+#ti:focus { border-color: #2ECC71; }
+#ti::placeholder { color: #aaa; }
+#sbtn {
+  background: linear-gradient(135deg, #2ECC71, #3498DB);
+  border: none; border-radius: 99px; padding: 9px 20px;
+  font-family: 'Fredoka', cursive; font-size: .9rem; font-weight: 700;
+  color: #fff; cursor: pointer; transition: all .18s;
+  box-shadow: 0 3px 10px rgba(46,204,113,.3); white-space: nowrap;
+}
+#sbtn:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(46,204,113,.4); }
+
+/* Calm overlay */
+.calm {
+  position: fixed; inset: 0; z-index: 900;
+  background: rgba(240,244,255,.97); backdrop-filter: blur(14px);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 16px; padding: 40px; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity .4s;
+}
+.calm.on { opacity: 1; pointer-events: all; }
+.calm-em { font-size: 5rem; animation: bop 2s infinite; }
+.breath {
+  width: 70px; height: 70px; border-radius: 50%;
+  border: 3px solid rgba(46,204,113,.25);
+  animation: breathe 4s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{transform:scale(1);border-color:rgba(46,204,113,.2)} 50%{transform:scale(1.55);border-color:#2ECC71} }
+.calm h2 { font-family: 'Fredoka', cursive; font-size: 1.7rem; color: #2C3E50; }
+.calm p  { font-size: .88rem; color: #7F8C8D; max-width: 280px; line-height: 1.8; }
+.calm-btn {
+  background: linear-gradient(135deg, #FF6B9D, #9B59B6);
+  border: none; border-radius: 99px; padding: 12px 30px;
+  font-family: 'Fredoka', cursive; font-size: 1rem; font-weight: 700;
+  color: #fff; cursor: pointer; box-shadow: 0 4px 14px rgba(255,107,157,.35);
+}
+.calm-btn:hover { transform: translateY(-2px); }
+.sr { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<div class="sr" aria-live="polite" id="ann"></div>
+<a href="#msgs" class="skip-link">Skip to chat</a>
+
+<!-- NAV 52px -->
+<nav aria-label="Site navigation">
+  <a href="index.html" class="brand">🦚 Kahaniverse</a>
+  <div class="nav-links">
+    <a href="index.html"        class="nl">🏠 Home</a>
+    <a href="world-map.html"    class="nl">🗺️ Map</a>
+    <a href="communicate.html"  class="nl cur" aria-current="page">✋ Sign Talk</a>
+    <a href="sign-detect.html"  class="nl">🔍 Detect</a>
+    <a href="learn.html"        class="nl">📚 Learn</a>
+    <a href="clinician.html"    class="nl">📊 Clinic</a>
+    <a href="sticker-book.html" class="nl">⭐ Stickers</a>
+    <a href="plaza.html"        class="nl">🏛️ Plaza</a>
+    <a href="settings.html"     class="nl">⚙️ Help</a>
+    <a href="about.html"        class="nl">📄 About</a>
+  </div>
+</nav>
+
+<!-- HERO 64px -->
+<div class="hero">
+  <h1><span class="b">✋</span> Sign &amp; Talk AI</h1>
+  <div class="hero-right">
+    <div class="live-tag"><span class="live-dot"></span>Live</div>
+    <button class="pause-btn" id="pause-btn">⏸ Pause</button>
+  </div>
+</div>
+
+<!-- MAIN GRID: 100vh - 52 - 64 - 48 = calc(100vh - 164px) -->
+<div class="main" role="main">
+
+  <!-- LEFT: child -->
+  <div class="left">
+    <div class="left-hdr">🧒 Child's Section — Show your sign to the camera!</div>
+
+    <!-- Camera box -->
+    <div class="cam-box">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="overlay" aria-hidden="true"></canvas>
+      <div class="cam-cover" id="cam-cover">
+        <span class="cam-cover-em">🤲</span>
+        <p>Your hands are your voice!<br>Start camera or use Demo Mode 🌟</p>
+        <button class="btn-start" id="start-btn">📷 Start Camera</button>
+        <button class="btn-demo"  id="demo-btn">🎭 Demo Mode</button>
+        <span class="cam-note">🔒 Video stays on your device only</span>
+      </div>
+    </div>
+
+    <!-- Detected word -->
+    <div class="det-card" aria-live="polite">
+      <div class="det-lbl">👁️ AI Reading Your Sign…</div>
+      <div class="det-word" id="det-word"><span class="det-ph">Show me a sign! 🙌</span></div>
+      <div class="hold-lbl">Hold steady to send:</div>
+      <div class="hold-rail"><div class="hold-bar" id="hold-bar"></div></div>
+    </div>
+
+    <!-- Demo gesture buttons -->
+    <div class="demo-area" id="demo-area">
+      <div class="demo-ttl">🎭 Tap any gesture to send it to teacher:</div>
+      <div class="demo-btns" id="demo-btns"></div>
+    </div>
+
+    <!-- Sign library -->
+    <div class="sign-lib">
+      <div class="lib-ttl">📖 Signs — hold each for 0.7 seconds</div>
+      <div class="sgrid" id="sgrid"></div>
+    </div>
+
+    <!-- TTS -->
+    <div class="tts-row">
+      <button class="tts-btn" id="tts-btn" aria-pressed="true">🔊 Voice ON</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: teacher chat -->
+  <div class="right">
+    <div class="right-hdr">👩‍🏫 Teacher's Section — Read &amp; reply to the child</div>
+
+    <div class="chat-hdr">
+      <div class="t-ava">👩‍🏫</div>
+      <div>
+        <div class="t-name">Your Teacher</div>
+        <div class="t-sub"><span class="on-dot"></span>Online · Watching your signs</div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="msgs" role="log" aria-live="polite">
+      <div class="sys">🌟 Hello! Show a sign to the camera — it will appear here as text and your teacher will hear it!</div>
+    </div>
+
+    <!-- Quick replies -->
+    <div class="qr-lbl">Teacher Quick Replies</div>
+    <div class="qr-row">
+      <button class="qbtn" data-m="Well done! 🌟">Well done! 🌟</button>
+      <button class="qbtn" data-m="I understand! 😊">I understand!</button>
+      <button class="qbtn" data-m="Try again! You can do it 💪">Try again!</button>
+      <button class="qbtn" data-m="Great job! 🎉">Great job!</button>
+      <button class="qbtn" data-m="Take your time 🌸">No rush!</button>
+      <button class="qbtn" data-m="I'm here! 👂">I'm here!</button>
+    </div>
+
+    <!-- Input -->
+    <div class="ibar">
+      <span class="i-pre">Teacher ›</span>
+      <label for="ti" class="sr">Type reply to child</label>
+      <input id="ti" type="text" placeholder="Type a reply and press Enter…" autocomplete="off">
+      <button id="sbtn">Send ▶</button>
+    </div>
+  </div>
+
+</div><!-- end .main -->
+
+<!-- Calm overlay -->
+<div class="calm" id="calm" role="dialog" aria-modal="true">
+  <div class="calm-em">🌸</div>
+  <div class="breath" aria-hidden="true"></div>
+  <h2>Take a Break!</h2>
+  <p>Breathe slowly with the circle. You're doing wonderfully! 💖</p>
+  <button class="calm-btn" id="calm-ok">▶ I'm Ready to Continue!</button>
+</div>
+
+<!-- Bottom dock from a11y.css -->
+<div class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html"    class="persistent-btn">🏠 Home</a>
+  <span class="dot-sep"   aria-hidden="true"></span>
+  <a href="learn.html"    class="persistent-btn">📚 Learn</a>
+  <span class="dot-sep"   aria-hidden="true"></span>
+  <a href="settings.html" class="persistent-btn">❓ Help</a>
+</div>
+
+<script src="js/kahani-app.js"></script>
+<script src="js/sign-engine.js"></script>
+<script src="js/tts-engine.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+//  SIGN & TALK AI
+//  Child shows sign → text bubble + voice → Teacher
+//  Teacher types → text bubble + voice → Child
+// ═══════════════════════════════════════════════
+
+/* ── 7 CORE GESTURES ── */
+const SIGNS = {
+  open_palm:   { word:'HELLO',      emoji:'👋', how:'Open hand out',      demo:true  },
+  i_love_you:  { word:'THANK YOU',  emoji:'🙏', how:'Pinky+index+thumb',  demo:true  },
+  thumbs_up:   { word:'GOOD',       emoji:'👍', how:'Thumb pointing up',  demo:true  },
+  raised_hand: { word:'HELP',       emoji:'🙋', how:'Hand raised high',   demo:true  },
+  fist:        { word:'LOVE',       emoji:'❤️', how:'Closed fist to heart',demo:true },
+  thumbs_down: { word:'NO',         emoji:'👎', how:'Thumb pointing down', demo:true  },
+  v_sign:      { word:'YES',        emoji:'✊', how:'Peace / nod sign',   demo:true  },
+  pointing:    { word:'I WANT',     emoji:'☝️', how:'1 finger pointing',  demo:false },
+  ok_sign:     { word:'OKAY',       emoji:'👌', how:'OK circle',          demo:false },
+  pinky_up:    { word:'WATER',      emoji:'💧', how:'Only pinky up',      demo:false },
+};
+
+/* ── DOM ── */
+const webcam   = document.getElementById('webcam');
+const overlay  = document.getElementById('overlay');
+const camCover = document.getElementById('cam-cover');
+const startBtn = document.getElementById('start-btn');
+const demoBtn  = document.getElementById('demo-btn');
+const demoArea = document.getElementById('demo-area');
+const demoBtns = document.getElementById('demo-btns');
+const detWord  = document.getElementById('det-word');
+const holdBar  = document.getElementById('hold-bar');
+const sgrid    = document.getElementById('sgrid');
+const msgs     = document.getElementById('msgs');
+const ti       = document.getElementById('ti');
+const sbtn     = document.getElementById('sbtn');
+const ttsBtn   = document.getElementById('tts-btn');
+const pauseBtn = document.getElementById('pause-btn');
+const calm     = document.getElementById('calm');
+const calmOk   = document.getElementById('calm-ok');
+const ann      = document.getElementById('ann');
+
+/* ── STATE ── */
+let ttsOn = true, engine = null;
+let curGest = null, holdStart = 0, locked = false;
+const HOLD = 700;
+
+/* ── BUILD SIGN LIBRARY ── */
+Object.entries(SIGNS).forEach(([key, s]) => {
+  const d = document.createElement('div');
+  d.className = 'sp'; d.dataset.key = key;
+  d.innerHTML = `<em style="font-style:normal;font-size:1rem;display:block">${s.emoji}</em><span class="sp-w">${s.word}</span><span class="sp-h">${s.how}</span>`;
+  sgrid.appendChild(d);
+});
+
+/* ── BUILD DEMO BUTTONS ── */
+Object.entries(SIGNS).filter(([,s]) => s.demo).forEach(([key, s]) => {
+  const b = document.createElement('button');
+  b.className = 'dg';
+  b.innerHTML = `<em style="font-style:normal;font-size:1.2rem;display:block">${s.emoji}</em><span style="font-size:.52rem;font-weight:800">${s.word}</span>`;
+  b.addEventListener('click', () => fireSign(key, s));
+  demoBtns.appendChild(b);
+});
+
+/* ── TTS ── */
+function speak(text) {
+  if (!ttsOn) return;
+  if (window.TTSEngine) { TTSEngine.unlockAudio(); TTSEngine.speakPhrase(text); }
+  else {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-IN'; u.rate = 0.9;
+    speechSynthesis.speak(u);
+  }
+}
+ttsBtn.addEventListener('click', () => {
+  ttsOn = !ttsOn;
+  if (window.TTSEngine) TTSEngine.setEnabled(ttsOn);
+  ttsBtn.textContent = ttsOn ? '🔊 Voice ON' : '🔇 Voice OFF';
+  ttsBtn.classList.toggle('off', !ttsOn);
+  ttsBtn.setAttribute('aria-pressed', String(ttsOn));
+});
+
+/* ── CAMERA ── */
+startBtn.addEventListener('click', async () => {
+  startBtn.textContent = 'Starting…'; startBtn.disabled = true;
+  if (window.TTSEngine) TTSEngine.unlockAudio();
+  engine = new SignEngine(webcam, overlay, { onGesture: onGesture });
+  try {
+    await engine.start();
+    camCover.classList.add('gone');
+    addSys('✅ Camera ready! Show me a sign and hold it steady!');
+  } catch {
+    startBtn.textContent = '📷 Start Camera'; startBtn.disabled = false;
+    addSys('⚠️ Camera not allowed. Use 🎭 Demo Mode below!');
+  }
+});
+
+/* ── DEMO MODE ── */
+demoBtn.addEventListener('click', () => {
+  camCover.classList.add('gone');
+  demoArea.classList.add('on');
+  addSys('🎭 Demo Mode! Tap any gesture button to send a sign to the teacher!');
+});
+
+/* ── RAF HOLD-BAR LOOP ── */
+function rafLoop() {
+  if (curGest && !locked) {
+    const pct = Math.min(((Date.now() - holdStart) / HOLD) * 100, 100);
+    holdBar.style.width = pct + '%';
+    if (pct >= 100) {
+      const s = SIGNS[curGest];
+      if (s) fireSign(curGest, s);
+    }
+  }
+  requestAnimationFrame(rafLoop);
+}
+requestAnimationFrame(rafLoop);
+
+/* ── GESTURE CALLBACK ── */
+function onGesture(gesture) {
+  if (locked) return;
+  if (!gesture || gesture === 'none') {
+    curGest = null;
+    detWord.innerHTML = '<span class="det-ph">Show me a sign! 🙌</span>';
+    holdBar.style.width = '0%';
+    document.querySelectorAll('.sp').forEach(p => p.classList.remove('on'));
+    return;
+  }
+  if (gesture === 'active') return; // hand moving — don't reset
+
+  const s = SIGNS[gesture];
+  if (!s) return;
+
+  if (gesture !== curGest) {
+    curGest   = gesture;
+    holdStart = Date.now();
+    holdBar.style.width = '0%';
+    detWord.innerHTML = `${s.emoji} <strong>${s.word}</strong>`;
+    document.querySelectorAll('.sp').forEach(p => p.classList.remove('on'));
+    const pill = document.querySelector(`.sp[data-key="${gesture}"]`);
+    if (pill) { pill.classList.add('on'); pill.scrollIntoView({ block:'nearest' }); }
+  }
+}
+
+/* ── FIRE SIGN → text bubble + voice ── */
+function fireSign(key, sign) {
+  if (locked) return;
+  locked = true;
+
+  // 1. Add TEXT bubble in chat
+  addChildBubble(sign.emoji + '  ' + sign.word);
+
+  // 2. Speak word aloud for teacher
+  speak(sign.word);
+
+  ann.textContent = 'You signed: ' + sign.word;
+
+  // Highlight pill briefly
+  document.querySelectorAll('.sp').forEach(p => p.classList.remove('on'));
+  const pill = document.querySelector(`.sp[data-key="${key}"]`);
+  if (pill) { pill.classList.add('on'); setTimeout(() => pill.classList.remove('on'), 900); }
+
+  setTimeout(() => {
+    detWord.innerHTML = '<span class="det-ph">Show me a sign! 🙌</span>';
+    holdBar.style.width = '0%';
+    locked = false;
+    curGest = null;
+  }, 900);
+}
+
+/* ── HELPERS ── */
+function nowT() { return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function scrollMsgs() {
+  // Double rAF ensures DOM is painted before scroll
+  requestAnimationFrame(() => requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; }));
+}
+
+/* ── BUBBLE BUILDERS ── */
+function addChildBubble(text) {
+  const row = document.createElement('div');
+  row.className = 'crow';
+  row.innerHTML = `
+    <div class="bc">
+      ${esc(text)}
+      <div class="ts">You · ${nowT()}</div>
+    </div>
+    <div class="c-ava">🧒</div>`;
+  msgs.appendChild(row);
+  scrollMsgs();
+}
+
+function addTeacherBubble(text) {
+  const row = document.createElement('div');
+  row.className = 'trow';
+  row.innerHTML = `
+    <div class="t-ava-sm">👩‍🏫</div>
+    <div>
+      <div class="bt">${esc(text)}<div class="ts">Teacher · ${nowT()}</div></div>
+      <button class="hear-btn" data-t="${esc(text)}">▶ Hear again</button>
+    </div>`;
+  row.querySelector('.hear-btn').addEventListener('click', e => speak(e.currentTarget.dataset.t));
+  msgs.appendChild(row);
+  speak(text);
+  ann.textContent = 'Teacher says: ' + text;
+  scrollMsgs();
+}
+
+function addSys(text) {
+  const d = document.createElement('div');
+  d.className = 'sys'; d.textContent = text;
+  msgs.appendChild(d);
+  scrollMsgs();
+}
+
+/* ── TEACHER SEND ── */
+function teacherSend(msg) {
+  const text = (msg !== undefined ? msg : ti.value).trim();
+  if (!text) return;
+  ti.value = '';
+  addTeacherBubble(text);
+}
+sbtn.addEventListener('click', () => teacherSend());
+ti.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); teacherSend(); } });
+document.querySelectorAll('.qbtn').forEach(b => b.addEventListener('click', () => teacherSend(b.dataset.m)));
+
+/* ── PAUSE ── */
+pauseBtn.addEventListener('click', () => calm.classList.add('on'));
+calmOk.addEventListener('click',   () => calm.classList.remove('on'));
+
+ti.focus();
+</script>
+</body>
+</html>

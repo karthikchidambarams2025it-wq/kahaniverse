@@ -1,0 +1,286 @@
+/* ================================================================
+   KAHANIVERSE — CLINICIAN / CAREGIVER CONSOLE
+   IBM Plex Sans, clinical clean, trustworthy
+   ================================================================ */
+
+.clinic-body {
+  background: #F5F4F0;
+  color: var(--ink);
+  font-family: var(--font-clinic);
+  min-height: 100vh;
+}
+
+/* ── CLINIC SIDEBAR ── */
+.clinic-sidebar {
+  width: 240px;
+  height: 100vh;
+  position: fixed;
+  left: 0; top: 0;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+}
+
+.clinic-brand {
+  padding: var(--s-lg);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.clinic-brand-name {
+  font-family: var(--font-clinic);
+  font-size: 1rem; font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.clinic-brand-sub {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+
+.clinic-nav { flex:1; padding:var(--s-md) 0; overflow-y:auto; }
+.clinic-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: var(--s-sm) var(--s-lg);
+  font-size: 0.85rem; font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+}
+.clinic-nav-item:hover { color:#fff; background:rgba(255,255,255,0.05); }
+.clinic-nav-item.active {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  border-left-color: var(--peacock-light);
+}
+.clinic-nav-icon { font-size:1rem; width:20px; text-align:center; }
+
+/* ── CLINIC MAIN ── */
+.clinic-main {
+  margin-left: 240px;
+  min-height: 100vh;
+  padding: var(--s-xl);
+  font-family: var(--font-clinic);
+}
+
+.clinic-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-xl);
+  padding-bottom: var(--s-lg);
+  border-bottom: 1px solid var(--sand);
+}
+
+.clinic-title { font-size: 1.5rem; font-weight: 700; color: var(--ink); }
+.clinic-sub   { font-size: 0.82rem; color: var(--ink-faint); margin-top: 2px; }
+
+/* ── CLINIC STAT CARDS ── */
+.clinic-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--s-lg); margin-bottom:var(--s-xl); }
+
+.clinic-stat-card {
+  background: #fff;
+  border: 1px solid var(--sand);
+  border-radius: var(--r-lg);
+  padding: var(--s-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.clinic-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--stat-color, var(--peacock));
+}
+
+.clinic-stat-val {
+  font-family: var(--font-clinic);
+  font-size: 2rem; font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.clinic-stat-label {
+  font-size: 0.72rem; font-weight: 600;
+  color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+.clinic-stat-change {
+  font-size: 0.75rem; font-weight: 600;
+  margin-top: var(--s-sm);
+}
+.up   { color: var(--mehendi); }
+.down { color: var(--kumkum); }
+
+/* ── TIMELINE ── */
+.timeline { position: relative; padding-left: var(--s-2xl); }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 12px; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--sand);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: var(--s-lg);
+  padding-left: var(--s-md);
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -22px; top: 4px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--peacock);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--peacock);
+}
+
+.timeline-time  { font-size:0.72rem; color:var(--ink-faint); margin-bottom:2px; }
+.timeline-event { font-size:0.88rem; font-weight:600; color:var(--ink); }
+.timeline-detail{ font-size:0.78rem; color:var(--ink-faint); }
+.timeline-latency{
+  display:inline-block;
+  margin-top:4px;
+  padding:2px 8px;
+  border-radius:var(--r-full);
+  font-size:0.68rem; font-weight:700;
+  background:rgba(14,124,123,0.08);
+  color:var(--peacock);
+  border:1px solid rgba(14,124,123,0.2);
+}
+
+/* ── MOTIVATION CHART ── */
+.motivation-chart-wrap {
+  background: #fff;
+  border: 1px solid var(--sand);
+  border-radius: var(--r-lg);
+  padding: var(--s-xl);
+}
+
+.chart-title {
+  font-size: 0.82rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  margin-bottom: var(--s-md);
+}
+
+/* ── REWARD OVERRIDE PANEL ── */
+.reward-category-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-md);
+  border: 1px solid var(--sand);
+  border-radius: var(--r-md);
+  margin-bottom: var(--s-sm);
+  background: #fff;
+  transition: all var(--t-base);
+}
+.reward-category-item.locked {
+  opacity: 0.5;
+  background: rgba(193,39,45,0.04);
+  border-color: rgba(193,39,45,0.2);
+}
+
+/* ── TOGGLE SWITCH ── */
+.toggle {
+  position: relative;
+  width: 44px; height: 24px;
+  background: var(--sand);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: background var(--t-base);
+  flex-shrink: 0;
+}
+.toggle.on { background: var(--peacock); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--t-spring);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* ── SCHEDULE TABLE ── */
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.schedule-table th {
+  text-align: left;
+  padding: var(--s-sm) var(--s-md);
+  background: var(--paper-warm);
+  border-bottom: 2px solid var(--sand);
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+.schedule-table td {
+  padding: var(--s-sm) var(--s-md);
+  border-bottom: 1px solid var(--sand);
+  vertical-align: middle;
+}
+.schedule-table tr:hover td { background: rgba(242,153,74,0.04); }
+
+/* ── CONSENT PANEL ── */
+.consent-panel {
+  background: rgba(193,39,45,0.04);
+  border: 1.5px solid rgba(193,39,45,0.2);
+  border-radius: var(--r-lg);
+  padding: var(--s-lg);
+  margin-bottom: var(--s-lg);
+}
+.consent-title { font-weight:700; color:var(--kumkum); margin-bottom:var(--s-sm); font-size:0.88rem; }
+.consent-body  { font-size:0.8rem; color:var(--ink-faint); line-height:1.6; }
+
+/* ── EXPORT BUTTON ── */
+.btn-clinic {
+  display: inline-flex; align-items: center; gap: var(--s-sm);
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--r-md);
+  font-family: var(--font-clinic);
+  font-size: 0.85rem; font-weight: 600;
+  background: var(--peacock);
+  color: #fff; border: none; cursor: pointer;
+  transition: all var(--t-base);
+}
+.btn-clinic:hover { background:var(--peacock-light); transform:translateY(-1px); }
+
+.btn-clinic-outline {
+  background: transparent;
+  border: 1.5px solid var(--peacock);
+  color: var(--peacock);
+}
+.btn-clinic-outline:hover { background:rgba(14,124,123,0.08); }
+
+/* ── CLINIC GRID ── */
+.clinic-grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:var(--s-lg); }
+.clinic-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s-lg); }
+
+@media(max-width:1100px) {
+  .clinic-stats { grid-template-columns:repeat(2,1fr); }
+}
+@media(max-width:768px) {
+  .clinic-sidebar { display:none; }
+  .clinic-main    { margin-left:0; }
+  .clinic-stats, .clinic-grid-2, .clinic-grid-3 { grid-template-columns:1fr; }
+}
