@@ -231,7 +231,7 @@ nav {
   display: flex;
   flex-direction: column;
   background: #F0FFF8;
-  overflow: hidden;
+  overflow-y: auto;    /* scroll if content is taller than panel */
   height: 100%;
 }
 .right-hdr {
@@ -256,16 +256,21 @@ nav {
 .t-sub  { font-size: .68rem; color: #7F8C8D; display: flex; align-items: center; gap: 4px; margin-top: 1px; }
 .on-dot { width: 6px; height: 6px; border-radius: 50%; background: #2ECC71; box-shadow: 0 0 4px #2ECC71; }
 
-/* *** MESSAGES — THE KEY PART *** */
+/* *** MESSAGES — THE CHAT BOX *** */
 #msgs {
-  flex: 1;
-  min-height: 0;          /* MUST have this for overflow to work */
+  flex: 1 1 auto;
+  min-height: 300px;      /* NEVER collapse — always show the chat box */
+  max-height: calc(100vh - 350px); /* don't overflow the viewport */
   overflow-y: auto;
-  overflow-anchor: auto;  /* keeps scroll pinned to bottom */
-  padding: 14px 16px 60px; /* extra bottom padding so dock doesn't cover last bubble */
+  overflow-anchor: auto;
+  padding: 14px 16px 60px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  background: #F0FFF8;
+  border: 2px solid #D5F5E3;
+  border-radius: 12px;
+  margin: 8px 10px;
 }
 #msgs::-webkit-scrollbar { width: 4px; }
 #msgs::-webkit-scrollbar-thumb { background: #D5F5E3; border-radius: 99px; }
