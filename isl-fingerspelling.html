@@ -113,11 +113,11 @@ nav {
 /* === MAIN LAYOUT === */
 .main-grid {
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 480px 1fr;
   gap: 0;
   min-height: calc(100vh - 54px - 120px);
 }
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .main-grid { grid-template-columns: 1fr; }
 }
 
@@ -200,42 +200,67 @@ nav {
 }
 .no-cam .icon { font-size: 3.5rem; opacity: .4; }
 
-/* === PREDICTION CARD === */
+/* === PREDICTION CARDS (dual hand) === */
+.pred-cards-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 16px;
+}
 .pred-card {
-  margin: 14px 16px;
-  background: linear-gradient(135deg, rgba(110,40,217,.18), rgba(155,89,182,.12));
+  background: linear-gradient(135deg, rgba(110,40,217,.18), rgba(155,89,182,.1));
   border: 2px solid rgba(155,89,182,.3);
-  border-radius: 18px;
-  padding: 16px 18px;
-  display: flex; gap: 16px; align-items: center;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: opacity .3s, border-color .3s;
+}
+.pred-card.hand2 {
+  background: linear-gradient(135deg, rgba(0,240,200,.1), rgba(79,195,247,.07));
+  border-color: rgba(0,240,200,.25);
+}
+.pred-hand-tag {
+  font-size: .56rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: .12em;
+  margin-bottom: 3px;
 }
 .pred-letter-box {
-  width: 80px; height: 80px; flex-shrink: 0;
-  border-radius: 16px;
+  width: 62px; height: 62px; flex-shrink: 0;
+  border-radius: 14px;
   background: linear-gradient(135deg, #6E28D9, #C77DFF);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Fredoka', cursive;
-  font-size: 3.5rem; font-weight: 700; color: #fff;
-  box-shadow: 0 8px 32px rgba(110,40,217,.45);
+  font-size: 2.6rem; font-weight: 700; color: #fff;
+  box-shadow: 0 6px 22px rgba(110,40,217,.4);
   transition: all .25s cubic-bezier(.34,1.56,.64,1);
+}
+.pred-letter-box.hand2 {
+  background: linear-gradient(135deg, rgba(0,240,200,.8), #4FC3F7);
+  box-shadow: 0 6px 22px rgba(0,240,200,.3);
 }
 .pred-letter-box.pop {
   animation: pop 0.35s cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes pop {
   0%   { transform: scale(1); }
-  40%  { transform: scale(1.25); }
+  40%  { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
 .pred-info { flex: 1; min-width: 0; }
 .pred-label {
   font-family: 'Fredoka', cursive;
-  font-size: 1.1rem; font-weight: 700; color: #E8E0FF;
+  font-size: 1rem; font-weight: 700; color: #E8E0FF;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.pred-sublabel { font-size: .72rem; color: rgba(200,180,255,.5); margin-bottom: 8px; }
+.pred-sublabel {
+  font-size: .68rem; color: rgba(200,180,255,.5);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .conf-track {
-  height: 8px; background: rgba(155,89,182,.2);
-  border-radius: 99px; overflow: hidden;
+  height: 6px; background: rgba(155,89,182,.2);
+  border-radius: 99px; overflow: hidden; margin-top: 5px;
 }
 .conf-fill {
   height: 100%;
@@ -243,17 +268,16 @@ nav {
   background: linear-gradient(90deg, #6E28D9, #00FF88);
   transition: width .2s ease;
 }
-.conf-pct { font-size: .75rem; font-weight: 800; color: #00FF88; margin-top: 4px; }
+.conf-pct { font-size: .7rem; font-weight: 800; color: #00FF88; margin-top: 3px; }
 
 /* hold ring */
-.hold-ring-wrap { display: flex; align-items: center; justify-content: center; margin-top: 8px; }
+.hold-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
 .hold-ring {
-  width: 36px; height: 36px;
+  width: 42px; height: 42px;
   border-radius: 50%;
-  border: 3px solid rgba(155,89,182,.2);
   display: flex; align-items: center; justify-content: center;
-  font-size: .6rem; font-weight: 800; color: rgba(200,180,255,.5);
-  position: relative; overflow: hidden;
+  font-size: .5rem; font-weight: 800; color: rgba(200,180,255,.5);
+  position: relative;
 }
 .hold-ring svg {
   position: absolute; top: 0; left: 0;
@@ -531,56 +555,57 @@ nav {
       <div class="cam-overlay-badge" id="hand-badge" style="display:none;">No Hand Detected</div>
     </div>
 
-    <!-- Live Prediction Cards — Dual Hand -->
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <!-- Live Prediction Cards — Dual Hand (stacked) -->
+    <div class="pred-cards-wrap">
 
-      <!-- ── HAND 1 (purple) ── -->
-      <div class="pred-card" id="pred-card-0" style="flex:1;min-width:0;">
-        <div style="font-size:.56rem;font-weight:900;color:#C77DFF;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">✋ Hand 1</div>
+      <!-- HAND 1 — purple -->
+      <div class="pred-card" id="pred-card-0">
         <div class="pred-letter-box" id="pred-letter-0">?</div>
         <div class="pred-info">
-          <div class="pred-label" id="pred-label-0">Waiting…</div>
-          <div class="pred-sublabel" id="pred-sublabel-0">Show a sign</div>
-          <div class="conf-track" style="margin-top:6px;">
+          <div class="pred-hand-tag" style="color:#C77DFF;">✋ Hand 1</div>
+          <div class="pred-label" id="pred-label-0">Waiting for camera…</div>
+          <div class="pred-sublabel" id="pred-sublabel-0">Show a hand sign to begin</div>
+          <div class="conf-track">
             <div class="conf-fill" id="conf-fill-0" style="width:0%;"></div>
           </div>
           <div class="conf-pct" id="conf-pct-0">0%</div>
         </div>
         <div class="hold-ring-wrap">
           <div class="hold-ring">
-            <svg viewBox="0 0 36 36">
-              <circle class="hold-ring-track" cx="18" cy="18" r="16"/>
-              <circle class="hold-ring-fill" id="hold-ring-fill-0" cx="18" cy="18" r="16"
-                stroke-dasharray="100.53" stroke-dashoffset="100.53"/>
+            <svg viewBox="0 0 42 42">
+              <circle class="hold-ring-track" cx="21" cy="21" r="18"/>
+              <circle class="hold-ring-fill" id="hold-ring-fill-0" cx="21" cy="21" r="18"
+                stroke-dasharray="113.1" stroke-dashoffset="113.1"/>
             </svg>
-            <span style="position:relative;z-index:1;font-size:.5rem;font-weight:800;color:rgba(200,180,255,.4);">HOLD</span>
+            <span style="position:relative;z-index:1;">HOLD</span>
           </div>
         </div>
       </div>
 
-      <!-- ── HAND 2 (cyan) ── -->
-      <div class="pred-card" id="pred-card-1" style="flex:1;min-width:0;opacity:.45;transition:opacity .3s;">
-        <div style="font-size:.56rem;font-weight:900;color:#00F0C8;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">✋ Hand 2</div>
-        <div class="pred-letter-box" id="pred-letter-1" style="background:linear-gradient(135deg,rgba(0,240,200,.18),rgba(79,195,247,.1));">?</div>
+      <!-- HAND 2 — cyan -->
+      <div class="pred-card hand2" id="pred-card-1" style="opacity:.45;">
+        <div class="pred-letter-box hand2" id="pred-letter-1">?</div>
         <div class="pred-info">
-          <div class="pred-label" id="pred-label-1">Waiting…</div>
-          <div class="pred-sublabel" id="pred-sublabel-1">Show 2nd hand</div>
-          <div class="conf-track" style="margin-top:6px;">
+          <div class="pred-hand-tag" style="color:#00F0C8;">✋ Hand 2</div>
+          <div class="pred-label" id="pred-label-1">Not detected</div>
+          <div class="pred-sublabel" id="pred-sublabel-1">Show your 2nd hand</div>
+          <div class="conf-track">
             <div class="conf-fill" id="conf-fill-1" style="width:0%;background:linear-gradient(90deg,#00F0C8,#4FC3F7);"></div>
           </div>
           <div class="conf-pct" id="conf-pct-1" style="color:#00F0C8;">0%</div>
         </div>
         <div class="hold-ring-wrap">
           <div class="hold-ring">
-            <svg viewBox="0 0 36 36">
-              <circle class="hold-ring-track" cx="18" cy="18" r="16"/>
-              <circle class="hold-ring-fill" id="hold-ring-fill-1" cx="18" cy="18" r="16"
-                stroke-dasharray="100.53" stroke-dashoffset="100.53" style="stroke:#00F0C8;"/>
+            <svg viewBox="0 0 42 42">
+              <circle class="hold-ring-track" cx="21" cy="21" r="18"/>
+              <circle class="hold-ring-fill" id="hold-ring-fill-1" cx="21" cy="21" r="18"
+                stroke-dasharray="113.1" stroke-dashoffset="113.1" style="stroke:#00F0C8;"/>
             </svg>
-            <span style="position:relative;z-index:1;font-size:.5rem;font-weight:800;color:rgba(0,240,200,.4);">HOLD</span>
+            <span style="position:relative;z-index:1;color:rgba(0,240,200,.5);">HOLD</span>
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- Word Builder -->
@@ -1022,7 +1047,7 @@ function updateTop5(preds) {
 }
 
 // ─── Hold ring SVG (per hand) ───
-const CIRCUMFERENCE = 2 * Math.PI * 16;
+const CIRCUMFERENCE = 2 * Math.PI * 18; // r=18 → 113.1
 function updateHoldRingForHand(progress, i) {
   const fill = document.getElementById('hold-ring-fill-'+i);
   if (!fill) return;
