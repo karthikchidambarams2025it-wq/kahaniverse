@@ -358,6 +358,16 @@
   </div>
 
   <div class="hero-ctas">
+    <!-- ★ ISL FINGERSPELLING — TOP FEATURE ★ -->
+    <a href="isl-fingerspelling.html" class="btn-world btn-xl" style="
+      background: linear-gradient(135deg,#6E28D9,#C77DFF);
+      color:#fff; font-weight:900;
+      box-shadow: 0 0 32px rgba(110,40,217,0.6), 0 0 64px rgba(110,40,217,0.25);
+      animation: islGlow 2s ease-in-out infinite alternate;
+      border:none; position:relative;
+    ">🖐️ ISL Fingerspelling
+      <span style="position:absolute;top:-9px;right:-9px;background:#00FF88;color:#04081A;font-size:0.55rem;font-weight:900;padding:3px 7px;border-radius:99px;letter-spacing:.05em;">35 CLASSES</span>
+    </a>
     <!-- ★ SIGN & TALK AI — PRIMARY FEATURE ★ -->
     <a href="communicate.html" class="btn-world btn-xl" style="
       background: linear-gradient(135deg,#00F0C8,#0EA5E9);
@@ -373,11 +383,10 @@
       color:#04081A; font-weight:900;
       box-shadow: 0 0 32px rgba(247,201,72,0.4);
       border:none;
-    ">🖐️ Live ISL Detection</a>
-    <a href="test-model.html" class="btn-ghost btn-lg" style="background:rgba(79,227,216,0.12);border-color:rgba(79,227,216,0.4);color:#fff;">🧪 Test ISL Model</a>
+    ">🔍 Live Detect</a>
     <a href="intro.html" class="btn-world btn-xl">🎬 Begin Story</a>
     <a href="world-map.html" class="btn-ghost btn-lg" style="background:rgba(79,227,216,0.06);border-color:rgba(79,227,216,0.2);color:#fff;">🗺️ World Map</a>
-    <a href="clinician.html" class="btn-ghost btn-sm" style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);">📊 Clinician Console</a>
+    <a href="clinician.html" class="btn-ghost btn-sm" style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);">📊 Clinician</a>
   </div>
 </section>
 
@@ -386,40 +395,55 @@
   from { box-shadow: 0 0 24px rgba(0,240,200,0.45), 0 0 48px rgba(0,240,200,0.15); }
   to   { box-shadow: 0 0 44px rgba(0,240,200,0.75), 0 0 80px rgba(0,240,200,0.35); }
 }
+@keyframes islGlow {
+  from { box-shadow: 0 0 24px rgba(110,40,217,0.5), 0 0 48px rgba(110,40,217,0.2); }
+  to   { box-shadow: 0 0 44px rgba(199,125,255,0.8), 0 0 80px rgba(110,40,217,0.4); }
+}
 </style>
 
-<!-- ★ SIGN & TALK & REAL ISL MODEL FEATURE CARDS ★ -->
+<!-- ★ ISL FINGERSPELLING + SIGN & TALK FEATURE CARDS ★ -->
 <section style="
-  max-width:860px; margin:0 auto 32px; padding:0 20px; display:flex; flex-direction:column; gap:16px;
+  max-width:900px; margin:0 auto 32px; padding:0 20px; display:flex; flex-direction:column; gap:16px;
 ">
-  <!-- Card 1: Live ISL Detection -->
-  <a href="sign-detect.html" style="
+
+  <!-- Card 0: ISL Fingerspelling — HERO CARD -->
+  <a href="isl-fingerspelling.html" style="
     display:flex; align-items:center; gap:20px;
-    background:linear-gradient(135deg,rgba(247,201,72,0.08),rgba(225,79,216,0.06));
-    border:1px solid rgba(247,201,72,0.3);
-    border-radius:20px; padding:22px 28px;
+    background:linear-gradient(135deg,rgba(110,40,217,0.18),rgba(199,125,255,0.08));
+    border:2px solid rgba(110,40,217,0.5);
+    border-radius:20px; padding:24px 28px;
     text-decoration:none; color:inherit;
     transition:all 0.3s;
-    box-shadow: 0 0 40px rgba(247,201,72,0.08);
-  " onmouseover="this.style.boxShadow='0 0 60px rgba(247,201,72,0.25)';this.style.borderColor='rgba(247,201,72,0.6)'"
-     onmouseout="this.style.boxShadow='0 0 40px rgba(247,201,72,0.08)';this.style.borderColor='rgba(247,201,72,0.3)'">
-    <div style="font-size:3.5rem;filter:drop-shadow(0 0 20px rgba(247,201,72,0.6));flex-shrink:0;">🖐️</div>
+    box-shadow: 0 0 50px rgba(110,40,217,0.2);
+    position:relative; overflow:hidden;
+  " onmouseover="this.style.boxShadow='0 0 80px rgba(110,40,217,0.45)';this.style.borderColor='rgba(199,125,255,0.8)'"
+     onmouseout="this.style.boxShadow='0 0 50px rgba(110,40,217,0.2)';this.style.borderColor='rgba(110,40,217,0.5)'">
+    <!-- glow orb decoration -->
+    <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(199,125,255,0.15),transparent 70%);pointer-events:none;"></div>
+    <div style="font-size:4rem;filter:drop-shadow(0 0 24px rgba(199,125,255,0.8));flex-shrink:0;">🖐️</div>
     <div style="flex:1;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
-        <span style="font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:900;color:#F7C948;letter-spacing:.05em;">Live ISL Detection</span>
-        <span style="background:linear-gradient(135deg,#F7C948,#E14FD8);color:#04081A;font-size:0.58rem;font-weight:900;padding:3px 9px;border-radius:99px;letter-spacing:.08em;">35-CLASS AI MODEL</span>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+        <span style="font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:900;color:#C77DFF;letter-spacing:.05em;">ISL Fingerspelling</span>
+        <span style="background:linear-gradient(135deg,#6E28D9,#C77DFF);color:#fff;font-size:0.58rem;font-weight:900;padding:3px 9px;border-radius:99px;letter-spacing:.08em;">35-CLASS MobileNetV2</span>
+        <span style="background:rgba(0,255,136,0.15);color:#00FF88;border:1px solid rgba(0,255,136,0.3);font-size:0.58rem;font-weight:900;padding:3px 9px;border-radius:99px;letter-spacing:.08em;">&gt;99% Accuracy</span>
       </div>
-      <p style="font-size:0.88rem;color:rgba(226,238,248,0.7);line-height:1.7;margin:0;">
-        Real-time on-device <strong style="color:#fff;">Indian Sign Language (ISL)</strong> fingerspelling recognition (digits 1-9, letters A-Z) powered by a trained <strong style="color:#fff;">MobileNetV2 CNN (>99% accuracy)</strong>. Includes hold-time stabilization and practice tracking.
+      <p style="font-size:0.9rem;color:rgba(226,200,255,0.75);line-height:1.7;margin:0;">
+        <strong style="color:#fff;">Dedicated fingerspelling page</strong> — show any hand sign to your camera and the AI instantly recognises <strong style="color:#C77DFF;">digits 1–9 and letters A–Z</strong>. Letters stack into a <strong style="color:#fff;">word builder</strong>, and you can tap 🔊 Speak to hear it read aloud. All 35 classes shown live with confidence scores.
       </p>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <span style="background:rgba(110,40,217,0.2);border:1px solid rgba(199,125,255,0.3);border-radius:99px;padding:3px 10px;font-size:0.65rem;font-weight:700;color:rgba(200,180,255,0.8);">📷 MediaPipe Hands</span>
+        <span style="background:rgba(110,40,217,0.2);border:1px solid rgba(199,125,255,0.3);border-radius:99px;padding:3px 10px;font-size:0.65rem;font-weight:700;color:rgba(200,180,255,0.8);">⚡ On-Device AI</span>
+        <span style="background:rgba(110,40,217,0.2);border:1px solid rgba(199,125,255,0.3);border-radius:99px;padding:3px 10px;font-size:0.65rem;font-weight:700;color:rgba(200,180,255,0.8);">🔊 Word Builder + TTS</span>
+        <span style="background:rgba(110,40,217,0.2);border:1px solid rgba(199,125,255,0.3);border-radius:99px;padding:3px 10px;font-size:0.65rem;font-weight:700;color:rgba(200,180,255,0.8);">📊 Top-5 Live Scores</span>
+      </div>
     </div>
     <div style="flex-shrink:0;text-align:center;">
-      <div style="font-family:monospace;font-size:0.65rem;color:rgba(247,201,72,0.7);letter-spacing:.1em;margin-bottom:6px;">LAUNCH</div>
-      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#F7C948,#E14FD8);display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 16px rgba(247,201,72,0.4);color:#04081A;font-weight:900;">▶</div>
+      <div style="font-family:monospace;font-size:0.65rem;color:rgba(199,125,255,0.7);letter-spacing:.1em;margin-bottom:6px;">OPEN</div>
+      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6E28D9,#C77DFF);display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 0 24px rgba(110,40,217,0.5);color:#fff;font-weight:900;">▶</div>
     </div>
   </a>
 
-  <!-- Card 2: Sign & Talk AI Chat -->
+  <!-- Card 1: Sign & Talk AI Chat -->
   <a href="communicate.html" style="
     display:flex; align-items:center; gap:20px;
     background:linear-gradient(135deg,rgba(0,240,200,0.07),rgba(14,165,233,0.05));
@@ -443,6 +467,33 @@
     <div style="flex-shrink:0;text-align:center;">
       <div style="font-family:monospace;font-size:0.65rem;color:rgba(0,240,200,0.6);letter-spacing:.1em;margin-bottom:6px;">OPEN CHAT</div>
       <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#00F0C8,#0EA5E9);display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 16px rgba(0,240,200,0.4);color:#04081A;font-weight:900;">▶</div>
+    </div>
+  </a>
+
+  <!-- Card 2: Live ISL Detection -->
+  <a href="sign-detect.html" style="
+    display:flex; align-items:center; gap:20px;
+    background:linear-gradient(135deg,rgba(247,201,72,0.08),rgba(225,79,216,0.06));
+    border:1px solid rgba(247,201,72,0.3);
+    border-radius:20px; padding:22px 28px;
+    text-decoration:none; color:inherit;
+    transition:all 0.3s;
+    box-shadow: 0 0 40px rgba(247,201,72,0.08);
+  " onmouseover="this.style.boxShadow='0 0 60px rgba(247,201,72,0.25)';this.style.borderColor='rgba(247,201,72,0.6)'"
+     onmouseout="this.style.boxShadow='0 0 40px rgba(247,201,72,0.08)';this.style.borderColor='rgba(247,201,72,0.3)'">
+    <div style="font-size:3.5rem;filter:drop-shadow(0 0 20px rgba(247,201,72,0.6));flex-shrink:0;">🔍</div>
+    <div style="flex:1;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+        <span style="font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:900;color:#F7C948;letter-spacing:.05em;">Live ISL Sign Detector</span>
+        <span style="background:linear-gradient(135deg,#F7C948,#E14FD8);color:#04081A;font-size:0.58rem;font-weight:900;padding:3px 9px;border-radius:99px;letter-spacing:.08em;">PRACTICE MODE</span>
+      </div>
+      <p style="font-size:0.88rem;color:rgba(226,238,248,0.7);line-height:1.7;margin:0;">
+        Practice ISL signs in guided mode. Choose a vocabulary set and get real-time feedback on each sign.
+      </p>
+    </div>
+    <div style="flex-shrink:0;text-align:center;">
+      <div style="font-family:monospace;font-size:0.65rem;color:rgba(247,201,72,0.7);letter-spacing:.1em;margin-bottom:6px;">LAUNCH</div>
+      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#F7C948,#E14FD8);display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 16px rgba(247,201,72,0.4);color:#04081A;font-weight:900;">▶</div>
     </div>
   </a>
 </section>
@@ -522,6 +573,7 @@
     <a href="intro.html">Intro</a> &nbsp;·&nbsp;
     <a href="profile.html">Profiles</a> &nbsp;·&nbsp;
     <a href="world-map.html">World Map</a> &nbsp;·&nbsp;
+    <a href="isl-fingerspelling.html">🖐️ ISL Fingerspelling</a> &nbsp;·&nbsp;
     <a href="sign-detect.html">✋ Sign Detector</a> &nbsp;·&nbsp;
     <a href="communicate.html">Sign &amp; Talk</a> &nbsp;·&nbsp;
     <a href="learn.html">Learn</a> &nbsp;·&nbsp;
