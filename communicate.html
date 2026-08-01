@@ -227,24 +227,25 @@ nav {
 .tts-btn.off { color: #95A5A6; border-color: #ddd; background: transparent; }
 
 /* === RIGHT PANEL (teacher/chat) === */
+/* Using CSS Grid instead of flex — grid-template-rows guarantees 1fr never collapses */
 .right {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto auto;
+  /*                  hdr  chat msgs qr-l qr-r ibar */
   background: #F0FFF8;
-  overflow-y: auto;    /* scroll if content is taller than panel */
+  overflow: hidden;
   height: 100%;
 }
 .right-hdr {
   background: linear-gradient(135deg, #2ECC71, #3498DB);
   padding: 7px 14px;
   font-family: 'Fredoka', cursive; font-size: .85rem; font-weight: 700;
-  color: #fff; flex-shrink: 0;
+  color: #fff;
 }
 .chat-hdr {
   display: flex; align-items: center; gap: 10px;
   padding: 9px 16px; background: #fff;
   border-bottom: 2px solid #D5F5E3;
-  flex-shrink: 0;
 }
 .t-ava {
   width: 38px; height: 38px; border-radius: 50%;
@@ -257,20 +258,16 @@ nav {
 .on-dot { width: 6px; height: 6px; border-radius: 50%; background: #2ECC71; box-shadow: 0 0 4px #2ECC71; }
 
 /* *** MESSAGES — THE CHAT BOX *** */
+/* This sits in the 1fr grid row — grid GUARANTEES it fills all remaining space */
 #msgs {
-  flex: 1 1 auto;
-  min-height: 300px;      /* NEVER collapse — always show the chat box */
-  max-height: calc(100vh - 350px); /* don't overflow the viewport */
   overflow-y: auto;
-  overflow-anchor: auto;
-  padding: 14px 16px 60px;
+  padding: 14px 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #F0FFF8;
-  border: 2px solid #D5F5E3;
-  border-radius: 12px;
-  margin: 8px 10px;
+  background: rgba(46,204,113,.03);
+  border-top: 1px solid #D5F5E3;
+  border-bottom: 1px solid #D5F5E3;
 }
 #msgs::-webkit-scrollbar { width: 4px; }
 #msgs::-webkit-scrollbar-thumb { background: #D5F5E3; border-radius: 99px; }
