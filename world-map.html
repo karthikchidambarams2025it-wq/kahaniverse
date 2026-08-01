@@ -234,7 +234,9 @@
     ">🖐️ ISL Fingerspelling
       <span style="position:absolute;top:-7px;right:-7px;background:#00FF88;color:#04081A;font-size:0.48rem;font-weight:900;padding:2px 5px;border-radius:99px;">35</span>
     </a>
-    <a href="sign-detect.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#4FE3D8,#0E7C7B);font-size:0.82rem;">🔍 Sign Detect</a>
+    <a href="sign-detect.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#4FE3D8,#0E7C7B);font-size:0.82rem;position:relative;">🔍 Sign Detect
+      <span style="position:absolute;top:-7px;right:-7px;background:linear-gradient(135deg,#FF5C8A,#FF9800);color:#fff;font-size:0.46rem;font-weight:900;padding:2px 5px;border-radius:99px;">🎉</span>
+    </a>
     <a href="learn.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#F7C948,#E07B2A);color:#241C15;font-size:0.82rem;">📚 Learn &amp; Grow</a>
     <a href="sticker-book.html" class="btn-peacock btn-sm" style="background:linear-gradient(135deg,#FF6B9D,#E14FD8);font-size:0.82rem;">⭐ Stickers</a>
     <a href="clinician.html" class="btn-ghost btn-sm" style="background:rgba(36,28,21,0.05);border-color:rgba(36,28,21,0.12);color:var(--ink-soft);font-size:0.82rem;">📊 Clinician</a>
@@ -297,6 +299,94 @@
 </div>
 
 <div id="kv-toast" class="toast-container"></div>
+
+<!-- ★ AI SIGN FEATURES SHOWCASE (floating card on world map) ★ -->
+<div style="
+  max-width: 860px; margin: 20px auto; padding: 0 16px;
+" id="sign-features-bar">
+  <div style="
+    background: linear-gradient(135deg,rgba(14,10,26,0.97),rgba(30,10,60,0.97));
+    border: 2px solid rgba(199,125,255,0.3);
+    border-radius: 24px;
+    padding: 22px 26px;
+    box-shadow: 0 8px 48px rgba(110,40,217,0.25), 0 0 0 1px rgba(199,125,255,0.08);
+  ">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+      <span style="font-size:1.6rem;">✋</span>
+      <div>
+        <div style="font-family:'Baloo 2','Fredoka',cursive;font-size:1.1rem;font-weight:900;color:#C77DFF;letter-spacing:.04em;">AI Sign Recognition</div>
+        <div style="font-size:0.72rem;color:rgba(200,180,255,.5);font-weight:700;">Real-time Indian Sign Language · On-Device AI · No uploads</div>
+      </div>
+      <span style="margin-left:auto;background:linear-gradient(135deg,#FF5C8A,#FF9800);color:#fff;font-size:0.6rem;font-weight:900;padding:4px 12px;border-radius:99px;letter-spacing:.06em;">🎉 HELLO PARTY INSIDE</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+
+      <!-- Sign & Talk AI -->
+      <a href="communicate.html" style="
+        display:flex;align-items:center;gap:14px;
+        background:linear-gradient(135deg,rgba(0,240,200,0.1),rgba(14,165,233,0.06));
+        border:1.5px solid rgba(0,240,200,0.3);
+        border-radius:16px;padding:14px 16px;
+        text-decoration:none;color:inherit;
+        transition:all .25s;
+      " onmouseover="this.style.borderColor='rgba(0,240,200,0.7)';this.style.transform='translateY(-2px)'"
+         onmouseout="this.style.borderColor='rgba(0,240,200,0.3)';this.style.transform='translateY(0)'">
+        <div style="font-size:2.4rem;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(0,240,200,0.5));">💬</div>
+        <div>
+          <div style="font-weight:900;font-size:0.9rem;color:#00F0C8;margin-bottom:3px;">Sign &amp; Talk AI</div>
+          <div style="font-size:0.7rem;color:rgba(200,220,255,.55);line-height:1.5;">Show signs → teacher chat + voice. Sign HELLO for a surprise! 🎉</div>
+          <div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap;">
+            <span style="background:rgba(0,240,200,.12);color:#00F0C8;border:1px solid rgba(0,240,200,.25);border-radius:99px;padding:2px 8px;font-size:0.58rem;font-weight:800;">✋ Live AI</span>
+            <span style="background:rgba(255,92,138,.12);color:#FF5C8A;border:1px solid rgba(255,92,138,.25);border-radius:99px;padding:2px 8px;font-size:0.58rem;font-weight:800;">🎉 Hello Party</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- ISL Fingerspelling -->
+      <a href="isl-fingerspelling.html" style="
+        display:flex;align-items:center;gap:14px;
+        background:linear-gradient(135deg,rgba(110,40,217,0.18),rgba(199,125,255,0.08));
+        border:1.5px solid rgba(110,40,217,0.4);
+        border-radius:16px;padding:14px 16px;
+        text-decoration:none;color:inherit;
+        transition:all .25s;
+      " onmouseover="this.style.borderColor='rgba(199,125,255,0.8)';this.style.transform='translateY(-2px)'"
+         onmouseout="this.style.borderColor='rgba(110,40,217,0.4)';this.style.transform='translateY(0)'">
+        <div style="font-size:2.4rem;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(199,125,255,0.6));">🖐️</div>
+        <div>
+          <div style="font-weight:900;font-size:0.9rem;color:#C77DFF;margin-bottom:3px;">ISL Fingerspelling</div>
+          <div style="font-size:0.7rem;color:rgba(200,180,255,.55);line-height:1.5;">35-class MobileNetV2 · Dual hand · Word builder + TTS</div>
+          <div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap;">
+            <span style="background:rgba(110,40,217,.15);color:#C77DFF;border:1px solid rgba(199,125,255,.25);border-radius:99px;padding:2px 8px;font-size:0.58rem;font-weight:800;">35 Classes</span>
+            <span style="background:rgba(0,255,136,.1);color:#00FF88;border:1px solid rgba(0,255,136,.25);border-radius:99px;padding:2px 8px;font-size:0.58rem;font-weight:800;">&gt;99% Acc</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Sign Detect -->
+      <a href="sign-detect.html" style="
+        display:flex;align-items:center;gap:14px;
+        background:linear-gradient(135deg,rgba(247,201,72,0.1),rgba(225,79,216,0.06));
+        border:1.5px solid rgba(247,201,72,0.3);
+        border-radius:16px;padding:14px 16px;
+        text-decoration:none;color:inherit;
+        transition:all .25s;
+      " onmouseover="this.style.borderColor='rgba(247,201,72,0.7)';this.style.transform='translateY(-2px)'"
+         onmouseout="this.style.borderColor='rgba(247,201,72,0.3)';this.style.transform='translateY(0)'">
+        <div style="font-size:2.4rem;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(247,201,72,0.5));">🔍</div>
+        <div>
+          <div style="font-weight:900;font-size:0.9rem;color:#F7C948;margin-bottom:3px;">Sign Detect Practice</div>
+          <div style="font-size:0.7rem;color:rgba(226,238,200,.5);line-height:1.5;">Guided practice with real-time feedback. Sign HELLO for celebration! 🎊</div>
+          <div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap;">
+            <span style="background:rgba(247,201,72,.12);color:#F7C948;border:1px solid rgba(247,201,72,.25);border-radius:99px;padding:2px 8px;font-size:0.58rem;font-weight:800;">🎯 Practice</span>
+            <span style="background:rgba(255,92,138,.12);color:#FF5C8A;border:1px solid rgba(255,92,138,.25);border-radius:99px;padding:2px 8px;font-size:0.58rem;font-weight:800;">🎉 Hello Party</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</div>
 
 <div class="persistent-nav" role="navigation" aria-label="Quick navigation">
   <a href="index.html" class="persistent-btn" aria-label="Home">🏠 Home</a>

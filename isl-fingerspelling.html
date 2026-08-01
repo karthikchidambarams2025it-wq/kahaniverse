@@ -15,6 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0"></script>
   <script src="assets/js/isl-recognizer.js"></script>
+  <script src="assets/js/hello-celebration.js"></script>
 
 <style>
 /* ===== RESET & BASE ===== */
@@ -1062,6 +1063,14 @@ function commitLetter(letter, confidence, handIdx) {
   showSpeakFlash('✅ ' + (isNaN(parseInt(letter)) ? 'Letter' : 'Digit') + ': ' + letter + tag);
   const chip = document.getElementById('chip-' + letter);
   if (chip) { chip.classList.add('active'); setTimeout(() => chip.classList.remove('active'), 600); }
+
+  // 🎉 Celebrate when child spells H-E-L-L-O
+  const currentWord = wordChars.join('').toUpperCase();
+  if (currentWord === 'HELLO') {
+    setTimeout(() => {
+      if (window.showHelloCelebration) showHelloCelebration();
+    }, 400);
+  }
 }
 
 // ─── Word builder ───
