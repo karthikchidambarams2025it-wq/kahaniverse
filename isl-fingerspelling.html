@@ -9,40 +9,51 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- MediaPipe + TensorFlow.js -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0"></script>
-  <script src="assets/js/hello-celebration.js"></script>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/world.css">
+  <style>
+    body {
+      background: linear-gradient(180deg, #87CEEB 0%, #B8E4F5 30%, #FFF8EC 100%) !important;
+      color: var(--ink) !important;
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-<style>
-/* ===== RESET & BASE ===== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── FESTIVAL BUNTING FLAGS ── */
+    .bunting {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 28px; display: flex; justify-content: space-around;
+      pointer-events: none; z-index: 101; overflow: hidden;
+    }
+    .bunting-flag {
+      width: 0; height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 24px solid;
+      animation: flagSway 2s ease-in-out infinite;
+      animation-delay: var(--flag-delay, 0s);
+    }
+    @keyframes flagSway { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
 
-body {
-  font-family: 'Nunito', sans-serif;
-  background: #F0F4FF;
-  color: #2C3E50;
-  min-height: 100vh;
-  overflow-x: hidden;
-  background-image:
-    radial-gradient(circle at 10% 10%, rgba(255,107,157,.12) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(78,201,225,.12) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(247,220,111,.1) 0%, transparent 50%);
-}
-
-/* === TOPNAV === */
-nav {
-  height: 56px;
-  display: flex; align-items: center; gap: 10px;
-  padding: 0 20px;
-  background: #FFFFFF;
-  border-bottom: 3.5px solid #F7DC6F;
-  box-shadow: 0 4px 16px rgba(0,0,0,.06);
-  position: sticky; top: 0; z-index: 100;
-}
-.brand {
+    /* === TOPNAV === */
+    nav {
+      height: 58px;
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 20px;
+      background: rgba(255,248,236,0.92) !important;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 4px 20px rgba(36,28,21,0.1);
+      border-bottom: 3px solid var(--marigold) !important;
+      position: sticky; top: 0; z-index: 200;
+    }
+    .brand {
+      font-family: var(--font-display);
+      font-size: 1.35rem; font-weight: 800;
+      background: linear-gradient(135deg,var(--peacock),var(--marigold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none; white-space: nowrap; display: flex; align-items: center; gap: 6px;
+    }
   font-family: 'Fredoka', cursive;
   font-size: 1.25rem; font-weight: 700;
   color: #9B59B6; text-decoration: none;
@@ -502,7 +513,21 @@ nav {
 </style>
 </head>
 
-<body>
+<body class="world-body">
+
+<!-- Bunting Flags Decoration -->
+<div class="bunting">
+  <div class="bunting-flag" style="border-top-color:#FF6B9D;--flag-delay:0s"></div>
+  <div class="bunting-flag" style="border-top-color:#F7C948;--flag-delay:.3s"></div>
+  <div class="bunting-flag" style="border-top-color:#4FE3D8;--flag-delay:.6s"></div>
+  <div class="bunting-flag" style="border-top-color:#3A7D44;--flag-delay:.9s"></div>
+  <div class="bunting-flag" style="border-top-color:#FF9800;--flag-delay:1.2s"></div>
+  <div class="bunting-flag" style="border-top-color:#9B59B6;--flag-delay:1.5s"></div>
+</div>
+
+<!-- Floating cloud background -->
+<div class="cloud" style="top:12%;left:4%;width:180px;height:180px;"></div>
+<div class="cloud" style="top:25%;right:8%;width:220px;height:220px;animation-delay:6s;"></div>
 
 <!-- ===== TOPNAV ===== -->
 <nav>

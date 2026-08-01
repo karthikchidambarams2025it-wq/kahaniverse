@@ -8,71 +8,65 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/world.css">
   <link rel="stylesheet" href="css/a11y.css">
   <style>
-    /* ── DESIGN TOKENS — CHILD THEME (BRIGHT & ATTRACTIVE) ── */
-    :root {
-      --void:        #F0F4FF;
-      --void-mid:    #FFFFFF;
-      --void-soft:   #FFF8EC;
-      --thread-cyan: #4EC9E1;
-      --thread-magenta: #FF6B9D;
-      --thread-gold: #F7DC6F;
-      --marigold:    #F2994A;
-      --peacock:     #9B59B6;
-      --kumkum:      #FF5252;
-      --correct:     #2ECC71;
-      --wrong:       #FF5252;
-      --font-display: 'Baloo 2', cursive;
-      --font-body:   'Nunito', sans-serif;
-      --font-clinic: 'IBM Plex Sans', sans-serif;
-      --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 28px; --r-full: 999px;
-      --s-xs: 4px; --s-sm: 8px; --s-md: 12px; --s-lg: 16px; --s-xl: 24px; --s-2xl: 40px;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
     body {
-      background: #F0F4FF;
-      color: #2C3E50;
+      background: linear-gradient(180deg, #87CEEB 0%, #B8E4F5 30%, #FFF8EC 100%) !important;
+      color: var(--ink) !important;
       font-family: var(--font-body);
       min-height: 100vh;
       overflow-x: hidden;
-      background-image:
-        radial-gradient(circle at 10% 10%, rgba(255,107,157,.12) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(78,201,225,.12) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, rgba(247,220,111,.15) 0%, transparent 50%);
     }
 
-    /* ── AMBIENT PARTICLES ── */
-    .star { position: fixed; border-radius: 50%; animation: starTwinkle var(--dur,3s) var(--delay,0s) ease-in-out infinite; }
-    @keyframes starTwinkle { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:0.9;transform:scale(1.5)} }
+    /* ── FESTIVAL BUNTING FLAGS ── */
+    .bunting {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 28px; display: flex; justify-content: space-around;
+      pointer-events: none; z-index: 101; overflow: hidden;
+    }
+    .bunting-flag {
+      width: 0; height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 24px solid;
+      animation: flagSway 2s ease-in-out infinite;
+      animation-delay: var(--flag-delay, 0s);
+    }
+    @keyframes flagSway { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
 
     /* ── TOP NAV ── */
     .top-nav {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky; top: 0; z-index: 200;
       display: flex; align-items: center; justify-content: space-between;
       padding: var(--s-md) var(--s-xl);
-      background: #FFFFFF;
-      box-shadow: 0 4px 16px rgba(0,0,0,.06);
-      border-bottom: 3.5px solid #F7DC6F;
+      background: rgba(255,248,236,0.92) !important;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 4px 20px rgba(36,28,21,0.1);
+      border-bottom: 3px solid var(--marigold) !important;
       flex-wrap: wrap; gap: var(--s-sm);
     }
-    .nav-brand { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: var(--s-sm); color: #9B59B6; }
-    .nav-brand span { font-size: 1.6rem; }
+    .nav-brand {
+      font-family: var(--font-display); font-size: 1.4rem; font-weight: 800;
+      display: flex; align-items: center; gap: var(--s-sm);
+      background: linear-gradient(135deg, var(--peacock), var(--marigold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-brand span { font-size: 1.8rem; -webkit-text-fill-color: initial; }
     .nav-badge {
-      background: rgba(155,89,182,.12); border: 2px solid rgba(155,89,182,.3);
+      background: rgba(242,153,74,0.15); border: 1.5px solid var(--marigold);
       border-radius: var(--r-full); padding: 5px 16px;
-      font-size: 0.75rem; font-weight: 900; color: #9B59B6; letter-spacing: 0.06em;
+      font-size: 0.78rem; font-weight: 900; color: var(--marigold-deep); letter-spacing: 0.06em;
       text-transform: uppercase;
     }
     .btn-ghost {
-      background: #F0F4FF; border: 2px solid #D5E0FF;
-      color: #2C3E50; border-radius: var(--r-full);
+      background: rgba(255,255,255,0.7); border: 1.5px solid rgba(242,153,74,0.3);
+      color: var(--ink); border-radius: var(--r-full);
       padding: 6px 18px; font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
       cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
     }
-    .btn-ghost:hover { background: #E2EBFF; color: #9B59B6; border-color: #9B59B6; }
+    .btn-ghost:hover { background: #FFF; color: var(--peacock); border-color: var(--marigold); transform: translateY(-2px); }
 
     /* ── MAIN LAYOUT ── */
     .main-grid {
@@ -393,10 +387,21 @@
     @keyframes toastIn { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
   </style>
 </head>
-<body>
+<body class="world-body">
 
-<!-- Stars background -->
-<div id="stars-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;"></div>
+<!-- Bunting Flags Decoration -->
+<div class="bunting">
+  <div class="bunting-flag" style="border-top-color:#FF6B9D;--flag-delay:0s"></div>
+  <div class="bunting-flag" style="border-top-color:#F7C948;--flag-delay:.3s"></div>
+  <div class="bunting-flag" style="border-top-color:#4FE3D8;--flag-delay:.6s"></div>
+  <div class="bunting-flag" style="border-top-color:#3A7D44;--flag-delay:.9s"></div>
+  <div class="bunting-flag" style="border-top-color:#FF9800;--flag-delay:1.2s"></div>
+  <div class="bunting-flag" style="border-top-color:#9B59B6;--flag-delay:1.5s"></div>
+</div>
+
+<!-- Floating cloud background -->
+<div class="cloud" style="top:10%;left:5%;width:180px;height:180px;"></div>
+<div class="cloud" style="top:30%;right:10%;width:220px;height:220px;animation-delay:8s;"></div>
 
 <!-- ── TOP NAV ── -->
 <nav class="top-nav">
