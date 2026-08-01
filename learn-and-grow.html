@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn &amp; Grow — Kahaniverse 🌱</title>
+  <meta name="description" content="Your child's persistent therapy journey garden — watch it bloom as Kahi grows with every session.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800;900&family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/a11y.css">
+
+<style>
+/* ══════════════════════════════════════════════════════
+   LEARN & GROW — Kahaniverse
+   A festival of progress for every child
+══════════════════════════════════════════════════════ */
+:root {
+  --garden-green:  #2E7D32;
+  --leaf-light:    #66BB6A;
+  --sky-day:       #87CEEB;
+  --soil:          #6D4C41;
+  --firefly:       #F9A825;
+  --blossom:       #FF80AB;
+  --sun:           #FFD600;
+  --bark:          #5D4037;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(180deg, #0B0E2B 0%, #0E1A0E 60%, #1A2E1A 100%);
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── PERSISTENT NAV ── */
+.top-nav {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; height: 54px;
+  background: rgba(11,14,43,0.95);
+  border-bottom: 2px solid rgba(242,153,74,0.25);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 200;
+}
+.nav-brand {
+  font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 900;
+  color: #F2994A; text-decoration: none; white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+}
+.nav-links { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+.nav-links::-webkit-scrollbar { display: none; }
+.nl {
+  font-size: 0.7rem; font-weight: 800; white-space: nowrap;
+  color: rgba(255,255,255,0.55); text-decoration: none;
+  padding: 5px 12px; border-radius: 99px;
+  border: 1.5px solid transparent;
+  transition: all 0.2s;
+}
+.nl:hover, .nl.cur {
+  color: #F2994A; border-color: rgba(242,153,74,0.4);
+  background: rgba(242,153,74,0.08);
+}
+.profile-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 99px; padding: 4px 12px 4px 4px;
+  cursor: pointer; transition: all 0.2s;
+}
+.profile-chip:hover { background: rgba(255,255,255,0.1); }
+.nav-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(242,153,74,0.2);
+  border: 2px solid rgba(242,153,74,0.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+
+/* ── HERO BANNER ── */
+.hero {
+  padding: 48px 24px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%,
+    rgba(242,153,74,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.18em;
+  text-transform: uppercase; color: rgba(242,153,74,0.7);
+  margin-bottom: 10px;
+}
+.hero h1 {
+  font-family: 'Baloo 2', cursive;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-weight: 900; line-height: 1.15;
+  margin-bottom: 12px;
+}
+.hero h1 .grow { color: #66BB6A; }
+.hero h1 .kahi { color: #F2994A; }
+.hero-sub {
+  font-size: 1rem; color: rgba(255,255,255,0.65);
+  max-width: 540px; margin: 0 auto 28px;
+  line-height: 1.7;
+}
+.hero-stats {
+  display: flex; gap: 20px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 0;
+}
+.hero-stat {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 12px 20px;
+  min-width: 90px; text-align: center;
+}
+.hero-stat-val {
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.6rem; font-weight: 900; line-height: 1;
+  color: #F7C948;
+}
+.hero-stat-lbl {
+  font-size: 0.62rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.4); margin-top: 4px;
+}
+
+/* ── MAIN GRID ── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+@media (max-width: 820px) {
+  .main-grid { grid-template-columns: 1fr; }
+}
+
+/* ── GARDEN PANEL ── */
+.garden-panel {
+  background: linear-gradient(180deg,
+    rgba(14,26,14,0.9) 0%,
+    rgba(20,40,20,0.95) 100%);
+  border: 2px solid rgba(102,187,106,0.25);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(102,187,106,0.08);
+}
+.garden-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(102,187,106,0.12);
+  display: flex; align-items: center; gap: 12px;
+}
+.garden-title {
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.1rem; font-weight: 900; color: #66BB6A;
+}
+.garden-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); font-weight: 700; }
+.stage-badge {
+  margin-left: auto;
+  background: rgba(102,187,106,0.15);
+  border: 1.5px solid rgba(102,187,106,0.4);
+  border-radius: 99px; padding: 4px 14px;
+  font-size: 0.7rem; font-weight: 900;
+  color: #66BB6A; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Garden SVG scene */
+.garden-scene {
+  width: 100%; height: 320px;
+  position: relative;
+  background: linear-gradient(180deg,
+    #0a1a2e 0%, #0d2340 25%, #0E4A3A 65%, #1a3a1a 100%);
+  overflow: hidden;
+}
+/* Sky stars */
+.garden-scene::before {
+  content: '✦ ⋆ ˚ · ✦ ˚ ⋆ · ✦ ˚ ⋆ · ✦ ⋆ ˚';
+  position: absolute; top: 10px; left: 0; right: 0;
+  text-align: center; font-size: 0.7rem;
+  color: rgba(255,255,255,0.35); letter-spacing: 18px;
+  pointer-events: none;
+}
+/* Moon */
+.garden-moon {
+  position: absolute; top: 20px; right: 40px;
+  font-size: 2.2rem; opacity: 0.85;
+  animation: moonFloat 6s ease-in-out infinite alternate;
+}
+@keyframes moonFloat { 0%{transform:translateY(0)} 100%{transform:translateY(-8px)} }
+
+/* Ground */
+.garden-ground {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 72px;
+  background: linear-gradient(180deg, #2d1a0a, #1a0d05);
+  border-radius: 60% 60% 0 0 / 30px 30px 0 0;
+}
+/* Grass strip */
+.garden-grass {
+  position: absolute; bottom: 60px; left: 0; right: 0;
+  height: 28px;
+  background: linear-gradient(180deg, #2E7D32, #1B5E20);
+  border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+}
+
+/* Tree container */
+#garden-tree {
+  position: absolute; bottom: 68px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center;
+  transition: all 1.2s cubic-bezier(0.34,1.26,0.64,1);
+}
+.tree-emoji {
+  font-size: 5rem; line-height: 1;
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+  transition: font-size 0.8s cubic-bezier(0.34,1.26,0.64,1);
+  animation: treeSway 4s ease-in-out infinite alternate;
+}
+@keyframes treeSway { 0%{transform:rotate(-2deg)} 100%{transform:rotate(2deg)} }
+
+/* Stage-specific tree sizes */
+.stage-0 .tree-emoji { font-size: 2.4rem; }
+.stage-1 .tree-emoji { font-size: 3rem; }
+.stage-2 .tree-emoji { font-size: 3.8rem; }
+.stage-3 .tree-emoji { font-size: 4.6rem; }
+.stage-4 .tree-emoji { font-size: 5.4rem; }
+.stage-5 .tree-emoji { font-size: 6rem; }
+
+/* Fireflies for stage 5 */
+.firefly {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #F9A825;
+  box-shadow: 0 0 8px 3px rgba(249,168,37,0.7);
+  animation: fireflyDance var(--dur,4s) ease-in-out infinite alternate;
+  opacity: 0.8;
+}
+@keyframes fireflyDance {
+  0%   { transform: translate(0,0) scale(1); opacity: 0.4; }
+  50%  { opacity: 1; }
+  100% { transform: translate(var(--tx,20px),var(--ty,-30px)) scale(0.6); opacity: 0.3; }
+}
+
+/* Kahi on the garden */
+.kahi-garden {
+  position: absolute; bottom: 70px; right: 32px;
+  display: flex; flex-direction: column; align-items: center;
+  cursor: pointer;
+  animation: kahiWiggle 3s ease-in-out infinite;
+}
+@keyframes kahiWiggle {
+  0%,100%{transform:translateY(0) rotate(-2deg)}
+  50%    {transform:translateY(-6px) rotate(2deg)}
+}
+.kahi-emoji { font-size: 3.5rem; line-height: 1; }
+.kahi-bubble {
+  background: rgba(255,248,236,0.97);
+  border: 2px solid #F2994A;
+  border-radius: 14px 14px 14px 4px;
+  padding: 6px 12px;
+  font-size: 0.7rem; font-weight: 800;
+  color: #241C15; white-space: nowrap;
+  margin-bottom: 6px;
+  box-shadow: 0 4px 16px rgba(242,153,74,0.3);
+  max-width: 160px; white-space: normal; text-align: center;
+}
+
+/* Growth progress bar */
+.growth-bar-wrap {
+  padding: 16px 24px 20px;
+}
+.growth-label-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.growth-label {
+  font-size: 0.72rem; font-weight: 800;
+  color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.growth-pct {
+  font-family: 'Baloo 2', cursive;
+  font-size: 0.88rem; font-weight: 900; color: #66BB6A;
+}
+.growth-rail {
+  height: 12px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px; overflow: hidden;
+}
+.growth-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2E7D32, #66BB6A, #A5D6A7);
+  border-radius: 99px;
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+.growth-fill::after {
+  content: '';
+  position: absolute; right: 0; top: 0;
+  width: 20px; height: 100%;
+  background: rgba(255,255,255,0.5);
+  filter: blur(6px); border-radius: 99px;
+}
+
+/* Stage dots */
+.stage-dots {
+  display: flex; justify-content: space-between;
+  padding: 6px 0 0;
+}
+.stage-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  transition: all 0.4s;
+  position: relative;
+}
+.stage-dot.done {
+  background: #66BB6A;
+  border-color: #66BB6A;
+  box-shadow: 0 0 8px rgba(102,187,106,0.6);
+}
+.stage-dot.active {
+  background: #F7C948;
+  border-color: #F7C948;
+  box-shadow: 0 0 10px rgba(247,201,72,0.8);
+  animation: dotPulse 1s ease-in-out infinite alternate;
+}
+@keyframes dotPulse { 0%{transform:scale(1)} 100%{transform:scale(1.4)} }
+
+/* Stage names */
+.stage-names {
+  display: flex; justify-content: space-between;
+  padding: 4px 0;
+}
+.stage-name {
+  font-size: 0.55rem; font-weight: 800;
+  color: rgba(255,255,255,0.3); text-align: center;
+  flex: 1; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.stage-name.done { color: #66BB6A; }
+.stage-name.active { color: #F7C948; }
+
+/* ── KAHI MOOD ── */
+.kahi-mood-panel {
+  background: rgba(255,255,255,0.04);
+  border-top: 1px solid rgba(102,187,106,0.1);
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 14px;
+}
+.kahi-mood-face {
+  font-size: 2.8rem; line-height: 1;
+  animation: kahiMoodAnim 3s ease-in-out infinite alternate;
+}
+@keyframes kahiMoodAnim { 0%{transform:scale(1) rotate(-3deg)} 100%{transform:scale(1.08) rotate(3deg)} }
+.kahi-mood-text { flex: 1; }
+.kahi-mood-label {
+  font-size: 0.7rem; font-weight: 900;
+  color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 3px;
+}
+.kahi-mood-msg {
+  font-family: 'Baloo 2', cursive;
+  font-size: 0.92rem; font-weight: 700;
+  color: #fff; line-height: 1.4;
+}
+.kahi-mood-score {
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.8rem; font-weight: 900;
+  color: #F7C948;
+  text-align: center; min-width: 40px;
+}
+
+/* ── RIGHT SIDEBAR ── */
+.sidebar { display: flex; flex-direction: column; gap: 18px; }
+
+/* ── CARD BASE ── */
+.card {
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 22px;
+  overflow: hidden;
+}
+.card-head {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title {
+  font-family: 'Baloo 2', cursive;
+  font-size: 0.95rem; font-weight: 900;
+}
+.card-body { padding: 16px 20px; }
+
+/* ── NEXT SESSION CARD ── */
+.next-session-card { border-color: rgba(242,153,74,0.3); }
+.next-session-card .card-head { background: rgba(242,153,74,0.06); }
+.next-session-card .card-title { color: #F2994A; }
+.ns-suggestion {
+  background: linear-gradient(135deg,
+    rgba(242,153,74,0.12), rgba(244,180,0,0.08));
+  border: 1.5px solid rgba(242,153,74,0.3);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.ns-icon { font-size: 2.2rem; margin-bottom: 8px; }
+.ns-gap {
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.5rem; font-weight: 900; color: #F7C948;
+  margin-bottom: 4px;
+}
+.ns-reason {
+  font-size: 0.75rem; color: rgba(255,255,255,0.55);
+  line-height: 1.5;
+}
+.ns-caregiver {
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px; padding: 12px 14px;
+  font-size: 0.78rem; color: rgba(255,255,255,0.7);
+  line-height: 1.5; font-style: italic;
+  border-left: 3px solid rgba(242,153,74,0.5);
+}
+.ns-caregiver strong { color: #F2994A; font-style: normal; }
+
+/* ── THINNING INDICATOR CARD ── */
+.thinning-card { border-color: rgba(79,195,247,0.3); }
+.thinning-card .card-head { background: rgba(79,195,247,0.06); }
+.thinning-card .card-title { color: #4FC3F7; }
+.thinning-item {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+}
+.thinning-item:last-child { margin-bottom: 0; }
+.thinning-icon { font-size: 1.4rem; flex-shrink: 0; }
+.thinning-info { flex: 1; }
+.thinning-world {
+  font-size: 0.78rem; font-weight: 800; color: #fff;
+  margin-bottom: 3px;
+}
+.thinning-bar-wrap {
+  height: 7px; background: rgba(255,255,255,0.08);
+  border-radius: 99px; overflow: hidden;
+}
+.thinning-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4FC3F7, #00FF88);
+  border-radius: 99px;
+  transition: width 1.2s ease;
+}
+.thinning-msg {
+  font-size: 0.6rem; font-weight: 700;
+  color: rgba(79,195,247,0.7); margin-top: 3px;
+}
+.thinning-note {
+  background: rgba(79,195,247,0.07);
+  border-radius: 12px; padding: 10px 12px;
+  font-size: 0.72rem; color: rgba(255,255,255,0.55);
+  line-height: 1.5; margin-top: 12px;
+  border: 1px solid rgba(79,195,247,0.15);
+}
+.thinning-note .highlight { color: #66BB6A; font-weight: 800; }
+
+/* ── CROSS-WORLD BADGES ── */
+.badges-card { border-color: rgba(247,201,72,0.3); }
+.badges-card .card-head { background: rgba(247,201,72,0.06); }
+.badges-card .card-title { color: #F7C948; }
+.badge-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.badge-item:last-child { border-bottom: none; padding-bottom: 0; }
+.badge-emoji-wrap {
+  width: 46px; height: 46px; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(247,201,72,0.2), rgba(242,153,74,0.15));
+  border: 1.5px solid rgba(247,201,72,0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(247,201,72,0.2);
+}
+.badge-emoji-wrap.locked {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.1);
+  filter: grayscale(1);
+}
+.badge-name {
+  font-size: 0.82rem; font-weight: 900; color: #F7C948;
+  margin-bottom: 3px;
+}
+.badge-name.locked { color: rgba(255,255,255,0.35); }
+.badge-desc {
+  font-size: 0.68rem; color: rgba(255,255,255,0.5);
+  line-height: 1.5;
+}
+.badge-worlds {
+  display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap;
+}
+.badge-world-tag {
+  font-size: 0.58rem; font-weight: 800;
+  padding: 2px 8px; border-radius: 99px;
+  background: rgba(247,201,72,0.12);
+  border: 1px solid rgba(247,201,72,0.25);
+  color: rgba(247,201,72,0.8);
+}
+.badge-lock-msg {
+  font-size: 0.62rem; color: rgba(255,255,255,0.25);
+  font-style: italic; margin-top: 4px;
+}
+
+/* Unlock flash */
+.badge-unlock-flash {
+  animation: badgeUnlock 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes badgeUnlock {
+  0%   { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* ── CLINICIAN NOTE BOX ── */
+.clinician-note {
+  background: rgba(27,94,32,0.1);
+  border: 1.5px solid rgba(102,187,106,0.25);
+  border-radius: 16px; padding: 16px 20px;
+  margin: 0 20px 20px;
+}
+.clinician-note-head {
+  font-size: 0.68rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: rgba(102,187,106,0.7); margin-bottom: 8px;
+}
+.clinician-note-body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.8rem; color: rgba(255,255,255,0.6);
+  line-height: 1.6;
+}
+.clinician-note-body strong { color: #66BB6A; }
+
+/* ── BOTTOM NAV ── */
+.persistent-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(11,14,43,0.97);
+  border-top: 1px solid rgba(242,153,74,0.2);
+  display: flex; justify-content: center; gap: 8px;
+  padding: 10px 16px 12px;
+  z-index: 199;
+}
+.persistent-btn {
+  font-size: 0.72rem; font-weight: 800;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none; padding: 5px 12px;
+  border-radius: 99px;
+  border: 1.5px solid transparent;
+  transition: all 0.2s;
+}
+.persistent-btn:hover, .persistent-btn.cur {
+  color: #F2994A;
+  border-color: rgba(242,153,74,0.4);
+  background: rgba(242,153,74,0.07);
+}
+
+/* ── LOADING SHIMMER ── */
+.shimmer {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.1) 50%,
+    rgba(255,255,255,0.04) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px; height: 14px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── TOAST ── */
+#kv-toast {
+  position: fixed; top: 70px; right: 20px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+}
+
+/* ── RESPONSIVE PADDING ── */
+@media (max-width:600px) {
+  .hero h1 { font-size: 1.7rem; }
+  .garden-scene { height: 240px; }
+  .kahi-garden { right: 12px; }
+  .main-grid { padding: 20px 14px 80px; gap: 16px; }
+}
+
+/* ── REDUCED MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav" aria-label="Main navigation">
+  <a href="index.html" class="nav-brand">🦚 Kahaniverse</a>
+  <div class="nav-links">
+    <a href="index.html" class="nl">🏠 Home</a>
+    <a href="world-map.html" class="nl">🗺️ World Map</a>
+    <a href="learn-and-grow.html" class="nl cur">🌱 Learn &amp; Grow</a>
+    <a href="communicate.html" class="nl">✋ Sign &amp; Talk</a>
+    <a href="sign-detect.html" class="nl">🔍 Sign Detect</a>
+    <a href="isl-fingerspelling.html" class="nl">🖐️ ISL</a>
+    <a href="sticker-book.html" class="nl">⭐ Stickers</a>
+    <a href="clinician.html" class="nl">📊 Clinician</a>
+  </div>
+  <div class="profile-chip" id="profile-chip" onclick="window.location.href='profile.html'" role="button" tabindex="0" aria-label="View profile">
+    <div class="nav-avatar" id="nav-avatar">🧒</div>
+    <div>
+      <div style="font-size:0.75rem;font-weight:800;color:#fff;" id="nav-name">Loading…</div>
+      <div style="font-size:0.58rem;color:rgba(255,255,255,0.4);" id="nav-level">—</div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="main-content">
+  <div class="hero-eyebrow">🌱 Your Therapy Journey</div>
+  <h1>
+    <span class="grow">Learn</span> &amp;
+    <span class="kahi">Grow</span>
+    with Kahi
+  </h1>
+  <p class="hero-sub">
+    Every word you try, every sign you make, every session you finish — 
+    waters Kahi's garden. Watch it bloom as you grow! 🌻
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-val" id="stat-xp">—</div>
+      <div class="hero-stat-lbl">Total XP</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val" id="stat-sessions">—</div>
+      <div class="hero-stat-lbl">Sessions</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val" id="stat-streak">—🔥</div>
+      <div class="hero-stat-lbl">Day Streak</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val" id="stat-rewards">—</div>
+      <div class="hero-stat-lbl">Rewards Earned</div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+
+  <!-- ════════ LEFT: GARDEN ════════ -->
+  <div>
+    <div class="garden-panel">
+      <div class="garden-header">
+        <div>
+          <div class="garden-title">🌳 Kahi's Growing Garden</div>
+          <div class="garden-sub">Grows with every reward across all worlds</div>
+        </div>
+        <div class="stage-badge" id="stage-badge">Seed</div>
+      </div>
+
+      <!-- SVG/CSS Garden Scene -->
+      <div class="garden-scene" role="img" aria-label="Kahi's growing garden" id="garden-scene">
+        <div class="garden-moon">🌙</div>
+
+        <!-- Tree (grows via JS) -->
+        <div id="garden-tree" class="stage-0">
+          <div class="tree-emoji" id="tree-emoji">🌱</div>
+        </div>
+
+        <!-- Fireflies container (stage 5 only) -->
+        <div id="fireflies" style="display:none;position:absolute;inset:0;pointer-events:none;"></div>
+
+        <!-- Kahi mascot -->
+        <div class="kahi-garden" id="kahi-garden" 
+             onclick="kahiSpeak()" 
+             role="button" tabindex="0" 
+             aria-label="Tap Kahi for a message">
+          <div class="kahi-bubble" id="kahi-garden-bubble" style="display:none;"></div>
+          <div class="kahi-emoji" id="kahi-garden-emoji">🦚</div>
+        </div>
+
+        <!-- Ground elements -->
+        <div class="garden-grass"></div>
+        <div class="garden-ground"></div>
+
+        <!-- Small decorative flowers -->
+        <div style="position:absolute;bottom:64px;left:20px;font-size:1.2rem;animation:treeSway 3s ease-in-out 0.5s infinite alternate;" aria-hidden="true">🌸</div>
+        <div style="position:absolute;bottom:64px;left:44px;font-size:0.9rem;animation:treeSway 2.8s ease-in-out 1s infinite alternate;" aria-hidden="true">🌼</div>
+        <div id="extra-flowers" style="position:absolute;bottom:64px;left:80px;" aria-hidden="true"></div>
+      </div>
+
+      <!-- Growth bar -->
+      <div class="growth-bar-wrap">
+        <div class="growth-label-row">
+          <span class="growth-label">Garden Growth</span>
+          <span class="growth-pct" id="growth-pct">0%</span>
+        </div>
+        <div class="growth-rail" role="progressbar" aria-label="Garden growth progress" id="growth-rail">
+          <div class="growth-fill" id="growth-fill" style="width:0%"></div>
+        </div>
+        <div class="stage-dots" id="stage-dots" style="margin-top:8px;"></div>
+        <div class="stage-names" id="stage-names"></div>
+      </div>
+
+      <!-- Kahi mood -->
+      <div class="kahi-mood-panel" id="kahi-mood-panel">
+        <div class="kahi-mood-face" id="kahi-mood-face">🦚</div>
+        <div class="kahi-mood-text">
+          <div class="kahi-mood-label">Kahi's Mood — Last Session</div>
+          <div class="kahi-mood-msg" id="kahi-mood-msg">Loading…</div>
+        </div>
+        <div class="kahi-mood-score" id="kahi-mood-score">—</div>
+      </div>
+
+      <!-- Clinician note -->
+      <div class="clinician-note" role="note">
+        <div class="clinician-note-head">📋 Clinician Note</div>
+        <div class="clinician-note-body" id="clinician-note-body">
+          Loading session data…
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ RIGHT SIDEBAR ════════ -->
+  <div class="sidebar">
+
+    <!-- Next Session Suggestion -->
+    <div class="card next-session-card" role="region" aria-label="Next session suggestion">
+      <div class="card-head">
+        <span style="font-size:1.2rem;">📅</span>
+        <div>
+          <div class="card-title">Next Session</div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);font-weight:700;">AI-suggested interval</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="ns-suggestion">
+          <div class="ns-icon" id="ns-icon">📅</div>
+          <div class="ns-gap" id="ns-gap">Calculating…</div>
+          <div class="ns-reason" id="ns-reason">Analysing last session engagement…</div>
+        </div>
+        <div class="ns-caregiver" id="ns-caregiver">
+          <strong>Message for caregiver:</strong> Loading recommendation…
+        </div>
+      </div>
+    </div>
+
+    <!-- Reinforcement Thinning -->
+    <div class="card thinning-card" role="region" aria-label="Skill mastery progress">
+      <div class="card-head">
+        <span style="font-size:1.2rem;">💧</span>
+        <div>
+          <div class="card-title">Garden Watering</div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);font-weight:700;">Reinforcement schedule</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="thinning-items">
+          <div class="shimmer" style="margin-bottom:10px;"></div>
+          <div class="shimmer" style="margin-bottom:10px;width:80%;"></div>
+          <div class="shimmer" style="width:60%;"></div>
+        </div>
+        <div class="thinning-note" id="thinning-note" style="display:none;">
+          The garden <span class="highlight">needs less watering</span> now — 
+          you're getting so good! 🌿
+        </div>
+      </div>
+    </div>
+
+    <!-- Cross-World Badges -->
+    <div class="card badges-card" role="region" aria-label="Cross-world skill badges">
+      <div class="card-head">
+        <span style="font-size:1.2rem;">🏆</span>
+        <div>
+          <div class="card-title">Journey Badges</div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);font-weight:700;">Earned across worlds</div>
+        </div>
+      </div>
+      <div class="card-body" id="badges-body">
+        <div class="shimmer" style="margin-bottom:12px;"></div>
+        <div class="shimmer" style="margin-bottom:12px;width:85%;"></div>
+        <div class="shimmer" style="width:70%;"></div>
+      </div>
+    </div>
+
+    <!-- Quick links -->
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <a href="communicate.html" style="
+        display:flex;align-items:center;gap:10px;padding:12px 16px;
+        background:rgba(0,240,200,0.07);border:1.5px solid rgba(0,240,200,0.2);
+        border-radius:14px;text-decoration:none;color:inherit;transition:all .2s;
+      " onmouseover="this.style.borderColor='rgba(0,240,200,0.5)'"
+         onmouseout="this.style.borderColor='rgba(0,240,200,0.2)'">
+        <span style="font-size:1.5rem;">💬</span>
+        <div>
+          <div style="font-weight:800;font-size:0.82rem;color:#00F0C8;">Sign &amp; Talk AI</div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);">Practice and earn rewards</div>
+        </div>
+        <span style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.8rem;">→</span>
+      </a>
+      <a href="world-map.html" style="
+        display:flex;align-items:center;gap:10px;padding:12px 16px;
+        background:rgba(242,153,74,0.07);border:1.5px solid rgba(242,153,74,0.2);
+        border-radius:14px;text-decoration:none;color:inherit;transition:all .2s;
+      " onmouseover="this.style.borderColor='rgba(242,153,74,0.5)'"
+         onmouseout="this.style.borderColor='rgba(242,153,74,0.2)'">
+        <span style="font-size:1.5rem;">🗺️</span>
+        <div>
+          <div style="font-weight:800;font-size:0.82rem;color:#F2994A;">World Map</div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);">Choose your next festival world</div>
+        </div>
+        <span style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.8rem;">→</span>
+      </a>
+      <a href="clinician.html" style="
+        display:flex;align-items:center;gap:10px;padding:12px 16px;
+        background:rgba(79,195,247,0.07);border:1.5px solid rgba(79,195,247,0.2);
+        border-radius:14px;text-decoration:none;color:inherit;transition:all .2s;
+      " onmouseover="this.style.borderColor='rgba(79,195,247,0.5)'"
+         onmouseout="this.style.borderColor='rgba(79,195,247,0.2)'">
+        <span style="font-size:1.5rem;">📊</span>
+        <div>
+          <div style="font-weight:800;font-size:0.82rem;color:#4FC3F7;">Clinician Console</div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);">Full analytics &amp; session data</div>
+        </div>
+        <span style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.8rem;">→</span>
+      </a>
+    </div>
+
+  </div><!-- /sidebar -->
+</div><!-- /main-grid -->
+
+<!-- Bottom nav -->
+<nav class="persistent-nav" role="navigation" aria-label="Quick navigation">
+  <a href="index.html" class="persistent-btn">🏠 Home</a>
+  <a href="world-map.html" class="persistent-btn">🗺️ Map</a>
+  <a href="learn-and-grow.html" class="persistent-btn cur">🌱 Grow</a>
+  <a href="communicate.html" class="persistent-btn">✋ Sign</a>
+  <a href="sticker-book.html" class="persistent-btn">⭐ Stickers</a>
+</nav>
+
+<div id="kv-toast" aria-live="polite"></div>
+
+<!-- Scripts -->
+<script src="js/kahani-app.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════
+   LEARN & GROW — MAIN LOGIC
+   Reads from existing KV localStorage only (kahaniverse_v1)
+══════════════════════════════════════════════════════════ */
+
+/* ── GARDEN STAGES ─────────────────────────────────── */
+const STAGES = [
+  { id: 0, name: 'Seed',     emoji: '🌱', minXP: 0,    desc: 'Just planted — the journey begins!' },
+  { id: 1, name: 'Sprout',   emoji: '🌿', minXP: 100,  desc: 'A tiny sprout peeks through the soil!' },
+  { id: 2, name: 'Sapling',  emoji: '🌳', minXP: 300,  desc: 'Growing strong — a young sapling!' },
+  { id: 3, name: 'Small Tree',emoji:'🌲', minXP: 600,  desc: 'A proper tree stands tall!' },
+  { id: 4, name: 'Blooming', emoji: '🌸', minXP: 1000, desc: 'In full bloom — flowers everywhere!' },
+  { id: 5, name: 'Flourishing',emoji:'🎋',minXP: 1500, desc: 'Kahi\'s garden is FLOURISHING! 🌟' },
+];
+
+/* ── KAHI MOOD VARIANTS ────────────────────────────── */
+const KAHI_MOODS = {
+  high:    { emoji: '🦚', label: 'Joyful!',      color: '#00FF88', msgs: ['Wohoo! You did amazing today! 🌟', 'I\'m SO proud of you! 💚', 'Keep soaring high! ✨'] },
+  medium:  { emoji: '🦚', label: 'Cheerful',     color: '#F7C948', msgs: ['Good job today! 🌿', 'Every session grows the garden! 🌱', 'You\'re doing really well! 😊'] },
+  low:     { emoji: '🦚', label: 'Gentle & Resting', color: '#4FC3F7', msgs: ['Rest is part of growth too 💙', 'Even small steps water the garden 🌧️', 'Tomorrow we try again! 🌙'] },
+  none:    { emoji: '🦚', label: 'Waiting…',     color: '#8B7355', msgs: ['Start a session to grow the garden! 🌱', 'Kahi is waiting to see you! 👀', 'Show a sign to wake the garden! ✋'] },
+};
+
+/* ── CROSS-WORLD BADGE DEFINITIONS ─────────────────── */
+const CROSS_BADGES = [
+  {
+    id: 'cb-1', emoji: '🌈', name: 'Festival Explorer',
+    desc: 'Showed up across multiple festival worlds!',
+    worlds: ['Diwali Lantern Bazaar', 'Holi Color Garden'],
+    worldEmojis: ['🪔','🎨'],
+    skillTag: 'multi-world',
+    requireSessions: 2,  // sessions in 2+ different worlds
+  },
+  {
+    id: 'cb-2', emoji: '🗣️', name: 'Voice of the Valley',
+    desc: 'Improved articulation across Diwali + Monsoon worlds!',
+    worlds: ['Diwali Lantern Bazaar', 'Monsoon Kite Sky'],
+    worldEmojis: ['🪔','🪁'],
+    skillTag: 'Articulation',
+    requireAccuracy: 0.7,
+  },
+  {
+    id: 'cb-3', emoji: '📖', name: 'Story Weaver',
+    desc: 'Built sentences in Onam and signed words in Sign & Talk!',
+    worlds: ['Onam Flower Boat', 'Sign & Talk'],
+    worldEmojis: ['🚣','💬'],
+    skillTag: 'Sentence Formation',
+    requireSessions: 1,
+  },
+  {
+    id: 'cb-4', emoji: '🏆', name: 'All-World Champion',
+    desc: 'Earned stars in ALL 5 festival worlds — absolute legend!',
+    worlds: ['All 5 Worlds'],
+    worldEmojis: ['🌍'],
+    skillTag: 'champion',
+    requireAllWorlds: true,
+  },
+];
+
+/* ══════════════════════════════════════════════════════════
+   INITIALISE
+══════════════════════════════════════════════════════════ */
+KV.init();
+const profile = KV.getCurrentProfile();
+const state   = KV.state;
+
+/* ── Profile nav ── */
+if (profile) {
+  document.getElementById('nav-avatar').textContent = profile.avatar || '🧒';
+  document.getElementById('nav-name').textContent   = profile.name  || 'Player';
+  document.getElementById('nav-level').textContent  = KV.getPlayerLevelName(profile.totalXP || 0);
+  document.getElementById('stat-xp').textContent       = (profile.totalXP  || 0) + ' XP';
+  document.getElementById('stat-sessions').textContent  = profile.sessions  || 0;
+  document.getElementById('stat-streak').textContent    = (profile.streak   || 0) + '🔥';
+  document.getElementById('stat-rewards').textContent   = (state.rewardHistory || [])
+    .filter(r => !profile || r.profileId === profile.id).length;
+}
+
+/* ══════════════════════════════════════════════════════════
+   1. GARDEN GROWTH
+══════════════════════════════════════════════════════════ */
+function computeGrowthStage(xp) {
+  let stage = 0;
+  for (let i = STAGES.length - 1; i >= 0; i--) {
+    if (xp >= STAGES[i].minXP) { stage = i; break; }
+  }
+  return stage;
+}
+
+function computeGrowthPercent(xp, stage) {
+  const current = STAGES[stage];
+  const next    = STAGES[stage + 1];
+  if (!next) return 100; // max stage
+  const range = next.minXP - current.minXP;
+  const progress = xp - current.minXP;
+  return Math.min(100, Math.round((progress / range) * 100));
+}
+
+function renderGarden(xp) {
+  const stage   = computeGrowthStage(xp);
+  const pct     = computeGrowthPercent(xp, stage);
+  const stageData = STAGES[stage];
+  const nextStage = STAGES[stage + 1];
+
+  // Tree emoji + size class
+  const tree = document.getElementById('garden-tree');
+  const treeEmoji = document.getElementById('tree-emoji');
+  tree.className = `stage-${stage}`;
+  treeEmoji.textContent = stageData.emoji;
+
+  // Stage badge
+  document.getElementById('stage-badge').textContent = stageData.name;
+
+  // Growth bar
+  // Bar = overall progress through ALL stages
+  const totalProgress = Math.min(100, Math.round((xp / 1500) * 100));
+  document.getElementById('growth-fill').style.width = totalProgress + '%';
+  document.getElementById('growth-pct').textContent  = totalProgress + '%';
+  document.getElementById('growth-rail').setAttribute('aria-valuenow', totalProgress);
+
+  // Stage dots + names
+  const dotsEl  = document.getElementById('stage-dots');
+  const namesEl = document.getElementById('stage-names');
+  dotsEl.innerHTML = namesEl.innerHTML = '';
+  STAGES.forEach((s, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'stage-dot' +
+      (i < stage ? ' done' : i === stage ? ' active' : '');
+    dot.title = s.name;
+    dotsEl.appendChild(dot);
+
+    const nm = document.createElement('div');
+    nm.className = 'stage-name' +
+      (i < stage ? ' done' : i === stage ? ' active' : '');
+    nm.textContent = s.name.split(' ')[0]; // first word only
+    namesEl.appendChild(nm);
+  });
+
+  // Extra flowers at later stages
+  const flowers = document.getElementById('extra-flowers');
+  const flowerSets = ['','🌸','🌸🌼','🌻🌸🌼','🌺🌻🌸🌼💐','🌺🌻🌸🌼💐🎋'];
+  flowers.textContent = flowerSets[stage] || '';
+
+  // Fireflies for stage 5
+  const ff = document.getElementById('fireflies');
+  if (stage >= 5) {
+    ff.style.display = 'block';
+    if (!ff.children.length) {
+      for (let i = 0; i < 12; i++) {
+        const el = document.createElement('div');
+        el.className = 'firefly';
+        const dur = (2.5 + Math.random() * 3).toFixed(1);
+        const tx  = (-40 + Math.random() * 80).toFixed(0);
+        const ty  = -(20 + Math.random() * 60).toFixed(0);
+        el.style.cssText = `
+          left:${15 + Math.random() * 70}%;
+          top:${10 + Math.random() * 60}%;
+          --dur:${dur}s; --tx:${tx}px; --ty:${ty}px;
+          animation-delay:${(Math.random() * 2).toFixed(1)}s;
+        `;
+        ff.appendChild(el);
+      }
+    }
+  } else {
+    ff.style.display = 'none';
+  }
+
+  // XP needed for next
+  const clinNote = nextStage
+    ? `Growth stage <strong>${stageData.name}</strong>. ${xp} XP earned. Next stage — <strong>${nextStage.name}</strong> — unlocks at ${nextStage.minXP} XP (${nextStage.minXP - xp} XP to go). ${stageData.desc}`
+    : `🌟 Maximum growth stage <strong>${stageData.name}</strong> reached! Kahi's garden is fully flourishing. Incredible journey! ${stageData.desc}`;
+  document.getElementById('clinician-note-body').innerHTML = clinNote;
+}
+
+/* ══════════════════════════════════════════════════════════
+   2. NEXT-SESSION INTERVAL
+══════════════════════════════════════════════════════════ */
+function computeNextSession() {
+  const history = state.rewardHistory || [];
+  const sessions = profile?.sessions || 0;
+  const avgMot   = profile?.avgMotivation || 0;
+
+  // Look at last session's rewardHistory entries (most recent world completions)
+  const recent = history
+    .filter(h => !profile || h.profileId === profile.id)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  const lastEntry = recent[0];
+  const lastAccuracy = lastEntry?.accuracy ?? null;
+  const lastStars    = lastEntry?.stars ?? null;
+
+  let icon, gap, reason, caregiverMsg;
+
+  if (!lastEntry) {
+    // No session data
+    icon = '🌱'; gap = 'Start now!';
+    reason = 'No session data yet — begin the first session to grow the garden!';
+    caregiverMsg = 'Start your first session with ' + (profile?.name || 'the child') + ' today! The garden is waiting to grow. 🌿';
+  } else if (avgMot >= 4.2 && (lastAccuracy ?? 0) >= 0.75) {
+    // Strong finish
+    icon = '📅'; gap = 'In 3 days';
+    reason = `Strong engagement (${avgMot.toFixed(1)}/5 avg motivation, ${Math.round((lastAccuracy||0)*100)}% accuracy). A longer break lets the learning consolidate.`;
+    caregiverMsg = `<strong>${profile?.name || 'The child'}</strong> did brilliantly! Come back and grow the garden again in 3 days — the break will help skills solidify. 🌻`;
+  } else if (avgMot >= 3.0) {
+    // Moderate
+    icon = '📆'; gap = 'In 2 days';
+    reason = `Good session with ${avgMot.toFixed(1)}/5 motivation. A moderate gap keeps momentum without fatigue.`;
+    caregiverMsg = `<strong>${profile?.name || 'The child'}</strong> had a good session! Come back and grow the garden again in 2 days to keep the streak going. 🌿`;
+  } else {
+    // Engagement dropped
+    icon = '🔔'; gap = 'Tomorrow!';
+    reason = `Engagement dipped near session end (${avgMot.toFixed(1)}/5 motivation). Returning sooner prevents motivation loss.`;
+    caregiverMsg = `<strong>${profile?.name || 'The child'}</strong> may need a gentle restart soon. Come back tomorrow — Kahi will be waiting! 🌱`;
+  }
+
+  document.getElementById('ns-icon').textContent    = icon;
+  document.getElementById('ns-gap').textContent     = gap;
+  document.getElementById('ns-reason').textContent  = reason;
+  document.getElementById('ns-caregiver').innerHTML =
+    '<strong>Message for caregiver:</strong> ' + caregiverMsg;
+}
+
+/* ══════════════════════════════════════════════════════════
+   3. REINFORCEMENT THINNING
+══════════════════════════════════════════════════════════ */
+function computeThinning() {
+  const history  = (state.rewardHistory || [])
+    .filter(h => !profile || h.profileId === profile.id);
+  const worlds   = profile?.worlds || KV.state.worlds || WORLDS;
+
+  const items = document.getElementById('thinning-items');
+  const note  = document.getElementById('thinning-note');
+  items.innerHTML = '';
+
+  let anyThinned = false;
+
+  worlds.forEach(world => {
+    const worldEntries = history.filter(h => h.worldId === world.id);
+    if (!worldEntries.length) return; // not visited yet
+
+    const avgAccuracy = worldEntries.reduce((s, h) => s + (h.accuracy || 0), 0) / worldEntries.length;
+    const sessions    = worldEntries.length;
+
+    // Thinning logic: if avg accuracy > 75% over 2+ sessions → starting to thin
+    const mastery = Math.min(100, Math.round(avgAccuracy * 100));
+    const isThinned = mastery >= 75 && sessions >= 2;
+    if (isThinned) anyThinned = true;
+
+    // "Reward density" — higher mastery = fewer rewards needed
+    // Visual: bar shows how much less watering is needed (higher = more skilled)
+    const skillBar = Math.min(100, mastery);
+
+    const msg = mastery >= 90 ? '🌟 Expert level — garden self-sustains!'
+      : mastery >= 75 ? '🌿 Skilled — less watering needed now'
+      : mastery >= 50 ? '💧 Growing — moderate watering'
+      : '🌱 Learning — garden needs regular care';
+
+    const el = document.createElement('div');
+    el.className = 'thinning-item';
+    el.innerHTML = `
+      <span class="thinning-icon">${world.emoji || '🌍'}</span>
+      <div class="thinning-info">
+        <div class="thinning-world">${world.name} <span style="color:rgba(255,255,255,0.3);font-size:0.65rem;font-weight:700;">(${sessions} session${sessions!==1?'s':''})</span></div>
+        <div class="thinning-bar-wrap">
+          <div class="thinning-bar" style="width:${skillBar}%" role="progressbar" aria-label="${world.name} mastery" aria-valuenow="${skillBar}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div class="thinning-msg">${msg}</div>
+      </div>
+      <div style="font-family:'Baloo 2',cursive;font-size:0.9rem;font-weight:900;color:${mastery>=75?'#00FF88':'#F7C948'};min-width:36px;text-align:right;">${mastery}%</div>
+    `;
+    items.appendChild(el);
+  });
+
+  if (!items.children.length) {
+    items.innerHTML = `<div style="font-size:0.8rem;color:rgba(255,255,255,0.35);text-align:center;padding:12px 0;">Complete worlds to see skill progress here! 🌱</div>`;
+  }
+
+  note.style.display = anyThinned ? 'block' : 'none';
+}
+
+/* ══════════════════════════════════════════════════════════
+   4. CROSS-WORLD BADGES
+══════════════════════════════════════════════════════════ */
+function computeBadges() {
+  const history = (state.rewardHistory || [])
+    .filter(h => !profile || h.profileId === profile.id);
+  const worlds  = profile?.worlds || KV.state.worlds;
+
+  const container = document.getElementById('badges-body');
+  container.innerHTML = '';
+
+  // Award existing KV reward badges already in sticker book
+  const kvBadges = (state.rewards || []).filter(r => r.category === 'badges');
+
+  CROSS_BADGES.forEach(badge => {
+    let unlocked = false;
+
+    if (badge.requireAllWorlds) {
+      // All 5 worlds with at least 1 star
+      unlocked = worlds.every(w => (w.stars || 0) >= 1);
+    } else if (badge.requireAccuracy) {
+      // Any entry for the world IDs that match with sufficient accuracy
+      const relevantWorldNames = badge.worlds;
+      const worldsWithAccuracy = worlds.filter(w =>
+        relevantWorldNames.some(n => w.name.includes(n.split(' ')[0]))
+      );
+      const entries = history.filter(h =>
+        worldsWithAccuracy.some(w => w.id === h.worldId)
+      );
+      const goodEntries = entries.filter(e => (e.accuracy||0) >= badge.requireAccuracy);
+      unlocked = goodEntries.length >= 2; // improved across 2+ sessions
+    } else if (badge.requireSessions) {
+      // Sessions in 2+ distinct worlds
+      const distinctWorlds = new Set(history.map(h => h.worldId));
+      unlocked = distinctWorlds.size >= badge.requireSessions;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'badge-item';
+    if (unlocked) el.classList.add('badge-unlock-flash');
+
+    el.innerHTML = `
+      <div class="badge-emoji-wrap ${unlocked ? '' : 'locked'}">
+        ${unlocked ? badge.emoji : '🔒'}
+      </div>
+      <div style="flex:1;">
+        <div class="badge-name ${unlocked ? '' : 'locked'}">${badge.name}</div>
+        <div class="badge-desc">${unlocked ? badge.desc : 'Keep playing across worlds to unlock!'}</div>
+        <div class="badge-worlds">
+          ${badge.worldEmojis.map(e => `<span class="badge-world-tag">${e} ${badge.worlds[badge.worldEmojis.indexOf(e)] || ''}</span>`).join('')}
+        </div>
+        ${unlocked ? '' : `<div class="badge-lock-msg">Complete more sessions to earn this</div>`}
+      </div>
+      ${unlocked ? `<span style="font-size:1.2rem;">✅</span>` : `<span style="font-size:1rem;color:rgba(255,255,255,0.2);">🔒</span>`}
+    `;
+    container.appendChild(el);
+
+    // Write unlocked badge to KV sticker book if not already there
+    if (unlocked) {
+      const existing = (state.rewards || []).find(r => r.id === badge.id);
+      if (!existing) {
+        if (!KV.state.rewards) KV.state.rewards = [];
+        KV.state.rewards.push({
+          id: badge.id,
+          category: 'badges',
+          title: badge.name,
+          emoji: badge.emoji,
+          desc: badge.desc,
+          earnedAt: new Date().toISOString(),
+        });
+        KV.save();
+      }
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   5. KAHI MOOD
+══════════════════════════════════════════════════════════ */
+function computeKahiMood() {
+  const avgMot = profile?.avgMotivation || 0;
+  let mood;
+  if (!avgMot || avgMot === 0) mood = 'none';
+  else if (avgMot >= 4.0) mood = 'high';
+  else if (avgMot >= 2.5) mood = 'medium';
+  else mood = 'low';
+
+  const m = KAHI_MOODS[mood];
+  const msg = m.msgs[Math.floor(Math.random() * m.msgs.length)];
+
+  // Garden kahi face already set; update mood panel
+  document.getElementById('kahi-mood-face').textContent = m.emoji;
+  document.getElementById('kahi-mood-face').style.filter =
+    `drop-shadow(0 0 12px ${m.color})`;
+  document.getElementById('kahi-mood-msg').textContent  = msg;
+  document.getElementById('kahi-mood-score').textContent =
+    avgMot > 0 ? avgMot.toFixed(1) + '/5' : '—';
+  document.getElementById('kahi-mood-score').style.color = m.color;
+
+  // Garden Kahi also reflects mood
+  const gardenKahi = document.getElementById('kahi-garden-emoji');
+  gardenKahi.style.filter = `drop-shadow(0 0 16px ${m.color})`;
+
+  return mood;
+}
+
+/* ══════════════════════════════════════════════════════════
+   KAHI GARDEN SPEECH
+══════════════════════════════════════════════════════════ */
+const KAHI_QUIPS = [
+  'Every sign you learn waters me! 🌿',
+  'I grow when you practice! 🌱',
+  'Shabash! Keep it up! ⭐',
+  'Your hard work blooms here 🌸',
+  'Talk, sign, and grow with me! 🦚',
+  'The garden misses you when you\'re away! 🌙',
+  'One more session = one more flower! 🌼',
+];
+let kahiBubbleTimer = null;
+
+function kahiSpeak() {
+  const bubble = document.getElementById('kahi-garden-bubble');
+  const quip = KAHI_QUIPS[Math.floor(Math.random() * KAHI_QUIPS.length)];
+  bubble.textContent = quip;
+  bubble.style.display = 'block';
+  clearTimeout(kahiBubbleTimer);
+  kahiBubbleTimer = setTimeout(() => { bubble.style.display = 'none'; }, 3000);
+
+  // TTS
+  if (window.speechSynthesis) {
+    const u = new SpeechSynthesisUtterance(quip.replace(/[^\w\s!']/g,''));
+    u.lang = 'en-IN'; u.rate = 0.9; u.pitch = 1.15;
+    speechSynthesis.speak(u);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   TOAST HELPER
+══════════════════════════════════════════════════════════ */
+function showToast(msg, type='info') {
+  const c = document.getElementById('kv-toast');
+  const t = document.createElement('div');
+  const icons = { success:'✅', info:'ℹ️', warning:'⚠️' };
+  t.style.cssText = `
+    background:rgba(11,14,43,0.96);
+    border:1px solid ${type==='success'?'#00FF88':type==='warning'?'#F7C948':'#4FE3D8'};
+    border-radius:12px;padding:10px 16px;color:#fff;
+    font-size:0.82rem;font-weight:700;display:flex;gap:8px;align-items:center;
+    animation:toastIn .4s cubic-bezier(.34,1.56,.64,1);min-width:240px;
+  `;
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 3500);
+}
+
+/* ══════════════════════════════════════════════════════════
+   MAIN RENDER
+══════════════════════════════════════════════════════════ */
+function renderAll() {
+  if (!profile) {
+    document.getElementById('clinician-note-body').innerHTML =
+      'No profile found. <a href="profile.html" style="color:#F2994A;">Create a profile</a> to begin!';
+    return;
+  }
+  const xp = profile.totalXP || 0;
+
+  // Stagger renders for visual delight
+  renderGarden(xp);
+
+  setTimeout(() => {
+    computeKahiMood();
+    computeNextSession();
+  }, 300);
+
+  setTimeout(() => {
+    computeThinning();
+    computeBadges();
+  }, 600);
+
+  // Toast if new stage unlocked (compare vs saved)
+  const stage = computeGrowthStage(xp);
+  const savedStage = parseInt(localStorage.getItem('kv_lastGardenStage') || '0');
+  if (stage > savedStage) {
+    setTimeout(() => {
+      showToast(`🌱 Garden grew to: ${STAGES[stage].name}!`, 'success');
+      if (window.speechSynthesis) {
+        const u = new SpeechSynthesisUtterance(
+          `Wonderful! Kahi's garden grew to ${STAGES[stage].name}!`
+        );
+        u.lang = 'en-IN'; u.rate = 0.9; u.pitch = 1.1;
+        speechSynthesis.speak(u);
+      }
+      localStorage.setItem('kv_lastGardenStage', String(stage));
+    }, 1200);
+  } else {
+    localStorage.setItem('kv_lastGardenStage', String(stage));
+  }
+}
+
+// Kick off
+renderAll();
+
+// Auto-refresh every 30s in case another tab updated data
+setInterval(() => {
+  KV.load();
+  renderAll();
+}, 30000);
+</script>
+</body>
+</html>
