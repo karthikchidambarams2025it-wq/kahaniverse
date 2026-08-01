@@ -1339,7 +1339,100 @@ function renderAll() {
   }
 }
 
-// Kick off
+/* ══════════════════════════════════════════════════════════
+   DEMO SEED — Unlock everything for first-time visitors
+   Populates rich multi-world session history so all badges
+   and garden stages are visible and usable immediately.
+══════════════════════════════════════════════════════════ */
+function seedDemoData() {
+  const state = KV.state;
+
+  // ── Upgrade current profile ──────────────────────────
+  if (!state.currentProfileId && state.profiles.length > 0) {
+    state.currentProfileId = state.profiles[0].id;
+  }
+  const pid = state.currentProfileId;
+  const p   = state.profiles.find(x => x.id === pid);
+  if (!p) return;
+
+  // Boost XP, sessions, streak, motivation to show blooming garden
+  p.totalXP       = Math.max(p.totalXP || 0, 1200);
+  p.sessions      = Math.max(p.sessions || 0, 18);
+  p.streak        = Math.max(p.streak || 0, 6);
+  p.avgMotivation = Math.max(p.avgMotivation || 0, 4.4);
+  p.lastPlayed    = new Date().toISOString();
+
+  // ── Ensure all 5 worlds have stars (1-3) ─────────────
+  if (!p.worlds) p.worlds = JSON.parse(JSON.stringify(KV.WORLDS));
+  p.worlds.forEach((w, i) => {
+    w.unlocked = true;
+    w.stars    = Math.max(w.stars || 0, i < 3 ? 3 : i === 3 ? 2 : 1);
+  });
+
+  // ── Inject rich rewardHistory for all 5 worlds ───────
+  // Keep real entries; only add if sparse
+  const existing = (state.rewardHistory || []).filter(r => r.profileId === pid);
+  if (existing.length < 8) {
+
+    const now  = Date.now();
+    const day  = 86400000;
+
+    const demoHistory = [
+      // World 1 — Diwali — 4 sessions, high accuracy
+      { profileId:pid, worldId:1, accuracy:0.92, stars:3, xpEarned:92,  timestamp: new Date(now - 14*day).toISOString() },
+      { profileId:pid, worldId:1, accuracy:0.88, stars:3, xpEarned:88,  timestamp: new Date(now - 10*day).toISOString() },
+      { profileId:pid, worldId:1, accuracy:0.95, stars:3, xpEarned:95,  timestamp: new Date(now -  7*day).toISOString() },
+      { profileId:pid, worldId:1, accuracy:0.91, stars:3, xpEarned:91,  timestamp: new Date(now -  4*day).toISOString() },
+      // World 2 — Holi — 3 sessions
+      { profileId:pid, worldId:2, accuracy:0.78, stars:2, xpEarned:156, timestamp: new Date(now - 12*day).toISOString() },
+      { profileId:pid, worldId:2, accuracy:0.83, stars:3, xpEarned:166, timestamp: new Date(now -  8*day).toISOString() },
+      { profileId:pid, worldId:2, accuracy:0.87, stars:3, xpEarned:174, timestamp: new Date(now -  5*day).toISOString() },
+      // World 3 — Onam — 3 sessions
+      { profileId:pid, worldId:3, accuracy:0.74, stars:2, xpEarned:222, timestamp: new Date(now - 11*day).toISOString() },
+      { profileId:pid, worldId:3, accuracy:0.80, stars:2, xpEarned:240, timestamp: new Date(now -  6*day).toISOString() },
+      { profileId:pid, worldId:3, accuracy:0.85, stars:3, xpEarned:255, timestamp: new Date(now -  3*day).toISOString() },
+      // World 4 — Monsoon Kite — 2 sessions (Articulation skill)
+      { profileId:pid, worldId:4, accuracy:0.76, stars:2, xpEarned:304, timestamp: new Date(now -  9*day).toISOString() },
+      { profileId:pid, worldId:4, accuracy:0.82, stars:2, xpEarned:328, timestamp: new Date(now -  2*day).toISOString() },
+      // World 5 — Global Plaza — 2 sessions
+      { profileId:pid, worldId:5, accuracy:0.71, stars:1, xpEarned:355, timestamp: new Date(now -  5*day).toISOString() },
+      { profileId:pid, worldId:5, accuracy:0.79, stars:2, xpEarned:395, timestamp: new Date(now -  1*day).toISOString() },
+    ];
+
+    // Dedupe — don't add if worldId+timestamp already present
+    const existingKeys = new Set(existing.map(r => r.worldId + '_' + r.timestamp));
+    demoHistory.forEach(h => {
+      const k = h.worldId + '_' + h.timestamp;
+      if (!existingKeys.has(k)) {
+        if (!state.rewardHistory) state.rewardHistory = [];
+        state.rewardHistory.push(h);
+        existingKeys.add(k);
+      }
+    });
+  }
+
+  KV.save();
+
+  // Reset garden stage cache so toast fires
+  localStorage.removeItem('kv_lastGardenStage');
+
+  showToast('🌱 Game unlocked! All worlds & badges active!', 'success');
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   KICK OFF
+══════════════════════════════════════════════════════════ */
+
+// Auto-seed if this is a fresh/sparse state
+const _history = (KV.state.rewardHistory || []).filter(
+  r => r.profileId === KV.state.currentProfileId
+);
+if (_history.length < 4) {
+  seedDemoData();
+  KV.load(); // reload after seed
+}
+
 renderAll();
 
 // Auto-refresh every 30s in case another tab updated data
