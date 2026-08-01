@@ -558,9 +558,7 @@ nav {
     <!-- Word Builder -->
     <div class="word-section">
       <div class="word-title">📝 Word Builder</div>
-      <div class="word-display" id="word-display">
-        <span class="cursor-blink"></span>
-      </div>
+      <div class="word-display" id="word-display"><span class="cursor-blink"></span></div>
       <div class="word-btns">
         <button class="wbtn wbtn-del" onclick="deleteLast()">⌫ Delete</button>
         <button class="wbtn wbtn-spc" onclick="addSpace()">␣ Space</button>
@@ -869,8 +867,10 @@ function setPrediction(pred, hasHand) {
   }
 
   // Confidence bar
-  document.getElementById('conf-fill').style.width = confPct + '%';
-  document.getElementById('conf-pct').textContent  = confPct + '%';
+  const confFill = document.getElementById('conf-fill');
+  const confPctEl = document.getElementById('conf-pct');
+  if (confFill) confFill.style.width = confPct + '%';
+  if (confPctEl) confPctEl.textContent = confPct + '%';
 
   // Top 5
   updateTop5(allPred);
@@ -939,7 +939,14 @@ function clearWord() {
 }
 function renderWord() {
   const el = document.getElementById('word-display');
+  if (!el) return;
   el.innerHTML = '';
+  if (wordChars.length === 0) {
+    const ph = document.createElement('span');
+    ph.className = 'cursor-blink';
+    el.appendChild(ph);
+    return;
+  }
   wordChars.forEach(c => {
     if (c === ' ') {
       const sp = document.createElement('span');
@@ -953,6 +960,9 @@ function renderWord() {
       el.appendChild(ch);
     }
   });
+  // Animate the last added char
+  const last = el.querySelector('.word-char:last-of-type');
+  if (last) { last.style.animation = 'none'; void last.offsetWidth; last.style.animation = ''; }
   const cur = document.createElement('span');
   cur.className = 'cursor-blink';
   el.appendChild(cur);
