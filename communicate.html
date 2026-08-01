@@ -591,6 +591,7 @@ nav {
 <script src="js/kahani-app.js"></script>
 <script src="js/sign-engine.js"></script>
 <script src="js/tts-engine.js"></script>
+<script src="assets/js/hello-celebration.js"></script>
 <script>
 console.log('✅ Chat script loaded');
 // ═══════════════════════════════════════════════
@@ -737,6 +738,10 @@ async function islLoop() {
       islWordBuffer = '';
       addChildBubble('✋ ' + word);
       speak(word);
+      // 🎉 Celebration when child spells HELLO
+      if (word.toUpperCase() === 'HELLO') {
+        showHelloCelebration(speak);
+      }
       detWord.innerHTML = '<span class="det-ph">Show me a sign! 🙌</span>';
     }
   }
@@ -800,6 +805,11 @@ function fireSign(key, sign) {
 
   // 2. Speak word aloud for teacher
   speak(sign.word);
+
+  // 3. 🎉 Celebration when child signs HELLO
+  if (sign.word.toUpperCase() === 'HELLO') {
+    showHelloCelebration(speak);
+  }
 
   ann.textContent = 'You signed: ' + sign.word;
 

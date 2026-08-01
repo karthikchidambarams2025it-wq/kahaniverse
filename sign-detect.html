@@ -549,6 +549,7 @@
 <!-- TF.js + ISL Recognizer for real ISL detection -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0"></script>
 <script src="assets/js/isl-recognizer.js"></script>
+<script src="assets/js/hello-celebration.js"></script>
 
 <script>
 'use strict';
@@ -811,6 +812,14 @@ function judgeGesture(detectedId) {
   const isCorrect = detectedId === targetSign.id;
   recordAttempt(targetSign.id, detectedId, isCorrect);
   showFeedback(isCorrect, detectedId);
+
+  // 🎉 Celebration for HELLO sign (open_palm) when correctly detected
+  const helloIds = ['open_palm', 'HELLO', 'hello'];
+  const targetName = (targetSign.name || targetSign.id || '').toUpperCase();
+  if (isCorrect && (helloIds.includes(detectedId) || targetName.includes('HELLO'))) {
+    setTimeout(() => showHelloCelebration(), 300);
+  }
+
   // Reset hold timer so next sign can trigger again after feedback clears
   setTimeout(() => {
     holdStart = null; holdPct = 0; judgingLocked = false; updateHoldUI(0);
