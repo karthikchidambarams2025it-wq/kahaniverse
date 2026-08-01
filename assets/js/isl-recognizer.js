@@ -67,9 +67,9 @@ const ISLRecognizer = (function () {
       model = await tf.loadGraphModel(MODEL_PATH);
       console.log('[ISLRecognizer] GraphModel loaded successfully');
 
-      // Warm up
+      // Warm up — use execute() (model has no dynamic shapes)
       const dummy = tf.zeros([1, IMG_SIZE, IMG_SIZE, 3]);
-      const warmup = await model.executeAsync(dummy);
+      const warmup = model.execute(dummy);
       if (Array.isArray(warmup)) warmup.forEach(t => t.dispose());
       else warmup.dispose();
       dummy.dispose();
@@ -139,7 +139,7 @@ const ISLRecognizer = (function () {
   }
 
   // ─── Classify Cropped Image ───
-  async function classifyImage(canvas) {
+  function classifyImage(canvas) {
     if (!model || !canvas) return null;
 
     const tensor = tf.browser.fromPixels(canvas)
@@ -148,24 +148,17 @@ const ISLRecognizer = (function () {
       .expandDims(0);
 
     try {
-      // GraphModel: executeAsync returns a tensor or dict of tensors
-      const result = await model.executeAsync(tensor);
+      // model.execute() is sync and faster for static-shape models
+      const result = model.execute(tensor);
 
-      // The output tensor - may be a single tensor or array
       let probs;
       if (Array.isArray(result)) {
-        probs = result[0].dataSync();
+        probs = Array.from(result[0].dataSync());
         result.forEach(t => t.dispose());
-      } else if (result && typeof result === 'object' && !result.dataSync) {
-        // Dictionary output - get first value
-        const keys = Object.keys(result);
-        probs = result[keys[0]].dataSync();
-        Object.values(result).forEach(t => t.dispose());
       } else {
-        probs = result.dataSync();
+        probs = Array.from(result.dataSync());
         result.dispose();
       }
-
       tensor.dispose();
 
       // Find top prediction
@@ -174,7 +167,7 @@ const ISLRecognizer = (function () {
         if (probs[i] > topConf) { topConf = probs[i]; topIdx = i; }
       }
 
-      const allPreds = Array.from(probs)
+      const allPreds = probs
         .map((p, i) => ({ label: classNames[i], confidence: p }))
         .sort((a, b) => b.confidence - a.confidence);
 
@@ -210,7 +203,7 @@ const ISLRecognizer = (function () {
 
     if (!canvas) return { label: 'none', confidence: 0 };
 
-    const result = await classifyImage(canvas);
+    const result = classifyImage(canvas);
     if (!result || result.confidence < MIN_CONFIDENCE) {
       return { label: 'none', confidence: result ? result.confidence : 0 };
     }

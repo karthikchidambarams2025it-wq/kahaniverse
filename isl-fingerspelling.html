@@ -903,6 +903,7 @@ function updateTop5(preds) {
 const CIRCUMFERENCE = 2 * Math.PI * 16; // r=16 → ~100.53
 function updateHoldRing(progress) {
   const fill = document.getElementById('hold-ring-fill');
+  if (!fill) return;
   const offset = CIRCUMFERENCE * (1 - (progress || 0));
   fill.style.strokeDashoffset = offset;
 }
@@ -974,10 +975,14 @@ function addHistory(letter, confidence) {
   renderHistory();
 }
 function renderHistory() {
-  const list = document.getElementById('history-list');
+  const list  = document.getElementById('history-list');
   const empty = document.getElementById('history-empty');
-  if (historyItems.length === 0) { empty.style.display = ''; return; }
-  empty.style.display = 'none';
+  if (!list) return; // guard: DOM not ready yet
+  if (historyItems.length === 0) {
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
   list.innerHTML = '';
   historyItems.slice(0, 30).forEach(h => {
     const div = document.createElement('div');
@@ -997,6 +1002,7 @@ function renderHistory() {
 let flashTimer = null;
 function showSpeakFlash(msg) {
   const el = document.getElementById('speak-flash');
+  if (!el) return;
   el.textContent = msg;
   el.classList.add('show');
   if (flashTimer) clearTimeout(flashTimer);
@@ -1005,9 +1011,10 @@ function showSpeakFlash(msg) {
 
 // ─── Init on page load ───
 window.addEventListener('DOMContentLoaded', async () => {
-  // Load model in background
-  setTimeout(loadModel, 500);
-  renderHistory();
+  // Render history after DOM is ready (tiny delay ensures all IDs exist)
+  setTimeout(() => renderHistory(), 0);
+  // Load model
+  setTimeout(loadModel, 300);
 });
 </script>
 </body>
