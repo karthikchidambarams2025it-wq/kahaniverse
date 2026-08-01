@@ -519,20 +519,9 @@ nav {
   <a href="settings.html" class="persistent-btn">❓ Help</a>
 </div>
 
-<script>
-  // Load external scripts safely — if they fail, chat still works
-  function loadScript(src) {
-    try {
-      const s = document.createElement('script');
-      s.src = src;
-      s.onerror = () => console.warn('Failed to load: ' + src);
-      document.head.appendChild(s);
-    } catch(e) { console.warn('Script error:', e); }
-  }
-  loadScript('js/kahani-app.js');
-  loadScript('js/sign-engine.js');
-  loadScript('js/tts-engine.js');
-</script>
+<script src="js/kahani-app.js"></script>
+<script src="js/sign-engine.js"></script>
+<script src="js/tts-engine.js"></script>
 <script>
 console.log('✅ Chat script loaded');
 // ═══════════════════════════════════════════════
