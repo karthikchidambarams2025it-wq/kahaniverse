@@ -738,9 +738,12 @@ async function islLoop() {
       islWordBuffer = '';
       addChildBubble('✋ ' + word);
       speak(word);
-      // 🎉 Celebration when child spells HELLO
-      if (word.toUpperCase() === 'HELLO') {
-        showHelloCelebration(speak);
+      // 🎉 Celebration for any sign word that matches our library
+      if (window.showSignCelebration) {
+        const allWords = Object.values(SIGNS).map(s => s.word.toUpperCase());
+        if (allWords.includes(word.toUpperCase())) {
+          showSignCelebration(word.toUpperCase(), speak);
+        }
       }
       detWord.innerHTML = '<span class="det-ph">Show me a sign! 🙌</span>';
     }
@@ -806,9 +809,9 @@ function fireSign(key, sign) {
   // 2. Speak word aloud for teacher
   speak(sign.word);
 
-  // 3. 🎉 Celebration when child signs HELLO
-  if (sign.word.toUpperCase() === 'HELLO') {
-    showHelloCelebration(speak);
+  // 3. 🎉 Celebration for any recognized sign!
+  if (window.showSignCelebration) {
+    showSignCelebration(sign.word, speak);
   }
 
   ann.textContent = 'You signed: ' + sign.word;

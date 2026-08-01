@@ -813,11 +813,17 @@ function judgeGesture(detectedId) {
   recordAttempt(targetSign.id, detectedId, isCorrect);
   showFeedback(isCorrect, detectedId);
 
-  // 🎉 Celebration for HELLO sign (open_palm) when correctly detected
-  const helloIds = ['open_palm', 'HELLO', 'hello'];
-  const targetName = (targetSign.name || targetSign.id || '').toUpperCase();
-  if (isCorrect && (helloIds.includes(detectedId) || targetName.includes('HELLO'))) {
-    setTimeout(() => showHelloCelebration(), 300);
+  // 🎉 Celebration for EVERY correctly signed word
+  if (isCorrect && window.showSignCelebration) {
+    // Map gesture ID to a word name for the celebration lookup
+    const GESTURE_WORD_MAP = {
+      open_palm: 'HELLO', i_love_you: 'THANK YOU', thumbs_up: 'GOOD',
+      raised_hand: 'HELP', fist: 'LOVE', thumbs_down: 'NO',
+      v_sign: 'YES', pointing: 'I WANT', ok_sign: 'OKAY', pinky_up: 'WATER',
+    };
+    const celebWord = GESTURE_WORD_MAP[detectedId]
+      || (targetSign.name || targetSign.id || '').toUpperCase();
+    setTimeout(() => showSignCelebration(celebWord), 300);
   }
 
   // Reset hold timer so next sign can trigger again after feedback clears
