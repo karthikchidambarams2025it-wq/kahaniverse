@@ -91,9 +91,10 @@ nav {
 .pause-btn:hover { background: rgba(255,255,255,.35); }
 
 /* === MAIN AREA — fills remaining height === */
-/* remaining = 100vh - 52px nav - 64px hero - 48px dock = calc(100vh - 164px) */
+/* persistent-nav is position:fixed so it doesn't take flow space */
+/* remaining = 100vh - 52px nav - 64px hero */
 .main {
-  height: calc(100vh - 52px - 64px - 48px);
+  height: calc(100vh - 52px - 64px);
   display: grid;
   grid-template-columns: 400px 1fr;
   overflow: hidden;
@@ -260,7 +261,8 @@ nav {
   flex: 1;
   min-height: 0;          /* MUST have this for overflow to work */
   overflow-y: auto;
-  padding: 14px 16px;
+  overflow-anchor: auto;  /* keeps scroll pinned to bottom */
+  padding: 14px 16px 60px; /* extra bottom padding so dock doesn't cover last bubble */
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -292,6 +294,7 @@ nav {
 }
 @keyframes pop { from{opacity:0;transform:scale(.85) translateY(8px)} to{opacity:1;transform:none} }
 .bc .ts { font-size: .6rem; opacity: .8; margin-top: 3px; font-weight: 400; }
+.crow, .trow, .sys { flex-shrink: 0; } /* bubbles never shrink — they push the scroll */
 
 .trow { display: flex; align-items: flex-end; gap: 7px; }
 .t-ava-sm {
