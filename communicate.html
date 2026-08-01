@@ -483,20 +483,20 @@ nav {
     <!-- Quick replies -->
     <div class="qr-lbl">Teacher Quick Replies</div>
     <div class="qr-row">
-      <button class="qbtn" data-m="Well done! 🌟">Well done! 🌟</button>
-      <button class="qbtn" data-m="I understand! 😊">I understand!</button>
-      <button class="qbtn" data-m="Try again! You can do it 💪">Try again!</button>
-      <button class="qbtn" data-m="Great job! 🎉">Great job!</button>
-      <button class="qbtn" data-m="Take your time 🌸">No rush!</button>
-      <button class="qbtn" data-m="I'm here! 👂">I'm here!</button>
+      <button class="qbtn" onclick="teacherSend('Well done! 🌟')">Well done! 🌟</button>
+      <button class="qbtn" onclick="teacherSend('I understand! 😊')">I understand!</button>
+      <button class="qbtn" onclick="teacherSend('Try again! You can do it 💪')">Try again!</button>
+      <button class="qbtn" onclick="teacherSend('Great job! 🎉')">Great job!</button>
+      <button class="qbtn" onclick="teacherSend('Take your time 🌸')">No rush!</button>
+      <button class="qbtn" onclick="teacherSend(\`I'm here! 👂\`)">I'm here!</button>
     </div>
 
     <!-- Input -->
     <div class="ibar">
       <span class="i-pre">Teacher ›</span>
       <label for="ti" class="sr">Type reply to child</label>
-      <input id="ti" type="text" placeholder="Type a reply and press Enter…" autocomplete="off">
-      <button id="sbtn">Send ▶</button>
+      <input id="ti" type="text" placeholder="Type a reply and press Enter…" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();teacherSend();}">
+      <button id="sbtn" onclick="teacherSend()">Send ▶</button>
     </div>
   </div>
 
@@ -519,6 +519,71 @@ nav {
   <span class="dot-sep"   aria-hidden="true"></span>
   <a href="settings.html" class="persistent-btn">❓ Help</a>
 </div>
+
+<!-- CORE CHAT FUNCTIONS — runs BEFORE external scripts so chat always works -->
+<script>
+(function(){
+  // Core chat functions — completely self-contained
+  window._chatReady = true;
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function nowT() { return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+  function scrollMsgs() {
+    var m = document.getElementById('msgs');
+    if (m) requestAnimationFrame(function(){ m.scrollTop = m.scrollHeight; });
+  }
+
+  window.speak = function(text) {
+    try {
+      if (window._ttsOn === false) return;
+      if (window.TTSEngine) { TTSEngine.unlockAudio(); TTSEngine.speakPhrase(text); return; }
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-IN'; u.rate = 0.9;
+      speechSynthesis.speak(u);
+    } catch(e) { console.warn('TTS error:', e); }
+  };
+
+  window.addTeacherBubble = function(text) {
+    var m = document.getElementById('msgs');
+    if (!m) { console.error('msgs element not found'); return; }
+    var row = document.createElement('div');
+    row.className = 'trow';
+    row.innerHTML = '<div class="t-ava-sm">👩‍🏫</div><div><div class="bt">' + esc(text) + '<div class="ts">Teacher · ' + nowT() + '</div></div><button class="hear-btn" onclick="speak(this.dataset.t)" data-t="' + esc(text) + '">▶ Hear again</button></div>';
+    m.appendChild(row);
+    scrollMsgs();
+    speak(text);
+  };
+
+  window.addChildBubble = function(text) {
+    var m = document.getElementById('msgs');
+    if (!m) return;
+    var row = document.createElement('div');
+    row.className = 'crow';
+    row.innerHTML = '<div class="bc">' + esc(text) + '<div class="ts">You · ' + nowT() + '</div></div><div class="c-ava">🧒</div>';
+    m.appendChild(row);
+    scrollMsgs();
+  };
+
+  window.addSys = function(text) {
+    var m = document.getElementById('msgs');
+    if (!m) return;
+    var d = document.createElement('div');
+    d.className = 'sys'; d.textContent = text;
+    m.appendChild(d);
+    scrollMsgs();
+  };
+
+  window.teacherSend = function(msg) {
+    var ti = document.getElementById('ti');
+    var text = (msg !== undefined ? String(msg) : (ti ? ti.value : '')).trim();
+    if (!text) return;
+    if (ti) ti.value = '';
+    addTeacherBubble(text);
+  };
+
+  console.log('✅ Chat functions loaded');
+})();
+</script>
 
 <script src="js/kahani-app.js"></script>
 <script src="js/sign-engine.js"></script>
@@ -693,67 +758,11 @@ function fireSign(key, sign) {
   }, 900);
 }
 
-/* ── HELPERS ── */
-function nowT() { return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function scrollMsgs() {
-  // Double rAF ensures DOM is painted before scroll
-  requestAnimationFrame(() => requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; }));
-}
-
-/* ── BUBBLE BUILDERS ── */
-function addChildBubble(text) {
-  const row = document.createElement('div');
-  row.className = 'crow';
-  row.innerHTML = `
-    <div class="bc">
-      ${esc(text)}
-      <div class="ts">You · ${nowT()}</div>
-    </div>
-    <div class="c-ava">🧒</div>`;
-  msgs.appendChild(row);
-  scrollMsgs();
-}
-
-function addTeacherBubble(text) {
-  const row = document.createElement('div');
-  row.className = 'trow';
-  row.innerHTML = `
-    <div class="t-ava-sm">👩‍🏫</div>
-    <div>
-      <div class="bt">${esc(text)}<div class="ts">Teacher · ${nowT()}</div></div>
-      <button class="hear-btn" data-t="${esc(text)}">▶ Hear again</button>
-    </div>`;
-  row.querySelector('.hear-btn').addEventListener('click', e => speak(e.currentTarget.dataset.t));
-  msgs.appendChild(row);
-  speak(text);
-  ann.textContent = 'Teacher says: ' + text;
-  scrollMsgs();
-}
-
-function addSys(text) {
-  const d = document.createElement('div');
-  d.className = 'sys'; d.textContent = text;
-  msgs.appendChild(d);
-  scrollMsgs();
-}
-
-/* ── TEACHER SEND ── */
-function teacherSend(msg) {
-  const text = (msg !== undefined ? msg : ti.value).trim();
-  if (!text) return;
-  ti.value = '';
-  addTeacherBubble(text);
-}
-sbtn.addEventListener('click', () => teacherSend());
-ti.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); teacherSend(); } });
-document.querySelectorAll('.qbtn').forEach(b => b.addEventListener('click', () => teacherSend(b.dataset.m)));
-
 /* ── PAUSE ── */
 pauseBtn.addEventListener('click', () => calm.classList.add('on'));
 calmOk.addEventListener('click',   () => calm.classList.remove('on'));
 
-ti.focus();
+document.getElementById('ti').focus();
 </script>
 </body>
 </html>
