@@ -1038,9 +1038,10 @@ function renderGarden(xp) {
    2. NEXT-SESSION INTERVAL
 ══════════════════════════════════════════════════════════ */
 function computeNextSession() {
-  const history = state.rewardHistory || [];
-  const sessions = profile?.sessions || 0;
-  const avgMot   = profile?.avgMotivation || 0;
+  const fp      = KV.getCurrentProfile();
+  const history = (KV.state.rewardHistory || []).filter(h => fp && h.profileId === fp.id);
+  const sessions = fp?.sessions || 0;
+  const avgMot   = fp?.avgMotivation || 0;
 
   // Look at last session's rewardHistory entries (most recent world completions)
   const recent = history
@@ -1086,9 +1087,9 @@ function computeNextSession() {
    3. REINFORCEMENT THINNING
 ══════════════════════════════════════════════════════════ */
 function computeThinning() {
-  const history  = (state.rewardHistory || [])
-    .filter(h => !profile || h.profileId === profile.id);
-  const worlds   = profile?.worlds || KV.state.worlds || WORLDS;
+  const fp      = KV.getCurrentProfile();
+  const history = (KV.state.rewardHistory || []).filter(h => fp && h.profileId === fp.id);
+  const worlds  = fp?.worlds || KV.state.worlds || WORLDS;
 
   const items = document.getElementById('thinning-items');
   const note  = document.getElementById('thinning-note');
@@ -1141,18 +1142,17 @@ function computeThinning() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   4. CROSS-WORLD BADGES
+   4. CROSS-WORLD BADGES — reads FRESH state every call
 ══════════════════════════════════════════════════════════ */
 function computeBadges() {
-  const history = (state.rewardHistory || [])
-    .filter(h => !profile || h.profileId === profile.id);
-  const worlds  = profile?.worlds || KV.state.worlds;
+  const fp      = KV.getCurrentProfile();
+  const history = (KV.state.rewardHistory || []).filter(h => fp && h.profileId === fp.id);
+  const worlds  = fp?.worlds || KV.state.worlds || [];
 
   const container = document.getElementById('badges-body');
   container.innerHTML = '';
 
-  // Award existing KV reward badges already in sticker book
-  const kvBadges = (state.rewards || []).filter(r => r.category === 'badges');
+  const distinctWorldIds = new Set(history.map(h => h.worldId));
 
   CROSS_BADGES.forEach(badge => {
     let unlocked = false;
@@ -1172,9 +1172,7 @@ function computeBadges() {
       const goodEntries = entries.filter(e => (e.accuracy||0) >= badge.requireAccuracy);
       unlocked = goodEntries.length >= 2; // improved across 2+ sessions
     } else if (badge.requireSessions) {
-      // Sessions in 2+ distinct worlds
-      const distinctWorlds = new Set(history.map(h => h.worldId));
-      unlocked = distinctWorlds.size >= badge.requireSessions;
+      unlocked = distinctWorldIds.size >= badge.requireSessions;
     }
 
     const el = document.createElement('div');
@@ -1199,7 +1197,7 @@ function computeBadges() {
 
     // Write unlocked badge to KV sticker book if not already there
     if (unlocked) {
-      const existing = (state.rewards || []).find(r => r.id === badge.id);
+      const existing = (KV.state.rewards || []).find(r => r.id === badge.id);
       if (!existing) {
         if (!KV.state.rewards) KV.state.rewards = [];
         KV.state.rewards.push({
@@ -1220,7 +1218,7 @@ function computeBadges() {
    5. KAHI MOOD
 ══════════════════════════════════════════════════════════ */
 function computeKahiMood() {
-  const avgMot = profile?.avgMotivation || 0;
+  const avgMot = KV.getCurrentProfile()?.avgMotivation || 0;
   let mood;
   if (!avgMot || avgMot === 0) mood = 'none';
   else if (avgMot >= 4.0) mood = 'high';
@@ -1296,17 +1294,28 @@ function showToast(msg, type='info') {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MAIN RENDER
+   MAIN RENDER — always reads fresh from KV.state
 ══════════════════════════════════════════════════════════ */
 function renderAll() {
-  if (!profile) {
+  const fp = KV.getCurrentProfile();
+  if (!fp) {
     document.getElementById('clinician-note-body').innerHTML =
       'No profile found. <a href="profile.html" style="color:#F2994A;">Create a profile</a> to begin!';
     return;
   }
-  const xp = profile.totalXP || 0;
 
-  // Stagger renders for visual delight
+  // ── Update hero stats live ──
+  const xp = fp.totalXP || 0;
+  document.getElementById('nav-avatar').textContent = fp.avatar || '🧒';
+  document.getElementById('nav-name').textContent   = fp.name  || 'Player';
+  document.getElementById('nav-level').textContent  = KV.getPlayerLevelName(xp);
+  document.getElementById('stat-xp').textContent       = xp + ' XP';
+  document.getElementById('stat-sessions').textContent  = fp.sessions || 0;
+  document.getElementById('stat-streak').textContent    = (fp.streak || 0) + '🔥';
+  document.getElementById('stat-rewards').textContent   =
+    (KV.state.rewardHistory || []).filter(r => r.profileId === fp.id).length;
+
+  // ── Stagger renders for visual delight ──
   renderGarden(xp);
 
   setTimeout(() => {
@@ -1319,7 +1328,7 @@ function renderAll() {
     computeBadges();
   }, 600);
 
-  // Toast if new stage unlocked (compare vs saved)
+  // Toast if garden stage just grew
   const stage = computeGrowthStage(xp);
   const savedStage = parseInt(localStorage.getItem('kv_lastGardenStage') || '0');
   if (stage > savedStage) {
