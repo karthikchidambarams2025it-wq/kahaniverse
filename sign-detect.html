@@ -546,6 +546,9 @@
 <script src="js/kahani-app.js"></script>
 <script src="js/audio-engine.js"></script>
 <script src="js/gems.js"></script>
+<!-- TF.js + ISL Recognizer for real ISL detection -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0"></script>
+<script src="assets/js/isl-recognizer.js"></script>
 
 <script>
 'use strict';
@@ -608,12 +611,43 @@ const VOCABS = {
     { id:'raised_hand',emoji:'✋', name:'Raised Hand',  desc:'Open hand held out flat at camera level.' },
   ],
   isl: [
-    { id:'open_palm',  emoji:'🖐️', name:'ISL: Namaste', desc:'Open palm facing camera — greeting sign in ISL.' },
-    { id:'thumbs_up',  emoji:'👍', name:'ISL: Accha',    desc:'Thumbs up — meaning "good/okay" in ISL context.' },
-    { id:'v_sign',     emoji:'✌️', name:'ISL: 2',        desc:'V shape — number two or victory in ISL.' },
-    { id:'fist',       emoji:'✊', name:'ISL: Na',        desc:'Closed fist — negation/no in ISL.' },
-    { id:'pointing',   emoji:'☝️', name:'ISL: Ek',       desc:'Single index — number one in ISL.' },
-    { id:'i_love_you', emoji:'🤟', name:'ISL: Pyaar',    desc:'I love you sign — borrowed into ISL.' },
+    // Real ISL fingerspelling — 35 classes from trained CNN model
+    // NOTE: Static fingerspelling only (digits + letters), not full ISL.
+    { id:'1', emoji:'1️⃣', name:'ISL: 1', desc:'Show the digit 1 in Indian Sign Language.' },
+    { id:'2', emoji:'2️⃣', name:'ISL: 2', desc:'Show the digit 2 in Indian Sign Language.' },
+    { id:'3', emoji:'3️⃣', name:'ISL: 3', desc:'Show the digit 3 in Indian Sign Language.' },
+    { id:'4', emoji:'4️⃣', name:'ISL: 4', desc:'Show the digit 4 in Indian Sign Language.' },
+    { id:'5', emoji:'5️⃣', name:'ISL: 5', desc:'Show the digit 5 in Indian Sign Language.' },
+    { id:'6', emoji:'6️⃣', name:'ISL: 6', desc:'Show the digit 6 in Indian Sign Language.' },
+    { id:'7', emoji:'7️⃣', name:'ISL: 7', desc:'Show the digit 7 in Indian Sign Language.' },
+    { id:'8', emoji:'8️⃣', name:'ISL: 8', desc:'Show the digit 8 in Indian Sign Language.' },
+    { id:'9', emoji:'9️⃣', name:'ISL: 9', desc:'Show the digit 9 in Indian Sign Language.' },
+    { id:'A', emoji:'🅰️', name:'ISL: A', desc:'Show the letter A in Indian Sign Language.' },
+    { id:'B', emoji:'🅱️', name:'ISL: B', desc:'Show the letter B in Indian Sign Language.' },
+    { id:'C', emoji:'©️', name:'ISL: C', desc:'Show the letter C in Indian Sign Language.' },
+    { id:'D', emoji:'🇩', name:'ISL: D', desc:'Show the letter D in Indian Sign Language.' },
+    { id:'E', emoji:'📧', name:'ISL: E', desc:'Show the letter E in Indian Sign Language.' },
+    { id:'F', emoji:'🇫', name:'ISL: F', desc:'Show the letter F in Indian Sign Language.' },
+    { id:'G', emoji:'🇬', name:'ISL: G', desc:'Show the letter G in Indian Sign Language.' },
+    { id:'H', emoji:'🇭', name:'ISL: H', desc:'Show the letter H in Indian Sign Language.' },
+    { id:'I', emoji:'ℹ️', name:'ISL: I', desc:'Show the letter I in Indian Sign Language.' },
+    { id:'J', emoji:'🇯', name:'ISL: J', desc:'Show the letter J in Indian Sign Language.' },
+    { id:'K', emoji:'🇰', name:'ISL: K', desc:'Show the letter K in Indian Sign Language.' },
+    { id:'L', emoji:'🇱', name:'ISL: L', desc:'Show the letter L in Indian Sign Language.' },
+    { id:'M', emoji:'Ⓜ️', name:'ISL: M', desc:'Show the letter M in Indian Sign Language.' },
+    { id:'N', emoji:'🇳', name:'ISL: N', desc:'Show the letter N in Indian Sign Language.' },
+    { id:'O', emoji:'🅾️', name:'ISL: O', desc:'Show the letter O in Indian Sign Language.' },
+    { id:'P', emoji:'🅿️', name:'ISL: P', desc:'Show the letter P in Indian Sign Language.' },
+    { id:'Q', emoji:'🇶', name:'ISL: Q', desc:'Show the letter Q in Indian Sign Language.' },
+    { id:'R', emoji:'®️', name:'ISL: R', desc:'Show the letter R in Indian Sign Language.' },
+    { id:'S', emoji:'🇸', name:'ISL: S', desc:'Show the letter S in Indian Sign Language.' },
+    { id:'T', emoji:'🇹', name:'ISL: T', desc:'Show the letter T in Indian Sign Language.' },
+    { id:'U', emoji:'🇺', name:'ISL: U', desc:'Show the letter U in Indian Sign Language.' },
+    { id:'V', emoji:'🇻', name:'ISL: V', desc:'Show the letter V in Indian Sign Language.' },
+    { id:'W', emoji:'🇼', name:'ISL: W', desc:'Show the letter W in Indian Sign Language.' },
+    { id:'X', emoji:'❌', name:'ISL: X', desc:'Show the letter X in Indian Sign Language.' },
+    { id:'Y', emoji:'🇾', name:'ISL: Y', desc:'Show the letter Y in Indian Sign Language.' },
+    { id:'Z', emoji:'🇿', name:'ISL: Z', desc:'Show the letter Z in Indian Sign Language.' },
   ],
   asl: [
     { id:'open_palm',  emoji:'🅱️', name:'ASL: B',  desc:'Four fingers straight up, thumb tucked across palm.' },
@@ -625,6 +659,7 @@ const VOCABS = {
 };
 
 let currentVocab     = VOCABS.basic;
+let currentVocabKey  = 'basic';  // Track which vocab is active for ISL detection
 let targetSign       = currentVocab[0];
 
 /* ══════════════════════════════════════════════════════════════
@@ -972,7 +1007,7 @@ function initMediaPipe() {
   mediapipeCamera.start().then(() => setStatus('AI tracking active', false));
 }
 
-function onMediaPipeResults(results) {
+async function onMediaPipeResults(results) {
   if (!canvasEl) return;
   canvasEl.width  = videoEl.videoWidth  || 640;
   canvasEl.height = videoEl.videoHeight || 480;
@@ -980,7 +1015,25 @@ function onMediaPipeResults(results) {
   if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
     const lm = results.multiHandLandmarks[0];
     drawSkeleton(lm);
-    const gesture = GestureClassifier.classify(lm);
+
+    let gesture;
+
+    // Use ISLRecognizer for ISL vocab, geometric rules for basic/asl
+    if (currentVocabKey === 'isl' && window.ISLRecognizer && ISLRecognizer.ready) {
+      const pred = await ISLRecognizer.predict(videoEl, lm);
+      gesture = pred.label;  // Returns '1','2',...,'9','A','B',...,'Z' or 'none'
+      // Update confidence display if available
+      if (pred.confidence > 0) {
+        const confEl = document.getElementById('gesture-name');
+        if (confEl && gesture !== 'none') {
+          confEl.textContent = gesture + ' (' + Math.round(pred.confidence * 100) + '%)';
+        }
+      }
+    } else {
+      // Existing geometric classifier for basic/asl
+      gesture = GestureClassifier.classify(lm);
+    }
+
     updateGestureDisplay(gesture, lm);
     updateHold(gesture);
   } else {
@@ -1104,9 +1157,18 @@ function setTargetSign(sign) {
 }
 
 function loadVocab(vocabKey) {
+  currentVocabKey = vocabKey;
   currentVocab = VOCABS[vocabKey] || VOCABS.basic;
   buildPills();
   setTargetSign(currentVocab[0]);
+
+  // Init ISL Recognizer when ISL vocab is selected
+  if (vocabKey === 'isl' && window.ISLRecognizer && !ISLRecognizer.ready) {
+    ISLRecognizer.init().then(ok => {
+      if (ok) showToast('🧠 ISL Model loaded! Real recognition active.');
+      else showToast('⚠️ ISL Model not found. Using simulation.');
+    });
+  }
 }
 
 function buildPills() {

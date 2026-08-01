@@ -11,6 +11,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <!-- TF.js + ISL Recognizer for real ISL detection -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0"></script>
+  <script src="assets/js/isl-recognizer.js"></script>
 <style>
 /* === RESET & BASE === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -679,11 +682,66 @@ startBtn.addEventListener('click', async () => {
     await engine.start();
     camCover.classList.add('gone');
     addSys('✅ Camera ready! Show me a sign and hold it steady!');
+    // Also init ISL Recognizer for real fingerspelling
+    if (window.ISLRecognizer && !ISLRecognizer.ready) {
+      ISLRecognizer.init().then(ok => {
+        if (ok) {
+          addSys('🧠 ISL Model loaded! Show digit/letter signs for real recognition.');
+          islCameraMode = true;
+          requestAnimationFrame(islLoop);
+        }
+      });
+    } else if (window.ISLRecognizer && ISLRecognizer.ready) {
+      islCameraMode = true;
+      requestAnimationFrame(islLoop);
+    }
   } catch {
     startBtn.textContent = '📷 Start Camera'; startBtn.disabled = false;
     addSys('⚠️ Camera not allowed. Use 🎭 Demo Mode below!');
   }
 });
+
+/* ── ISL FINGERSPELLING MODE (real model) ── */
+// NOTE: Static fingerspelling only (digits 1-9, letters A-Z), not full ISL.
+let islCameraMode = false;
+let islWordBuffer = '';
+let islLastCommitTime = 0;
+const ISL_WORD_PAUSE = 2000; // ms pause before sending buffered word
+
+async function islLoop() {
+  if (!islCameraMode || !ISLRecognizer.ready) return;
+  if (webcam.readyState >= 2 && !locked) {
+    // Get landmarks from engine if available
+    const lm = engine && engine.lastLandmarks ? engine.lastLandmarks : null;
+    const pred = await ISLRecognizer.predict(webcam, lm);
+    const holdMs = HOLD;
+    const stable = ISLRecognizer.updateStable(pred, holdMs);
+
+    // Show current prediction
+    if (pred.label !== 'none' && pred.confidence > 0.4) {
+      detWord.innerHTML = `🧠 <strong>${pred.label}</strong> (${Math.round(pred.confidence*100)}%)`;
+      holdBar.style.width = Math.round(stable.holdProgress * 100) + '%';
+    }
+
+    // Committed character
+    if (stable.committed) {
+      islWordBuffer += stable.label;
+      islLastCommitTime = Date.now();
+      detWord.innerHTML = `📝 <strong>${islWordBuffer}</strong> (typing…)`;
+      holdBar.style.width = '0%';
+    }
+
+    // Send word after pause
+    if (islWordBuffer && (Date.now() - islLastCommitTime > ISL_WORD_PAUSE)) {
+      const word = islWordBuffer;
+      islWordBuffer = '';
+      addChildBubble('✋ ' + word);
+      speak(word);
+      detWord.innerHTML = '<span class="det-ph">Show me a sign! 🙌</span>';
+    }
+  }
+  requestAnimationFrame(islLoop);
+}
 
 /* ── DEMO MODE ── */
 demoBtn.addEventListener('click', () => {

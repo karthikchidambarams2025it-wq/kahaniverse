@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISL Model Test — Kahaniverse</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; }
+    h1 { text-align: center; padding: 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 1.4rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 1000px; margin: 20px auto; padding: 0 16px; }
+    .card { background: #1a1a2e; border-radius: 12px; padding: 16px; border: 1px solid #333; }
+    .card h2 { font-size: 1rem; margin-bottom: 10px; color: #667eea; }
+    .video-wrap { position: relative; background: #000; border-radius: 8px; overflow: hidden; aspect-ratio: 4/3; }
+    video, canvas { width: 100%; height: 100%; object-fit: cover; display: block; }
+    canvas { position: absolute; top: 0; left: 0; }
+    #crop-preview { width: 128px; height: 128px; border: 2px solid #667eea; border-radius: 8px; image-rendering: pixelated; }
+    .status { padding: 8px 12px; border-radius: 8px; font-size: .85rem; margin: 8px 0; }
+    .status.loading { background: rgba(255,193,7,.15); color: #ffc107; }
+    .status.ready { background: rgba(76,175,80,.15); color: #4caf50; }
+    .status.error { background: rgba(244,67,54,.15); color: #f44336; }
+    .big-label { font-size: 3rem; font-weight: 900; text-align: center; padding: 16px; color: #fff; letter-spacing: 4px; }
+    .conf-bar { height: 8px; background: #333; border-radius: 4px; margin: 8px 0; overflow: hidden; }
+    .conf-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 4px; transition: width .15s; }
+    .top5 { list-style: none; font-size: .8rem; }
+    .top5 li { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #222; }
+    .top5 .bar { width: 100px; height: 6px; background: #222; border-radius: 3px; display: inline-block; margin-left: 8px; }
+    .top5 .bar-fill { height: 100%; background: #667eea; border-radius: 3px; }
+    .btn { background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 8px; padding: 10px 20px; color: #fff; font-weight: 700; cursor: pointer; font-size: .9rem; transition: all .2s; }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(102,126,234,.4); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .log { font-family: monospace; font-size: .72rem; background: #111; padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto; color: #888; white-space: pre-wrap; word-break: break-all; }
+    .fps { font-size: .75rem; color: #888; text-align: right; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+    select { background: #222; color: #e0e0e0; border: 1px solid #444; border-radius: 6px; padding: 6px 10px; font-size: .85rem; }
+  </style>
+</head>
+<body>
+
+<h1>🧪 ISL Model Test Page</h1>
+
+<div class="grid">
+  <!-- Left: Camera -->
+  <div class="card">
+    <h2>📷 Camera Feed</h2>
+    <div class="video-wrap">
+      <video id="cam" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+    </div>
+    <div class="controls">
+      <button class="btn" id="start-btn">▶ Start Camera</button>
+      <label>Hold time:
+        <select id="hold-sel">
+          <option value="400">Fast (400ms)</option>
+          <option value="600" selected>Normal (600ms)</option>
+          <option value="900">Slow (900ms)</option>
+          <option value="1200">Very Slow (1200ms)</option>
+        </select>
+      </label>
+    </div>
+    <div class="fps" id="fps">0 FPS</div>
+  </div>
+
+  <!-- Right: Results -->
+  <div class="card">
+    <h2>🔍 Prediction</h2>
+    <div id="status" class="status loading">⏳ Loading model...</div>
+
+    <h2 style="margin-top:12px">Cropped Hand (128×128)</h2>
+    <canvas id="crop-preview" width="128" height="128"></canvas>
+
+    <div class="big-label" id="big-label">—</div>
+    <div class="conf-bar"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
+    <div style="font-size:.8rem;color:#888" id="conf-text">Confidence: 0%</div>
+
+    <h2 style="margin-top:12px">Hold Progress</h2>
+    <div class="conf-bar"><div class="conf-fill" id="hold-fill" style="width:0%;background:#4caf50"></div></div>
+    <div style="font-size:.8rem;color:#888" id="hold-text">Hold: 0% | Committed: —</div>
+
+    <h2 style="margin-top:12px">Top 5</h2>
+    <ul class="top5" id="top5"></ul>
+
+    <h2 style="margin-top:12px">Log</h2>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<!-- TF.js -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0"></script>
+<!-- MediaPipe Hands -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<!-- ISL Recognizer -->
+<script src="assets/js/isl-recognizer.js"></script>
+
+<script>
+const cam = document.getElementById('cam');
+const overlay = document.getElementById('overlay');
+const overlayCtx = overlay.getContext('2d');
+const statusEl = document.getElementById('status');
+const bigLabel = document.getElementById('big-label');
+const confFill = document.getElementById('conf-fill');
+const confText = document.getElementById('conf-text');
+const holdFill = document.getElementById('hold-fill');
+const holdText = document.getElementById('hold-text');
+const top5El = document.getElementById('top5');
+const logEl = document.getElementById('log');
+const fpsEl = document.getElementById('fps');
+const cropPreview = document.getElementById('crop-preview');
+const cropPreviewCtx = cropPreview.getContext('2d');
+
+let running = false;
+let mpHands = null;
+let curLandmarks = null;
+let frameCount = 0;
+let lastFpsTime = Date.now();
+let committed = [];
+
+function log(msg) {
+  const t = new Date().toLocaleTimeString();
+  logEl.textContent = `[${t}] ${msg}\n` + logEl.textContent;
+}
+
+// Init model
+(async function() {
+  log('Initializing ISL Recognizer...');
+  const ok = await ISLRecognizer.init();
+  if (ok) {
+    statusEl.className = 'status ready';
+    statusEl.textContent = '✅ Model loaded! ' + ISLRecognizer.classNames.length + ' classes: ' + ISLRecognizer.classNames.join(', ');
+    log('Model ready. Click Start Camera to begin.');
+  } else {
+    statusEl.className = 'status error';
+    statusEl.textContent = '❌ Model failed to load. Check console.';
+    log('ERROR: Model load failed.');
+  }
+})();
+
+// Start camera
+document.getElementById('start-btn').addEventListener('click', async function() {
+  if (running) return;
+  this.disabled = true;
+  this.textContent = '⏳ Starting...';
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
+    cam.srcObject = stream;
+    await cam.play();
+
+    overlay.width = cam.videoWidth;
+    overlay.height = cam.videoHeight;
+
+    log('Camera started: ' + cam.videoWidth + 'x' + cam.videoHeight);
+
+    // Init MediaPipe Hands
+    mpHands = new Hands({
+      locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+    });
+    mpHands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.6, minTrackingConfidence: 0.5 });
+    mpHands.onResults(onHandResults);
+
+    running = true;
+    this.textContent = '🟢 Running';
+    requestAnimationFrame(loop);
+    log('Detection loop started.');
+
+  } catch (err) {
+    log('Camera error: ' + err.message);
+    this.disabled = false;
+    this.textContent = '▶ Start Camera';
+  }
+});
+
+function onHandResults(results) {
+  overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+
+  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+    curLandmarks = results.multiHandLandmarks[0];
+
+    // Draw skeleton
+    if (typeof drawConnectors !== 'undefined') {
+      drawConnectors(overlayCtx, curLandmarks, HAND_CONNECTIONS, { color: '#667eea', lineWidth: 2 });
+      drawLandmarks(overlayCtx, curLandmarks, { color: '#764ba2', lineWidth: 1, radius: 3 });
+    }
+  } else {
+    curLandmarks = null;
+  }
+}
+
+async function loop() {
+  if (!running) return;
+
+  // Send frame to MediaPipe
+  if (mpHands && cam.readyState >= 2) {
+    await mpHands.send({ image: cam });
+  }
+
+  // Run ISL prediction
+  if (ISLRecognizer.ready && cam.readyState >= 2) {
+    const result = await ISLRecognizer.predict(cam, curLandmarks);
+
+    // Show cropped preview
+    if (ISLRecognizer._cropCanvas) {
+      cropPreviewCtx.drawImage(ISLRecognizer._cropCanvas, 0, 0);
+    }
+
+    // Update UI
+    bigLabel.textContent = result.label !== 'none' ? result.label : '—';
+    const confPct = Math.round(result.confidence * 100);
+    confFill.style.width = confPct + '%';
+    confText.textContent = `Confidence: ${confPct}% (${result.label})`;
+
+    // Stabilization
+    const holdMs = parseInt(document.getElementById('hold-sel').value) || 600;
+    const stable = ISLRecognizer.updateStable(result, holdMs);
+    holdFill.style.width = Math.round(stable.holdProgress * 100) + '%';
+
+    if (stable.committed) {
+      committed.push(stable.label);
+      log('✅ COMMITTED: ' + stable.label + ' | Buffer: ' + committed.join(''));
+    }
+    holdText.textContent = `Hold: ${Math.round(stable.holdProgress * 100)}% | Committed: ${committed.join('') || '—'}`;
+
+    // Top 5
+    if (result.allPredictions) {
+      top5El.innerHTML = result.allPredictions.map(p =>
+        `<li><span>${p.label}</span><span>${(p.confidence*100).toFixed(1)}%</span><span class="bar"><span class="bar-fill" style="width:${p.confidence*100}%"></span></span></li>`
+      ).join('');
+    }
+  }
+
+  // FPS
+  frameCount++;
+  const now = Date.now();
+  if (now - lastFpsTime >= 1000) {
+    fpsEl.textContent = frameCount + ' FPS';
+    frameCount = 0;
+    lastFpsTime = now;
+  }
+
+  requestAnimationFrame(loop);
+}
+</script>
+
+</body>
+</html>
