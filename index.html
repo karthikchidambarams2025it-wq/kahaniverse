@@ -358,21 +358,26 @@
   </div>
 
   <div class="hero-ctas">
-    <!-- ★ SIGN & TALK AI — PRIMARY HACKATHON FEATURE ★ -->
+    <!-- ★ SIGN & TALK AI — PRIMARY FEATURE ★ -->
     <a href="communicate.html" class="btn-world btn-xl" style="
       background: linear-gradient(135deg,#00F0C8,#0EA5E9);
       color:#04081A; font-weight:900;
       box-shadow: 0 0 32px rgba(0,240,200,0.55), 0 0 64px rgba(0,240,200,0.2);
       animation: signGlow 2s ease-in-out infinite alternate;
       border:none; position:relative;
-    ">✋ Sign &amp; Talk AI
-      <span style="position:absolute;top:-9px;right:-9px;background:#FF5C8A;color:#fff;font-size:0.55rem;font-weight:900;padding:3px 7px;border-radius:99px;letter-spacing:.05em;">NEW</span>
+    ">💬 Sign &amp; Talk AI
+      <span style="position:absolute;top:-9px;right:-9px;background:#FF5C8A;color:#fff;font-size:0.55rem;font-weight:900;padding:3px 7px;border-radius:99px;letter-spacing:.05em;">LIVE AI</span>
     </a>
-    <a href="intro.html" class="btn-world btn-xl">🎬 Begin the Story</a>
-    <a href="learn.html" class="btn-world btn-xl">📚 Learn &amp; Grow</a>
-    <a href="world-map.html" class="btn-ghost btn-lg" style="background:rgba(79,227,216,0.06);border-color:rgba(79,227,216,0.2);color:#fff;">🗺️ Jump to Map</a>
+    <a href="sign-detect.html" class="btn-world btn-xl" style="
+      background: linear-gradient(135deg,#F7C948,#E14FD8);
+      color:#04081A; font-weight:900;
+      box-shadow: 0 0 32px rgba(247,201,72,0.4);
+      border:none;
+    ">🖐️ Live ISL Detection</a>
+    <a href="test-model.html" class="btn-ghost btn-lg" style="background:rgba(79,227,216,0.12);border-color:rgba(79,227,216,0.4);color:#fff;">🧪 Test ISL Model</a>
+    <a href="intro.html" class="btn-world btn-xl">🎬 Begin Story</a>
+    <a href="world-map.html" class="btn-ghost btn-lg" style="background:rgba(79,227,216,0.06);border-color:rgba(79,227,216,0.2);color:#fff;">🗺️ World Map</a>
     <a href="clinician.html" class="btn-ghost btn-sm" style="background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);">📊 Clinician Console</a>
-    <a href="about.html" class="btn-peacock btn-sm" style="font-size:0.82rem;">📄 About</a>
   </div>
 </section>
 
@@ -383,10 +388,38 @@
 }
 </style>
 
-<!-- ★ SIGN & TALK FEATURE CARD ★ -->
+<!-- ★ SIGN & TALK & REAL ISL MODEL FEATURE CARDS ★ -->
 <section style="
-  max-width:860px; margin:0 auto 32px; padding:0 20px;
+  max-width:860px; margin:0 auto 32px; padding:0 20px; display:flex; flex-direction:column; gap:16px;
 ">
+  <!-- Card 1: Live ISL Detection -->
+  <a href="sign-detect.html" style="
+    display:flex; align-items:center; gap:20px;
+    background:linear-gradient(135deg,rgba(247,201,72,0.08),rgba(225,79,216,0.06));
+    border:1px solid rgba(247,201,72,0.3);
+    border-radius:20px; padding:22px 28px;
+    text-decoration:none; color:inherit;
+    transition:all 0.3s;
+    box-shadow: 0 0 40px rgba(247,201,72,0.08);
+  " onmouseover="this.style.boxShadow='0 0 60px rgba(247,201,72,0.25)';this.style.borderColor='rgba(247,201,72,0.6)'"
+     onmouseout="this.style.boxShadow='0 0 40px rgba(247,201,72,0.08)';this.style.borderColor='rgba(247,201,72,0.3)'">
+    <div style="font-size:3.5rem;filter:drop-shadow(0 0 20px rgba(247,201,72,0.6));flex-shrink:0;">🖐️</div>
+    <div style="flex:1;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+        <span style="font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:900;color:#F7C948;letter-spacing:.05em;">Live ISL Detection</span>
+        <span style="background:linear-gradient(135deg,#F7C948,#E14FD8);color:#04081A;font-size:0.58rem;font-weight:900;padding:3px 9px;border-radius:99px;letter-spacing:.08em;">35-CLASS AI MODEL</span>
+      </div>
+      <p style="font-size:0.88rem;color:rgba(226,238,248,0.7);line-height:1.7;margin:0;">
+        Real-time on-device <strong style="color:#fff;">Indian Sign Language (ISL)</strong> fingerspelling recognition (digits 1-9, letters A-Z) powered by a trained <strong style="color:#fff;">MobileNetV2 CNN (>99% accuracy)</strong>. Includes hold-time stabilization and practice tracking.
+      </p>
+    </div>
+    <div style="flex-shrink:0;text-align:center;">
+      <div style="font-family:monospace;font-size:0.65rem;color:rgba(247,201,72,0.7);letter-spacing:.1em;margin-bottom:6px;">LAUNCH</div>
+      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#F7C948,#E14FD8);display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 16px rgba(247,201,72,0.4);color:#04081A;font-weight:900;">▶</div>
+    </div>
+  </a>
+
+  <!-- Card 2: Sign & Talk AI Chat -->
   <a href="communicate.html" style="
     display:flex; align-items:center; gap:20px;
     background:linear-gradient(135deg,rgba(0,240,200,0.07),rgba(14,165,233,0.05));
@@ -397,19 +430,19 @@
     box-shadow: 0 0 40px rgba(0,240,200,0.08);
   " onmouseover="this.style.boxShadow='0 0 60px rgba(0,240,200,0.2)';this.style.borderColor='rgba(0,240,200,0.5)'"
      onmouseout="this.style.boxShadow='0 0 40px rgba(0,240,200,0.08)';this.style.borderColor='rgba(0,240,200,0.25)'">
-    <div style="font-size:3.5rem;filter:drop-shadow(0 0 20px rgba(0,240,200,0.6));flex-shrink:0;">🤲</div>
+    <div style="font-size:3.5rem;filter:drop-shadow(0 0 20px rgba(0,240,200,0.6));flex-shrink:0;">💬</div>
     <div style="flex:1;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
-        <span style="font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:900;color:#00F0C8;letter-spacing:.05em;">Sign &amp; Talk AI</span>
-        <span style="background:linear-gradient(135deg,#00F0C8,#0EA5E9);color:#04081A;font-size:0.58rem;font-weight:900;padding:3px 9px;border-radius:99px;letter-spacing:.08em;">HACKATHON FEATURE</span>
+        <span style="font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:900;color:#00F0C8;letter-spacing:.05em;">Sign &amp; Talk AI Chat</span>
+        <span style="background:linear-gradient(135deg,#00F0C8,#0EA5E9);color:#04081A;font-size:0.58rem;font-weight:900;padding:3px 9px;border-radius:99px;letter-spacing:.08em;">TWO-PANEL CHAT</span>
       </div>
       <p style="font-size:0.88rem;color:rgba(226,238,248,0.7);line-height:1.7;margin:0;">
-        Child shows an <strong style="color:#fff;">ISL hand sign</strong> → AI detects it in real-time with confidence scoring → converted to <strong style="color:#fff;">text &amp; voice</strong> for the teacher. Teacher types a reply → <strong style="color:#fff;">spoken aloud</strong> to the child. Two-way communication with zero speech required.
+        Child shows signs to camera → real-time <strong style="color:#fff;">word buffering &amp; text conversion</strong> → sent to teacher chat with <strong style="color:#fff;">voice synthesis</strong>. Two-way sign-to-speech communication.
       </p>
     </div>
     <div style="flex-shrink:0;text-align:center;">
-      <div style="font-family:monospace;font-size:0.65rem;color:rgba(0,240,200,0.6);letter-spacing:.1em;margin-bottom:6px;">ENTER SESSION</div>
-      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#00F0C8,#0EA5E9);display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 16px rgba(0,240,200,0.4);">▶</div>
+      <div style="font-family:monospace;font-size:0.65rem;color:rgba(0,240,200,0.6);letter-spacing:.1em;margin-bottom:6px;">OPEN CHAT</div>
+      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#00F0C8,#0EA5E9);display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 16px rgba(0,240,200,0.4);color:#04081A;font-weight:900;">▶</div>
     </div>
   </a>
 </section>
