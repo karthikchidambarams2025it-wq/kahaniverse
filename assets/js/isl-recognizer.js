@@ -60,16 +60,18 @@ const ISLRecognizer = (function () {
       classNames = classInfo.class_names || classInfo;
       console.log(`[ISLRecognizer] ${classNames.length} classes: ${classNames.join(', ')}`);
 
-      // Load TF.js model
+      // Load TF.js GraphModel (exported via tf_saved_model_conversion_v2)
       if (typeof tf === 'undefined') {
-        throw new Error('TensorFlow.js not loaded. Add <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0"></script>');
+        throw new Error('TensorFlow.js not loaded.');
       }
-      model = await tf.loadLayersModel(MODEL_PATH);
-      console.log('[ISLRecognizer] Model loaded successfully');
+      model = await tf.loadGraphModel(MODEL_PATH);
+      console.log('[ISLRecognizer] GraphModel loaded successfully');
 
-      // Warm up with dummy prediction
+      // Warm up
       const dummy = tf.zeros([1, IMG_SIZE, IMG_SIZE, 3]);
-      model.predict(dummy).dispose();
+      const warmup = await model.executeAsync(dummy);
+      if (Array.isArray(warmup)) warmup.forEach(t => t.dispose());
+      else warmup.dispose();
       dummy.dispose();
       console.log('[ISLRecognizer] Model warmed up');
 
@@ -137,43 +139,56 @@ const ISLRecognizer = (function () {
   }
 
   // ─── Classify Cropped Image ───
-  function classifyImage(canvas) {
+  async function classifyImage(canvas) {
     if (!model || !canvas) return null;
 
-    return tf.tidy(() => {
-      // Convert canvas to tensor: [1, 128, 128, 3], normalized to [0, 1]
-      let tensor = tf.browser.fromPixels(canvas)
-        .toFloat()
-        .div(255.0)
-        .expandDims(0);
+    const tensor = tf.browser.fromPixels(canvas)
+      .toFloat()
+      .div(255.0)
+      .expandDims(0);
 
-      // Run prediction
-      const predictions = model.predict(tensor);
-      const probs = predictions.dataSync();
+    try {
+      // GraphModel: executeAsync returns a tensor or dict of tensors
+      const result = await model.executeAsync(tensor);
+
+      // The output tensor - may be a single tensor or array
+      let probs;
+      if (Array.isArray(result)) {
+        probs = result[0].dataSync();
+        result.forEach(t => t.dispose());
+      } else if (result && typeof result === 'object' && !result.dataSync) {
+        // Dictionary output - get first value
+        const keys = Object.keys(result);
+        probs = result[keys[0]].dataSync();
+        Object.values(result).forEach(t => t.dispose());
+      } else {
+        probs = result.dataSync();
+        result.dispose();
+      }
+
+      tensor.dispose();
 
       // Find top prediction
-      let topIdx = 0;
-      let topConf = 0;
+      let topIdx = 0, topConf = 0;
       for (let i = 0; i < probs.length; i++) {
-        if (probs[i] > topConf) {
-          topConf = probs[i];
-          topIdx = i;
-        }
+        if (probs[i] > topConf) { topConf = probs[i]; topIdx = i; }
       }
 
-      // Build all predictions for debugging
-      const allPreds = [];
-      for (let i = 0; i < probs.length; i++) {
-        allPreds.push({ label: classNames[i], confidence: probs[i] });
-      }
-      allPreds.sort((a, b) => b.confidence - a.confidence);
+      const allPreds = Array.from(probs)
+        .map((p, i) => ({ label: classNames[i], confidence: p }))
+        .sort((a, b) => b.confidence - a.confidence);
 
       return {
         label: classNames[topIdx] || 'unknown',
         confidence: topConf,
-        allPredictions: allPreds.slice(0, 5) // top 5
+        allPredictions: allPreds.slice(0, 5)
       };
-    });
+
+    } catch (err) {
+      tensor.dispose();
+      console.error('[ISLRecognizer] Classify error:', err);
+      return null;
+    }
   }
 
   // ─── Main Predict Function ───
@@ -195,7 +210,7 @@ const ISLRecognizer = (function () {
 
     if (!canvas) return { label: 'none', confidence: 0 };
 
-    const result = classifyImage(canvas);
+    const result = await classifyImage(canvas);
     if (!result || result.confidence < MIN_CONFIDENCE) {
       return { label: 'none', confidence: result ? result.confidence : 0 };
     }
