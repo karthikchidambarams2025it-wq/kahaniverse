@@ -7,7 +7,15 @@
   <meta name="description" content="Real-time Indian Sign Language fingerspelling using MobileNetV2 AI. Recognises digits 1–9 and letters A–Z from your webcam.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖐️</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- MediaPipe + TensorFlow.js (must load BEFORE isl-recognizer.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0"></script>
+  <script src="assets/js/isl-recognizer.js"></script>
+  <script src="assets/js/hello-celebration.js"></script>
 
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/world.css">
@@ -54,11 +62,6 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       text-decoration: none; white-space: nowrap; display: flex; align-items: center; gap: 6px;
     }
-  font-family: 'Fredoka', cursive;
-  font-size: 1.25rem; font-weight: 700;
-  color: #9B59B6; text-decoration: none;
-  white-space: nowrap; display: flex; align-items: center; gap: 6px;
-}
 .nav-links { display: flex; gap: 6px; flex: 1; overflow-x: auto; }
 .nav-links::-webkit-scrollbar { display: none; }
 .nl {
@@ -706,7 +709,7 @@
     <div class="history-section">
       <div class="section-title">📜 Magic Sign History</div>
       <div class="history-list" id="history-list">
-        <div class="history-empty">No signs saved yet — hold a sign to add it to your word! ✨</div>
+        <div class="history-empty" id="history-empty">No signs saved yet — hold a sign to add it to your word! ✨</div>
       </div>
     </div>
 
@@ -777,13 +780,24 @@ async function loadModel() {
 
 // ─── Start camera ───
 async function startCamera() {
-  if (!modelReady) {
+  // Load model if not ready yet (non-blocking — camera starts regardless)
+  if (!modelReady && !document.getElementById('_modelLoading')) {
     setStatus('Loading AI…', 'loading');
-    await loadModel();
+    loadModel(); // fire and forget — prediction loop checks modelReady
+  }
+
+  // Check camera API availability
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setStatus('Camera not supported', '');
+    alert('Your browser does not support camera access. Please use Chrome or Firefox.');
+    return;
   }
 
   try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+      audio: false
+    });
     const video = document.getElementById('cam-video');
     video.srcObject = cameraStream;
 
@@ -796,20 +810,34 @@ async function startCamera() {
     document.getElementById('stop-btn').style.display = '';
     cameraActive = true;
 
-    // Resize canvas to match video
+    // Explicitly play the video (required in some browsers)
+    try { await video.play(); } catch(playErr) { console.warn('video.play() error:', playErr); }
+
+    // Resize canvas to match video dimensions
     video.addEventListener('loadedmetadata', () => {
+      const canvas = document.getElementById('hand-canvas');
+      canvas.width  = video.videoWidth  || 640;
+      canvas.height = video.videoHeight || 480;
+    });
+    // Also set canvas size immediately if metadata already loaded
+    if (video.videoWidth) {
       const canvas = document.getElementById('hand-canvas');
       canvas.width  = video.videoWidth;
       canvas.height = video.videoHeight;
-    });
+    }
 
-    setStatus('Initialising…', 'loading');
+    setStatus(modelReady ? 'Initialising…' : 'Camera on · AI loading…', 'loading');
     setupMediaPipe(video);
 
   } catch(e) {
     console.error('Camera error:', e);
     setStatus('Camera Error', '');
-    alert('Could not access camera: ' + e.message);
+    const msg = e.name === 'NotAllowedError'
+      ? 'Camera permission was denied. Please allow camera access in your browser settings and reload the page.'
+      : e.name === 'NotFoundError'
+      ? 'No camera found. Please connect a webcam and try again.'
+      : 'Could not access camera: ' + e.message;
+    alert(msg);
   }
 }
 
